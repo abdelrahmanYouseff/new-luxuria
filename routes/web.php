@@ -19,6 +19,16 @@ Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Temporary test dashboard route
+Route::get('/test-dashboard', function () {
+    return Inertia::render('Dashboard', [
+        'reservationsCount' => 0,
+        'invoicesCount' => 0,
+        'couponsCount' => 0,
+        'vehicalsCount' => 0,
+    ]);
+})->middleware(['auth'])->name('test.dashboard');
+
 // Public vehicles route for testing
 Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
 
@@ -30,7 +40,7 @@ Route::get('dashboard', function () {
         'couponsCount' => Coupon::count(),
         'vehicalsCount' => Car::count(),
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 
 
