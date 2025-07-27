@@ -236,7 +236,7 @@ class PointSysService
     /**
      * Get customer balance
      */
-    public function getCustomerBalance(int $customerId)
+    public function getCustomerBalance($customerId)
     {
         return $this->makeRequest("customers/{$customerId}/balance");
     }
@@ -244,7 +244,7 @@ class PointSysService
     /**
      * Add points to customer
      */
-    public function addPointsToCustomer(int $customerId, int $points, string $description = '', string $referenceId = '')
+    public function addPointsToCustomer($customerId, int $points, string $description = '', string $referenceId = '')
     {
         return $this->makeRequest('customers/points/add', [
             'customer_id' => $customerId,
@@ -265,7 +265,7 @@ class PointSysService
     /**
      * Redeem a reward
      */
-    public function redeemReward(int $customerId, int $rewardId)
+    public function redeemReward($customerId, int $rewardId)
     {
         return $this->makeRequest('rewards/redeem', [
             'customer_id' => $customerId,
