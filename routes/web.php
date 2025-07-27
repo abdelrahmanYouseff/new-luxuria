@@ -147,6 +147,37 @@ Route::get('/test-booking-payment', function () {
     return view('test_booking_payment');
 })->name('test.booking.payment');
 
+// Test PointSys Service
+Route::get('/test-pointsys-service', function () {
+    try {
+        $pointSysService = app(\App\Services\PointSysService::class);
+
+        // Test with a string customer ID
+        $customerId = '019821eb-37b2-dbf3-6c04-8dcd83933d2d';
+
+        $result = $pointSysService->addPointsToCustomer(
+            $customerId,
+            100,
+            'Test points',
+            'TEST_REF_001'
+        );
+
+        return response()->json([
+            'success' => true,
+            'customer_id' => $customerId,
+            'customer_id_type' => gettype($customerId),
+            'result' => $result
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->name('test.pointsys.service');
+
 // Test booking payment success simulation
 Route::post('/test-booking-payment-success', function (Request $request) {
     $bookingId = $request->input('booking_id');
