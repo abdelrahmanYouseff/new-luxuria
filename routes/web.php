@@ -19,6 +19,12 @@ Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Public vehicles route (no authentication required)
+Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
+
+// Public vehicles route - accessible without login
+Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index.public');
+
 // Temporary test dashboard route
 Route::get('/test-dashboard', function () {
     return Inertia::render('Dashboard', [
@@ -254,7 +260,7 @@ Inertia::share('userRole', function () {
     return Auth::check() ? Auth::user()->role : null;
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/my-points', function () {
         return Inertia::render('MyPoints');
     })->name('my-points');
