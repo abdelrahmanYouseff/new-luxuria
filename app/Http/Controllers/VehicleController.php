@@ -16,8 +16,8 @@ class VehicleController extends Controller
     public function index()
     {
         try {
-            // Get visible vehicles from database, ordered by daily rate (highest to lowest)
-            $vehicles = Vehicle::visible()->orderBy('daily_rate', 'desc')->get();
+            // Get all vehicles from database (both visible and hidden), ordered by daily rate (highest to lowest)
+            $vehicles = Vehicle::orderBy('daily_rate', 'desc')->get();
 
             // Transform database data to match frontend structure
             $transformedVehicles = $vehicles->map(function ($vehicle) {
@@ -219,6 +219,53 @@ class VehicleController extends Controller
                 'message' => $e->getMessage(),
                 'data' => null
             ], 500);
+        }
+    }
+
+    /**
+     * Get only visible vehicles for public website
+     */
+    public function publicIndex()
+    {
+        try {
+            // Get only visible vehicles from database, ordered by daily rate (highest to lowest)
+            $vehicles = Vehicle::visible()->orderBy('daily_rate', 'desc')->get();
+
+            // Transform database data to match frontend structure
+            $transformedVehicles = $vehicles->map(function ($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'name' => $vehicle->make ?? 'Unknown',
+                    'model' => $vehicle->model ?? 'N/A',
+                    'plateNumber' => $vehicle->plate_number ?? 'N/A',
+                    'status' => $vehicle->status,
+                    'category' => $vehicle->category,
+                    'ownership' => $vehicle->ownership_status,
+                    'year' => $vehicle->year ?? 'N/A',
+                    'color' => $vehicle->color ?? 'N/A',
+                    'transmission' => $vehicle->transmission,
+                    'odometer' => $vehicle->odometer,
+                    'dailyRate' => (float) $vehicle->daily_rate,
+                    'image' => $vehicle->image_url,
+                    'image_url' => $vehicle->image_url,
+                    'is_visible' => $vehicle->is_visible,
+                ];
+            })->toArray();
+
+            return Inertia::render('Vehicles', [
+                'vehicles' => $transformedVehicles,
+                'apiStatus' => 'success',
+                'totalCount' => count($transformedVehicles),
+                'dataSource' => 'database'
+            ]);
+        } catch (\Exception $e) {
+            return Inertia::render('Vehicles', [
+                'vehicles' => [],
+                'apiStatus' => 'error',
+                'error' => 'Failed to load vehicles: ' . $e->getMessage(),
+                'totalCount' => 0,
+                'dataSource' => 'database'
+            ]);
         }
     }
 

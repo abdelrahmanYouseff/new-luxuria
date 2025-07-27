@@ -30,6 +30,14 @@
             <Icon name="refresh-cw" class="w-4 h-4 mr-2" />
             Refresh
           </Button>
+          <Button
+            @click="showHiddenVehicles = !showHiddenVehicles"
+            :variant="showHiddenVehicles ? 'default' : 'outline'"
+            size="sm"
+          >
+            <Icon :name="showHiddenVehicles ? 'eye-off' : 'eye'" class="w-4 h-4 mr-2" />
+            {{ showHiddenVehicles ? 'Hide Hidden' : 'Show Hidden' }} ({{ hiddenCount }})
+          </Button>
         </div>
       </div>
 
@@ -76,7 +84,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="vehicle in vehicles" :key="vehicle.id" class="hover:bg-gray-50">
+              <tr v-for="vehicle in filteredVehicles" :key="vehicle.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3 overflow-hidden">
@@ -190,7 +198,8 @@
         <div class="px-6 py-4 border-t border-gray-200">
           <div class="flex items-center justify-between">
             <div class="text-sm text-gray-700">
-              Showing <span class="font-medium">1</span> to <span class="font-medium">{{ vehicles.length }}</span> of <span class="font-medium">{{ vehicles.length }}</span> results
+              Showing <span class="font-medium">{{ filteredVehicles.length }}</span> of <span class="font-medium">{{ vehicles.length }}</span> vehicles
+              <span v-if="hiddenCount > 0" class="text-gray-500 ml-2">({{ visibleCount }} visible, {{ hiddenCount }} hidden)</span>
             </div>
             <div class="flex items-center space-x-2">
               <Button size="sm" variant="outline" disabled>Previous</Button>
@@ -204,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
@@ -245,8 +254,20 @@ const error = ref(page.props.error || null)
 const totalCount = ref(page.props.totalCount || 0)
 const dataSource = ref(page.props.dataSource || 'database')
 
+// Computed properties
+const filteredVehicles = computed(() => {
+  if (showHiddenVehicles.value) {
+    return vehicles.value
+  }
+  return vehicles.value.filter(vehicle => vehicle.is_visible !== false)
+})
+
+const visibleCount = computed(() => vehicles.value.filter(v => v.is_visible !== false).length)
+const hiddenCount = computed(() => vehicles.value.filter(v => v.is_visible === false).length)
+
 // State
 const syncing = ref(false)
+const showHiddenVehicles = ref(false)
 
 const refreshPage = () => {
   window.location.reload()

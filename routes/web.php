@@ -22,8 +22,8 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 // Public vehicles route (no authentication required)
 Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
 
-// Public vehicles route - accessible without login
-Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index.public');
+// Public vehicles route - accessible without login (shows only visible vehicles)
+Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'publicIndex'])->name('vehicles.index.public');
 
 // Vehicle visibility management (admin only)
 Route::middleware(['auth'])->group(function () {
