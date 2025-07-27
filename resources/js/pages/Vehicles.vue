@@ -89,7 +89,14 @@
                       <Icon v-else name="car" class="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-gray-900">{{ vehicle.name }}</div>
+                      <div class="text-sm font-medium text-gray-900 flex items-center">
+                        {{ vehicle.name }}
+                        <Icon
+                          :name="vehicle.is_visible ? 'eye' : 'eye-off'"
+                          :class="`w-4 h-4 ml-2 ${vehicle.is_visible ? 'text-green-600' : 'text-red-600'}`"
+                          :title="vehicle.is_visible ? 'Visible on website' : 'Hidden from website'"
+                        />
+                      </div>
                       <div class="text-sm text-gray-500">{{ vehicle.model }}</div>
                     </div>
                   </div>
@@ -100,15 +107,20 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'px-2 py-1 text-xs font-medium rounded-full',
-                    vehicle.status === 'Available' ? 'bg-green-100 text-green-800' :
-                    vehicle.status === 'Rented' ? 'bg-red-100 text-red-800' :
-                    vehicle.status === 'Maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  ]">
-                    {{ vehicle.status }}
-                  </span>
+                  <div class="space-y-1">
+                    <span :class="[
+                      'px-2 py-1 text-xs font-medium rounded-full',
+                      vehicle.status === 'Available' ? 'bg-green-100 text-green-800' :
+                      vehicle.status === 'Rented' ? 'bg-red-100 text-red-800' :
+                      vehicle.status === 'Maintenance' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    ]">
+                      {{ vehicle.status }}
+                    </span>
+                    <div v-if="!vehicle.is_visible" class="text-xs text-red-600 font-medium">
+                      Hidden from website
+                    </div>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="[
@@ -157,6 +169,10 @@
                       <DropdownMenuItem @click="manageImage(vehicle.id)">
                         <Icon name="image" class="w-4 h-4 mr-2" />
                         Manage Image
+                      </DropdownMenuItem>
+                      <DropdownMenuItem @click="toggleVisibility(vehicle)" :class="vehicle.is_visible ? 'text-orange-600' : 'text-green-600'">
+                        <Icon :name="vehicle.is_visible ? 'eye-off' : 'eye'" class="w-4 h-4 mr-2" />
+                        {{ vehicle.is_visible ? 'Hide from Website' : 'Show on Website' }}
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="deleteVehicle(vehicle.id)" class="text-red-600">
                         <Icon name="trash-2" class="w-4 h-4 mr-2" />
@@ -219,6 +235,7 @@ interface Vehicle {
   dailyRate: number
   image: string | null
   image_url?: string
+  is_visible?: boolean
 }
 
 // Get vehicles from API or props
@@ -272,5 +289,35 @@ const syncFromApi = async () => {
 
 const openVehiclesApi = () => {
   window.location.href = '/vehicles-api'
+}
+
+const toggleVisibility = async (vehicle: Vehicle) => {
+  try {
+    const response = await fetch(`/vehicles/${vehicle.id}/toggle-visibility`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+
+      // Update the vehicle's visibility status locally
+      vehicle.is_visible = data.is_visible
+
+      // Show success message
+      alert(data.message)
+
+      // Refresh the page to show updated data
+      window.location.reload()
+    } else {
+      throw new Error('Failed to toggle visibility')
+    }
+  } catch (error) {
+    console.error('Error toggling visibility:', error)
+    alert('Failed to toggle vehicle visibility')
+  }
 }
 </script>
