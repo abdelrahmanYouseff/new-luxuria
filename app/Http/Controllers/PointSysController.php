@@ -40,7 +40,7 @@ class PointSysController extends Controller
     /**
      * Get customer balance
      */
-    public function getCustomerBalance(int $customerId): JsonResponse
+    public function getCustomerBalance($customerId): JsonResponse
     {
         $balance = $this->pointSysService->getCustomerBalance($customerId);
 
@@ -57,7 +57,7 @@ class PointSysController extends Controller
     public function addPointsToCustomer(Request $request): JsonResponse
     {
         $request->validate([
-            'customer_id' => 'required|integer|min:1',
+            'customer_id' => 'required|string',
             'points' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
             'reference_id' => 'nullable|string|max:255',
@@ -97,7 +97,7 @@ class PointSysController extends Controller
     public function redeemReward(Request $request): JsonResponse
     {
         $request->validate([
-            'customer_id' => 'required|integer|min:1',
+            'customer_id' => 'required|string',
             'reward_id' => 'required|integer|min:1',
         ]);
 
