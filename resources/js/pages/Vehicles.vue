@@ -84,7 +84,10 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="vehicle in filteredVehicles" :key="vehicle.id" class="hover:bg-gray-50">
+              <tr v-for="vehicle in filteredVehicles" :key="vehicle.id" :class="[
+                'hover:bg-gray-50',
+                !vehicle.is_visible ? 'bg-red-25 border-l-4 border-red-300' : ''
+              ]">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3 overflow-hidden">
@@ -104,6 +107,7 @@
                           :class="`w-4 h-4 ml-2 ${vehicle.is_visible ? 'text-green-600' : 'text-red-600'}`"
                           :title="vehicle.is_visible ? 'Visible on website' : 'Hidden from website'"
                         />
+                        <span v-if="!vehicle.is_visible" class="ml-1 text-xs text-red-500">(Hidden)</span>
                       </div>
                       <div class="text-sm text-gray-500">{{ vehicle.model }}</div>
                     </div>
@@ -125,7 +129,7 @@
                     ]">
                       {{ vehicle.status }}
                     </span>
-                    <div v-if="!vehicle.is_visible" class="text-xs text-red-600 font-medium">
+                    <div v-if="!vehicle.is_visible" class="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded border border-red-200">
                       Hidden from website
                     </div>
                   </div>
@@ -267,7 +271,7 @@ const hiddenCount = computed(() => vehicles.value.filter(v => v.is_visible === f
 
 // State
 const syncing = ref(false)
-const showHiddenVehicles = ref(false)
+const showHiddenVehicles = ref(true) // Default to show all vehicles including hidden ones
 
 const refreshPage = () => {
   window.location.reload()
