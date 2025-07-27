@@ -293,16 +293,33 @@ const openVehiclesApi = () => {
 
 const toggleVisibility = async (vehicle: Vehicle) => {
   try {
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+
+    if (!csrfToken) {
+      console.error('CSRF token not found')
+      alert('CSRF token not found. Please refresh the page and try again.')
+      return
+    }
+
+    console.log('Toggling visibility for vehicle:', vehicle.id)
+    console.log('CSRF Token:', csrfToken)
+
     const response = await fetch(`/vehicles/${vehicle.id}/toggle-visibility`, {
       method: 'PATCH',
       headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        'X-CSRF-TOKEN': csrfToken,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     })
 
+    console.log('Response status:', response.status)
+    console.log('Response headers:', response.headers)
+
     if (response.ok) {
       const data = await response.json()
+      console.log('Response data:', data)
 
       // Update the vehicle's visibility status locally
       vehicle.is_visible = data.is_visible
@@ -313,11 +330,14 @@ const toggleVisibility = async (vehicle: Vehicle) => {
       // Refresh the page to show updated data
       window.location.reload()
     } else {
-      throw new Error('Failed to toggle visibility')
+      const errorText = await response.text()
+      console.error('Response error:', errorText)
+      throw new Error(`HTTP ${response.status}: ${errorText}`)
     }
   } catch (error) {
     console.error('Error toggling visibility:', error)
-    alert('Failed to toggle vehicle visibility')
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    alert(`Failed to toggle vehicle visibility: ${errorMessage}`)
   }
 }
 </script>

@@ -227,15 +227,42 @@ class VehicleController extends Controller
      */
     public function toggleVisibility(Vehicle $vehicle)
     {
-        $vehicle->update([
-            'is_visible' => !$vehicle->is_visible
-        ]);
+        try {
+            Log::info('Toggle visibility called for vehicle', [
+                'vehicle_id' => $vehicle->id,
+                'current_visibility' => $vehicle->is_visible,
+                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'user_email' => \Illuminate\Support\Facades\Auth::user()?->email
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => $vehicle->is_visible ? 'Vehicle is now visible' : 'Vehicle is now hidden',
-            'is_visible' => $vehicle->is_visible
-        ]);
+            $vehicle->update([
+                'is_visible' => !$vehicle->is_visible
+            ]);
+
+            $vehicle->refresh();
+
+            Log::info('Vehicle visibility updated successfully', [
+                'vehicle_id' => $vehicle->id,
+                'new_visibility' => $vehicle->is_visible
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $vehicle->is_visible ? 'Vehicle is now visible' : 'Vehicle is now hidden',
+                'is_visible' => $vehicle->is_visible
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error toggling vehicle visibility', [
+                'vehicle_id' => $vehicle->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating vehicle visibility: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

@@ -30,6 +30,20 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/vehicles/{vehicle}/toggle-visibility', [App\Http\Controllers\VehicleController::class, 'toggleVisibility'])->name('vehicles.toggle-visibility');
 });
 
+// Debug route to test authentication
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'authenticated' => \Illuminate\Support\Facades\Auth::check(),
+        'user' => \Illuminate\Support\Facades\Auth::user() ? [
+            'id' => \Illuminate\Support\Facades\Auth::user()->id,
+            'name' => \Illuminate\Support\Facades\Auth::user()->name,
+            'email' => \Illuminate\Support\Facades\Auth::user()->email,
+            'role' => \Illuminate\Support\Facades\Auth::user()->role
+        ] : null,
+        'csrf_token' => csrf_token()
+    ]);
+})->middleware(['auth'])->name('debug.auth');
+
 // Temporary test dashboard route
 Route::get('/test-dashboard', function () {
     return Inertia::render('Dashboard', [
