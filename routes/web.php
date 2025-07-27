@@ -25,6 +25,11 @@ Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, '
 // Public vehicles route - accessible without login (shows only visible vehicles)
 Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'publicIndex'])->name('vehicles.index.public');
 
+// Test page to explain vehicle routes
+Route::get('/test-vehicle-routes', function () {
+    return view('test_vehicle_routes');
+})->name('test.vehicle.routes');
+
 // Vehicle visibility management (admin only)
 Route::middleware(['auth'])->group(function () {
     Route::patch('/vehicles/{vehicle}/toggle-visibility', [App\Http\Controllers\VehicleController::class, 'toggleVisibility'])->name('vehicles.toggle-visibility');
