@@ -25,6 +25,11 @@ Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, '
 // Public vehicles route - accessible without login
 Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index.public');
 
+// Vehicle visibility management (admin only)
+Route::middleware(['auth'])->group(function () {
+    Route::patch('/vehicles/{vehicle}/toggle-visibility', [App\Http\Controllers\VehicleController::class, 'toggleVisibility'])->name('vehicles.toggle-visibility');
+});
+
 // Temporary test dashboard route
 Route::get('/test-dashboard', function () {
     return Inertia::render('Dashboard', [
@@ -265,8 +270,7 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('MyPoints');
     })->name('my-points');
 
-    Route::get('/vehicles', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index');
-    Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
+    Route::get('/vehicles-auth', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index');
     Route::post('/vehicles/sync', [App\Http\Controllers\VehicleController::class, 'syncFromApi'])->name('vehicles.sync');
     Route::get('/vehicles-api', [App\Http\Controllers\VehiclesApiController::class, 'index'])->name('vehicles.api');
 

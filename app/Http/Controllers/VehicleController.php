@@ -16,8 +16,8 @@ class VehicleController extends Controller
     public function index()
     {
         try {
-            // Get vehicles from database, ordered by daily rate (highest to lowest)
-            $vehicles = Vehicle::orderBy('daily_rate', 'desc')->get();
+            // Get visible vehicles from database, ordered by daily rate (highest to lowest)
+            $vehicles = Vehicle::visible()->orderBy('daily_rate', 'desc')->get();
 
             // Transform database data to match frontend structure
             $transformedVehicles = $vehicles->map(function ($vehicle) {
@@ -36,6 +36,7 @@ class VehicleController extends Controller
                     'dailyRate' => (float) $vehicle->daily_rate,
                     'image' => $vehicle->image_url,
                     'image_url' => $vehicle->image_url,
+                    'is_visible' => $vehicle->is_visible,
                 ];
             })->toArray();
 
@@ -219,6 +220,22 @@ class VehicleController extends Controller
                 'data' => null
             ], 500);
         }
+    }
+
+    /**
+     * Toggle vehicle visibility
+     */
+    public function toggleVisibility(Vehicle $vehicle)
+    {
+        $vehicle->update([
+            'is_visible' => !$vehicle->is_visible
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $vehicle->is_visible ? 'Vehicle is now visible' : 'Vehicle is now hidden',
+            'is_visible' => $vehicle->is_visible
+        ]);
     }
 
     /**

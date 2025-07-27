@@ -24,7 +24,8 @@ class Vehicle extends Model
         'doors',
         'odometer',
         'description',
-        'image'
+        'image',
+        'is_visible'
     ];
 
     protected $casts = [
@@ -88,6 +89,22 @@ class Vehicle extends Model
     public function scopeByMake($query, $make)
     {
         return $query->where('make', $make);
+    }
+
+    /**
+     * Scope for visible vehicles
+     */
+    public function scopeVisible($query)
+    {
+        return $query->where('is_visible', true);
+    }
+
+    /**
+     * Scope for hidden vehicles
+     */
+    public function scopeHidden($query)
+    {
+        return $query->where('is_visible', false);
     }
 
     /**
