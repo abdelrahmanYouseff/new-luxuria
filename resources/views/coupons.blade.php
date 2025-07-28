@@ -3,18 +3,42 @@
 @section('title', 'Coupons - Luxuria UAE')
 
 @section('content')
-<div class="modern-coupons-page">
+<div class="luxury-coupons-page">
     <!-- Hero Section -->
-    <div class="modern-hero-section">
+    <div class="luxury-hero-section">
+        <div class="hero-background">
+            <div class="hero-pattern"></div>
+            <div class="hero-overlay"></div>
+        </div>
         <div class="container">
             <div class="row justify-content-center text-center">
                 <div class="col-12 col-lg-10">
-                    <h1 class="modern-hero-title">
-                        Special Offers & Discounts
-                    </h1>
-                    <p class="modern-hero-subtitle">
-                        Save more on your luxury car rental experience with our exclusive deals
-                    </p>
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Exclusive Offers</span>
+                        </div>
+                        <h1 class="luxury-hero-title">
+                            Premium Discounts & Offers
+                        </h1>
+                        <p class="luxury-hero-subtitle">
+                            Unlock exclusive savings on luxury car rentals with our carefully curated collection of premium coupons
+                        </p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ count($formattedCoupons) }}</span>
+                                <span class="stat-label">Active Offers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Available</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">100%</span>
+                                <span class="stat-label">Secure</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -33,79 +57,120 @@
     @endif
 
     <!-- Coupons Grid -->
-    <div class="modern-coupons-section">
+    <div class="luxury-coupons-section">
         <div class="container">
+            <!-- Section Header -->
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Available Offers</h2>
+                <p class="section-subtitle">Choose from our premium collection of exclusive discounts</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="coupons-filters mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">All Offers</button>
+                            <button class="filter-tab" data-filter="percentage">Percentage</button>
+                            <button class="filter-tab" data-filter="fixed">Fixed Amount</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4 justify-content-center">
                 @forelse($formattedCoupons as $coupon)
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="modern-coupon-card">
-                        <div class="modern-coupon-header">
-                            <div class="modern-discount-badge">
-                                @if($coupon['discount_type'] === 'percentage')
-                                    <span class="discount-value">{{ $coupon['discount_value'] }}%</span>
-                                    <span class="discount-text">OFF</span>
-                                @else
-                                    <span class="discount-value">{{ $coupon['formatted_price'] }}</span>
-                                    <span class="discount-text">DISCOUNT</span>
-                                @endif
-                            </div>
-                            <div class="modern-coupon-status">
-                                <span class="status-badge">Active</span>
+                <div class="col-12 col-md-6 col-lg-4" data-coupon-type="{{ $coupon['discount_type'] }}">
+                    <div class="luxury-coupon-card">
+
+                        <!-- Coupon Header -->
+                        <div class="luxury-coupon-header">
+                            <div class="coupon-status">
+                                <div class="status-indicator active"></div>
+                                <span class="status-text">Active</span>
                             </div>
                         </div>
 
-                        <div class="modern-coupon-body">
-                            <h3 class="modern-coupon-title">{{ $coupon['name'] }}</h3>
-                            <p class="modern-coupon-description">{{ $coupon['description'] }}</p>
+                        <!-- Coupon Body -->
+                        <div class="luxury-coupon-body">
+                            <div class="coupon-title-section">
+                                <h3 class="luxury-coupon-title">{{ $coupon['name'] }}</h3>
+                                <div class="coupon-category">
+                                    <i class="bi bi-tag-fill"></i>
+                                    <span>{{ ucfirst($coupon['discount_type']) }} Discount</span>
+                                </div>
+                            </div>
 
-                            <div class="modern-coupon-details">
-                                <div class="detail-row">
-                                    <div class="detail-icon">
+                            <p class="luxury-coupon-description">{{ $coupon['description'] }}</p>
+
+                            <!-- Coupon Features -->
+                            <div class="coupon-features">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
                                         <i class="bi bi-calendar-check"></i>
                                     </div>
-                                    <div class="detail-content">
-                                        <span class="detail-label">Valid Until</span>
-                                        <span class="detail-value">{{ \Carbon\Carbon::parse($coupon['expires_at'])->format('M d, Y') }}</span>
+                                    <div class="feature-content">
+                                        <span class="feature-label">Valid Until</span>
+                                        <span class="feature-value">{{ \Carbon\Carbon::parse($coupon['expires_at'])->format('M d, Y') }}</span>
                                     </div>
                                 </div>
 
                                 @if($coupon['minimum_amount'] > 0)
-                                <div class="detail-row">
-                                    <div class="detail-icon">
-                                        <i class="bi bi-cash"></i>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-cash-stack"></i>
                                     </div>
-                                    <div class="detail-content">
-                                        <span class="detail-label">Minimum Spend</span>
-                                        <span class="detail-value">{{ $coupon['minimum_amount'] }} AED</span>
+                                    <div class="feature-content">
+                                        <span class="feature-label">Minimum Spend</span>
+                                        <span class="feature-value">{{ $coupon['minimum_amount'] }} AED</span>
                                     </div>
                                 </div>
                                 @endif
 
                                 @if($coupon['usage_limit'])
-                                <div class="detail-row">
-                                    <div class="detail-icon">
-                                        <i class="bi bi-people"></i>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-people-fill"></i>
                                     </div>
-                                    <div class="detail-content">
-                                        <span class="detail-label">Available</span>
-                                        <span class="detail-value">{{ $coupon['usage_limit'] - $coupon['used_count'] }} left</span>
+                                    <div class="feature-content">
+                                        <span class="feature-label">Available</span>
+                                        <span class="feature-value">{{ $coupon['usage_limit'] - $coupon['used_count'] }} left</span>
                                     </div>
                                 </div>
                                 @endif
                             </div>
                         </div>
 
-                        <div class="modern-coupon-footer">
-                            <div class="price-section">
-                                <span class="price-label">Coupon Price</span>
-                                <span class="price-amount">{{ $coupon['price'] }} AED</span>
+                        <!-- Coupon Footer -->
+                        <div class="luxury-coupon-footer">
+                            <div class="pricing-section">
+                                <div class="price-info">
+                                    <span class="price-label">Coupon Price</span>
+                                    <span class="price-value">{{ $coupon['price'] }} AED</span>
+                                </div>
+                                <div class="savings-info">
+                                    <span class="savings-label">Potential Savings</span>
+                                    <span class="savings-value">
+                                        @if($coupon['discount_type'] === 'percentage')
+                                            Up to {{ $coupon['discount_value'] }}% off
+                                        @else
+                                            Up to {{ $coupon['formatted_price'] }} off
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
-                            <button class="modern-buy-btn purchase-coupon-btn"
+
+                            <button class="luxury-purchase-btn purchase-coupon-btn"
                                     data-coupon-id="{{ $coupon['id'] }}"
                                     data-coupon-name="{{ $coupon['name'] }}"
                                     data-coupon-price="{{ $coupon['price'] }}">
-                                <i class="bi bi-bag-plus"></i>
-                                Purchase Now
+                                <span class="btn-content">
+                                    <i class="bi bi-bag-plus"></i>
+                                    <span>Purchase Now</span>
+                                </span>
+                                <div class="btn-loader" style="display: none;">
+                                    <div class="spinner"></div>
+                                </div>
                             </button>
                         </div>
                     </div>
@@ -163,90 +228,212 @@
 </div>
 
 <style>
-/* Modern Professional Design with Black Theme */
-.modern-coupons-page {
+/* Luxury Professional Design with Black Theme */
+.luxury-coupons-page {
     margin-top: 80px;
-    background: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     min-height: 100vh;
 }
 
-.modern-hero-section {
-    background: linear-gradient(135deg, #111 0%, #333 100%);
-    padding: 80px 0 60px 0;
+/* Hero Section */
+.luxury-hero-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    padding: 100px 0 80px 0;
     color: white;
     position: relative;
+    overflow: hidden;
 }
 
-.modern-hero-title {
-    font-size: 3rem;
-    font-weight: 700;
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    background-size: 300px 300px, 500px 500px;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(45,45,45,0.95) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+}
+
+.hero-badge i {
+    color: #ffd700;
+}
+
+.luxury-hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
     margin-bottom: 1.5rem;
     color: #fff;
+    line-height: 1.2;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.modern-hero-subtitle {
+.luxury-hero-subtitle {
     font-size: 1.25rem;
-    opacity: 0.95;
-    max-width: 600px;
-    margin: 0 auto;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
     line-height: 1.6;
     color: #e5e7eb;
 }
 
-.modern-coupons-section {
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-top: 40px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffd700;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Coupons Section */
+.luxury-coupons-section {
     padding: 80px 0;
 }
 
-.modern-coupon-card {
+.section-header {
+    margin-bottom: 60px;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Filters */
+.coupons-filters {
+    margin-bottom: 40px;
+}
+
+.filter-tabs {
+    display: flex;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
+}
+
+.filter-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.filter-tab.active {
+    background: #1a1a1a;
+    color: white;
+    box-shadow: 0 2px 8px rgba(26, 26, 26, 0.3);
+}
+
+.filter-tab:hover:not(.active) {
+    background: #f1f5f9;
+    color: #1a1a1a;
+}
+
+/* Coupon Cards */
+.luxury-coupon-card {
+    background: #1a1a1a;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    border: 1px solid #333;
     overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
-.modern-coupon-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.luxury-coupon-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: #e2e8f0;
 }
 
-.modern-coupon-header {
-    padding: 24px 24px 0 24px;
+
+
+/* Coupon Header */
+.luxury-coupon-header {
+    padding: 30px 30px 0 30px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: flex-start;
 }
 
-.modern-discount-badge {
-    background: linear-gradient(135deg, #111 0%, #333 100%);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    text-align: center;
-    min-width: 100px;
-}
-
-.discount-value {
-    display: block;
-    font-size: 1.75rem;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.discount-text {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 4px;
-}
-
-.modern-coupon-status {
+.coupon-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 16px;
     background: #dcfce7;
     color: #166534;
@@ -255,94 +442,167 @@
     font-weight: 600;
 }
 
-.modern-coupon-body {
-    padding: 24px;
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Coupon Body */
+.luxury-coupon-body {
+    padding: 30px;
     flex-grow: 1;
 }
 
-.modern-coupon-title {
+.coupon-title-section {
+    margin-bottom: 20px;
+}
+
+.luxury-coupon-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #111;
-    margin-bottom: 12px;
+    color: white;
+    margin-bottom: 8px;
     line-height: 1.3;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.modern-coupon-description {
-    color: #64748b;
-    margin-bottom: 24px;
-    line-height: 1.6;
-}
-
-.modern-coupon-details {
-    space-y: 16px;
-}
-
-.detail-row {
+.coupon-category {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
+    gap: 6px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.detail-icon {
-    width: 40px;
-    height: 40px;
-    background: #f1f5f9;
-    border-radius: 10px;
+.coupon-category i {
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.luxury-coupon-description {
+    color: white;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Coupon Features */
+.coupon-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.feature-icon {
+    width: 45px;
+    height: 45px;
+    background: #333;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 16px;
-    color: #111;
+    color: white;
+    font-size: 1.1rem;
+    border: 1px solid #444;
 }
 
-.detail-content {
+.feature-content {
     flex: 1;
 }
 
-.detail-label {
+.feature-label {
     display: block;
     font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 2px;
+    color: white;
+    margin-bottom: 4px;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.detail-value {
+.feature-value {
     display: block;
     font-weight: 600;
-    color: #111;
+    color: white;
+    font-size: 0.95rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.modern-coupon-footer {
-    padding: 24px;
-    border-top: 1px solid #e2e8f0;
-    background: #f8fafc;
+/* Coupon Footer */
+.luxury-coupon-footer {
+    padding: 30px;
+    border-top: 1px solid #333;
+    background: #2d2d2d;
 }
 
-.price-section {
+.pricing-section {
+    margin-bottom: 20px;
+}
+
+.price-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .price-label {
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-.price-amount {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111;
-}
-
-.modern-buy-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #111 0%, #333 100%);
     color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.price-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.savings-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.savings-label {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.savings-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #22c55e;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Purchase Button */
+.luxury-purchase-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+    color: #1a1a1a;
     border: none;
-    padding: 14px 24px;
+    padding: 16px 24px;
     border-radius: 12px;
     font-weight: 600;
     font-size: 1rem;
@@ -350,13 +610,57 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.luxury-purchase-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.luxury-purchase-btn:hover::before {
+    left: 100%;
+}
+
+.luxury-purchase-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+    background: linear-gradient(135deg, #f4d03f 0%, #d4af37 100%);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.modern-buy-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    background: linear-gradient(135deg, #000 0%, #111 100%);
+.btn-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .modern-empty-state {
@@ -463,6 +767,31 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const couponCards = document.querySelectorAll('[data-coupon-type]');
+
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+
+            // Update active tab
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Filter coupons
+            couponCards.forEach(card => {
+                if (filter === 'all' || card.dataset.couponType === filter) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.5s ease';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Purchase functionality
     const purchaseButtons = document.querySelectorAll('.purchase-coupon-btn');
 
     purchaseButtons.forEach(button => {
@@ -474,8 +803,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const couponPrice = parseFloat(this.dataset.couponPrice);
 
                 // Show loading state
-                const originalContent = this.innerHTML;
-                this.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+                const btnContent = this.querySelector('.btn-content');
+                const btnLoader = this.querySelector('.btn-loader');
+
+                btnContent.style.display = 'none';
+                btnLoader.style.display = 'flex';
                 this.disabled = true;
 
                 try {
@@ -496,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const paymentData = await paymentResponse.json();
 
-                                        if (paymentData.success) {
+                    if (paymentData.success) {
                         // Check if using mock payment system
                         if (paymentData.is_mock && paymentData.mock_payment_url) {
                             // Redirect to mock payment page
@@ -535,15 +867,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Purchase error:', error);
 
                     // Show error state
-                    this.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error!';
+                    btnContent.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error!';
+                    btnContent.style.display = 'flex';
+                    btnLoader.style.display = 'none';
                     this.style.background = '#dc3545';
-                    this.style.color = 'white';
 
                     // Reset button after 3 seconds
                     setTimeout(() => {
-                        this.innerHTML = originalContent;
+                        btnContent.innerHTML = '<i class="bi bi-bag-plus"></i><span>Purchase Now</span>';
                         this.style.background = '';
-                        this.style.color = '';
                         this.disabled = false;
                     }, 3000);
 
@@ -557,7 +889,46 @@ document.addEventListener('DOMContentLoaded', function() {
             @endauth
         });
     });
+
+    // Add smooth animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observe coupon cards
+    couponCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
 });
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
