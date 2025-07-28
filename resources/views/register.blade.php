@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - Luxuria UAE</title>
+    <title>Register - Luxuria UAE</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/app.css">
@@ -46,16 +46,35 @@
             </div>
         </div>
 
-        <!-- Right Side - Login Form -->
+        <!-- Right Side - Register Form -->
         <div class="form-section">
             <div class="form-container">
                 <div class="form-header">
-                    <h2>Welcome Back</h2>
-                    <p>Sign in to your account to continue</p>
+                    <h2>Create Account</h2>
+                    <p>Join us and start your luxury journey</p>
                 </div>
 
-                <form method="POST" action="/login" class="elegant-form">
+                <form method="POST" action="{{ route('register') }}" class="elegant-form">
                     @csrf
+
+                    <!-- Name Field -->
+                    <div class="form-field">
+                        <label for="name" class="field-label">Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-person"></i>
+                            <input type="text"
+                                   id="name"
+                                   name="name"
+                                   class="elegant-input"
+                                   placeholder="Enter your full name"
+                                   value="{{ old('name') }}"
+                                   required
+                                   autofocus>
+                        </div>
+                        @error('name')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     <!-- Email Field -->
                     <div class="form-field">
@@ -67,10 +86,65 @@
                                    name="email"
                                    class="elegant-input"
                                    placeholder="Enter your email address"
-                                   required
-                                   autofocus>
+                                   value="{{ old('email') }}"
+                                   required>
                         </div>
                         @error('email')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="form-field">
+                        <label for="phone" class="field-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-telephone"></i>
+                            <input type="tel"
+                                   id="phone"
+                                   name="phone"
+                                   class="elegant-input"
+                                   placeholder="0501234567"
+                                   value="{{ old('phone') }}">
+                        </div>
+                        @error('phone')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Emirate Field -->
+                    <div class="form-field">
+                        <label for="emirate" class="field-label">Emirate</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-geo-alt"></i>
+                            <select id="emirate" name="emirate" class="elegant-input" required>
+                                <option value="" disabled selected>Select your emirate</option>
+                                <option value="Abu Dhabi" {{ old('emirate') == 'Abu Dhabi' ? 'selected' : '' }}>Abu Dhabi</option>
+                                <option value="Dubai" {{ old('emirate') == 'Dubai' ? 'selected' : '' }}>Dubai</option>
+                                <option value="Sharjah" {{ old('emirate') == 'Sharjah' ? 'selected' : '' }}>Sharjah</option>
+                                <option value="Ajman" {{ old('emirate') == 'Ajman' ? 'selected' : '' }}>Ajman</option>
+                                <option value="Umm Al Quwain" {{ old('emirate') == 'Umm Al Quwain' ? 'selected' : '' }}>Umm Al Quwain</option>
+                                <option value="Ras Al Khaimah" {{ old('emirate') == 'Ras Al Khaimah' ? 'selected' : '' }}>Ras Al Khaimah</option>
+                                <option value="Fujairah" {{ old('emirate') == 'Fujairah' ? 'selected' : '' }}>Fujairah</option>
+                            </select>
+                        </div>
+                        @error('emirate')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Address Field -->
+                    <div class="form-field">
+                        <label for="address" class="field-label">Address</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-house"></i>
+                            <textarea id="address"
+                                      name="address"
+                                      class="elegant-input"
+                                      placeholder="Enter your full address"
+                                      rows="3"
+                                      required>{{ old('address') }}</textarea>
+                        </div>
+                        @error('address')
                             <div class="field-error">{{ $message }}</div>
                         @enderror
                     </div>
@@ -84,10 +158,10 @@
                                    id="password"
                                    name="password"
                                    class="elegant-input"
-                                   placeholder="Enter your password"
+                                   placeholder="Create a strong password"
                                    required>
-                            <button type="button" class="password-toggle" onclick="togglePassword()">
-                                <i class="bi bi-eye" id="eye-icon"></i>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                <i class="bi bi-eye" id="eye-icon-password"></i>
                             </button>
                         </div>
                         @error('password')
@@ -95,28 +169,38 @@
                         @enderror
                     </div>
 
-                    <!-- Remember & Forgot -->
-                    <div class="form-actions">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" id="remember" name="remember" class="elegant-checkbox">
-                            <span class="checkmark"></span>
-                            Remember me
-                        </label>
-                        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+                    <!-- Confirm Password Field -->
+                    <div class="form-field">
+                        <label for="password_confirmation" class="field-label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-lock"></i>
+                            <input type="password"
+                                   id="password_confirmation"
+                                   name="password_confirmation"
+                                   class="elegant-input"
+                                   placeholder="Confirm your password"
+                                   required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
+                                <i class="bi bi-eye" id="eye-icon-confirmation"></i>
+                            </button>
+                        </div>
+                        @error('password_confirmation')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Submit Button -->
                     <button type="submit" class="submit-btn">
-                        <span class="btn-text">Sign In</span>
+                        <span class="btn-text">Create Account</span>
                         <div class="btn-loader" style="display: none;">
                             <div class="spinner"></div>
                         </div>
                     </button>
 
-                    <!-- Register Link -->
+                    <!-- Login Link -->
                     <div class="register-link">
-                        <p>Don't have an account?
-                            <a href="/register">Create one here</a>
+                        <p>Already have an account?
+                            <a href="{{ route('login') }}">Sign in here</a>
                         </p>
                     </div>
                 </form>
@@ -173,7 +257,7 @@
     z-index: 10;
     display: flex;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
@@ -282,13 +366,15 @@
 
 /* Form Section */
 .form-section {
-    flex: 1;
+    flex: 1.2;
     padding: 60px 50px;
     background: white;
+    overflow-y: auto;
+    max-height: 100vh;
 }
 
 .form-container {
-    max-width: 400px;
+    max-width: 450px;
     margin: 0 auto;
 }
 
@@ -354,11 +440,16 @@
     font-size: 1rem;
     color: #333;
     outline: none;
+    resize: none;
 }
 
 .elegant-input::placeholder {
     color: #999;
     font-weight: 400;
+}
+
+.elegant-input:focus {
+    outline: none;
 }
 
 .password-toggle {
@@ -382,68 +473,6 @@
     padding-left: 15px;
 }
 
-/* Form Actions */
-.form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: #666;
-    position: relative;
-}
-
-.elegant-checkbox {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-}
-
-.checkmark {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.elegant-checkbox:checked + .checkmark {
-    background: #1a1a1a;
-    border-color: #1a1a1a;
-}
-
-.elegant-checkbox:checked + .checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.forgot-password {
-    color: #1a1a1a;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.forgot-password:hover {
-    color: #2d2d2d;
-    text-decoration: underline;
-}
-
 /* Submit Button */
 .submit-btn {
     width: 100%;
@@ -462,6 +491,7 @@
     gap: 10px;
     position: relative;
     overflow: hidden;
+    margin-top: 20px;
 }
 
 .submit-btn::before {
@@ -556,12 +586,6 @@
     .luxury-logo i {
         font-size: 2rem;
     }
-
-    .form-actions {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
 }
 
 @media (max-width: 480px) {
@@ -581,15 +605,13 @@
         font-size: 1.5rem;
     }
 }
-
-
 </style>
 
 <script>
 // Toggle password visibility
-function togglePassword() {
-    const passwordInput = document.getElementById('password');
-    const eyeIcon = document.getElementById('eye-icon');
+function togglePassword(fieldId) {
+    const passwordInput = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById('eye-icon-' + fieldId.replace('password_confirmation', 'confirmation'));
 
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -615,7 +637,7 @@ document.querySelector('.elegant-form').addEventListener('submit', function(e) {
 
 // Add smooth focus effects to inputs
 document.querySelectorAll('.elegant-input').forEach(input => {
-        input.addEventListener('focus', function() {
+    input.addEventListener('focus', function() {
         this.parentElement.style.transform = 'scale(1.02)';
         this.parentElement.style.boxShadow = '0 0 0 4px rgba(26, 26, 26, 0.15)';
     });
@@ -628,7 +650,7 @@ document.querySelectorAll('.elegant-input').forEach(input => {
 
 // Add subtle animations to form elements
 document.addEventListener('DOMContentLoaded', function() {
-    const formElements = document.querySelectorAll('.form-field, .form-actions, .submit-btn, .register-link');
+    const formElements = document.querySelectorAll('.form-field, .submit-btn, .register-link');
 
     formElements.forEach((element, index) => {
         element.style.opacity = '0';
@@ -643,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add hover effects to interactive elements
-document.querySelectorAll('.forgot-password, .register-link a').forEach(link => {
+document.querySelectorAll('.register-link a').forEach(link => {
     link.addEventListener('mouseenter', function() {
         this.style.transform = 'translateY(-1px)';
     });
@@ -651,10 +673,8 @@ document.querySelectorAll('.forgot-password, .register-link a').forEach(link => 
     link.addEventListener('mouseleave', function() {
         this.style.transform = 'translateY(0)';
     });
-    });
+});
 </script>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

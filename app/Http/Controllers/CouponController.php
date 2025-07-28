@@ -87,7 +87,7 @@ class CouponController extends Controller
                             'id' => 2,
                             'code' => 'LUXURY50',
                             'name' => 'Luxury Coupon',
-                            'description' => '50 SAR discount on luxury cars',
+                            'description' => '50 AED discount on luxury cars',
                             'discount_value' => 50,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 200,
@@ -98,14 +98,14 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 SAR',
+                            'formatted_price' => '50 AED',
                             'price' => 100
                         ],
                         [
                             'id' => 3,
                             'code' => 'PREMIUM100',
                             'name' => 'Premium Coupon',
-                            'description' => '100 SAR discount on premium vehicles',
+                            'description' => '100 AED discount on premium vehicles',
                             'discount_value' => 100,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 500,
@@ -116,7 +116,7 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 SAR',
+                            'formatted_price' => '100 AED',
                             'price' => 200
                         ]
                     ]);
@@ -148,7 +148,7 @@ class CouponController extends Controller
                             'id' => 2,
                             'code' => 'LUXURY50',
                             'name' => 'Luxury Coupon',
-                            'description' => '50 SAR discount on luxury cars',
+                            'description' => '50 AED discount on luxury cars',
                             'discount_value' => 50,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 200,
@@ -159,14 +159,14 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 SAR',
+                            'formatted_price' => '50 AED',
                             'price' => 100
                         ],
                         [
                             'id' => 3,
                             'code' => 'PREMIUM100',
                             'name' => 'Premium Coupon',
-                            'description' => '100 SAR discount on premium vehicles',
+                            'description' => '100 AED discount on premium vehicles',
                             'discount_value' => 100,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 500,
@@ -177,7 +177,7 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 SAR',
+                            'formatted_price' => '100 AED',
                             'price' => 200
                         ]
                 ]);
@@ -209,7 +209,7 @@ class CouponController extends Controller
                             'id' => 2,
                             'code' => 'LUXURY50',
                             'name' => 'Luxury Coupon',
-                            'description' => '50 SAR discount on luxury cars',
+                            'description' => '50 AED discount on luxury cars',
                             'discount_value' => 50,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 200,
@@ -220,14 +220,14 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 SAR',
+                            'formatted_price' => '50 AED',
                             'price' => 100
                         ],
                         [
                             'id' => 3,
                             'code' => 'PREMIUM100',
                             'name' => 'Premium Coupon',
-                            'description' => '100 SAR discount on premium vehicles',
+                            'description' => '100 AED discount on premium vehicles',
                             'discount_value' => 100,
                             'discount_type' => 'fixed',
                             'minimum_amount' => 500,
@@ -238,7 +238,7 @@ class CouponController extends Controller
                             'is_valid' => true,
                             'starts_at' => now(),
                             'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 SAR',
+                            'formatted_price' => '100 AED',
                             'price' => 200
                         ]
             ]);
