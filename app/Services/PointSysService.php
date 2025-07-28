@@ -110,7 +110,20 @@ class PointSysService
         switch ($endpoint) {
             case 'customers/register':
                 if ($method === 'POST') {
-                    $customerId = rand(1000, 9999);
+                    // Check if email already exists (simulate real API behavior)
+                    if (isset($data['email']) && $data['email'] === 'abdelrahman@gmail.com') {
+                        $response = [
+                            'status' => 'error',
+                            'message' => 'بيانات غير صحيحة',
+                            'errors' => [
+                                'email' => ['The email has already been taken.']
+                            ]
+                        ];
+                        Log::info('PointSys Mock API Response - Email already exists', $response);
+                        return $response;
+                    }
+
+                    $customerId = 'mock_' . rand(1000, 9999);
                     $response = [
                         'status' => 'success',
                         'message' => 'تم تسجيل العميل بنجاح',
@@ -127,20 +140,50 @@ class PointSysService
                 }
                 break;
 
-            case (preg_match('/^customers\/\d+\/balance$/', $endpoint) ? true : false):
+            case (preg_match('/^customers\/[^\/]+\/balance$/', $endpoint) ? true : false):
                 if ($method === 'GET') {
-                    $customerId = (int) explode('/', $endpoint)[1];
+                    $customerId = explode('/', $endpoint)[1];
+
+                    // Check if this is an existing customer (starts with 'existing_')
+                    if (strpos($customerId, 'existing_') === 0) {
+                        $response = [
+                            'status' => 'success',
+                            'data' => [
+                                'customer_id' => $customerId,
+                                'name' => 'abdelrahman',
+                                'points_balance' => 750,
+                                'total_earned' => 1500,
+                                'total_redeemed' => 250,
+                                'tier' => 'silver'
+                            ]
+                        ];
+                        Log::info('PointSys Mock API Response - Existing customer', $response);
+                        return $response;
+                    }
+
+                    // Mock customer (starts with 'mock_')
+                    if (strpos($customerId, 'mock_') === 0) {
+                        $response = [
+                            'status' => 'success',
+                            'data' => [
+                                'customer_id' => $customerId,
+                                'name' => 'Test User',
+                                'points_balance' => rand(100, 1000),
+                                'total_earned' => rand(1000, 5000),
+                                'total_redeemed' => rand(0, 2000),
+                                'tier' => 'bronze'
+                            ]
+                        ];
+                        Log::info('PointSys Mock API Response - Mock customer', $response);
+                        return $response;
+                    }
+
+                    // Unknown customer ID
                     $response = [
-                        'status' => 'success',
-                        'data' => [
-                            'customer_id' => $customerId,
-                            'name' => 'Test User',
-                            'points_balance' => rand(0, 1000),
-                            'total_earned' => rand(1000, 5000),
-                            'total_redeemed' => rand(0, 2000)
-                        ]
+                        'status' => 'error',
+                        'message' => 'العميل غير موجود أو لا يمكن الوصول إليه'
                     ];
-                    Log::info('PointSys Mock API Response', $response);
+                    Log::info('PointSys Mock API Response - Customer not found', $response);
                     return $response;
                 }
                 break;

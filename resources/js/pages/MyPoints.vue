@@ -306,28 +306,51 @@ const rewards = ref<any[]>([])
 
 // Load user points from PointSys API
 const loadPoints = async () => {
-  if (!user?.pointsys_customer_id) {
-    error.value = 'You are not registered in the loyalty system. Please contact support.'
-    loading.value = false
-    return
-  }
+  // Remove the early return - let the API handle registration
+  // if (!user?.pointsys_customer_id) {
+  //   error.value = 'You are not registered in the loyalty system. Please contact support.'
+  //   loading.value = false
+  //   return
+  // }
 
   loading.value = true
   error.value = ''
 
   try {
-    const response = await fetch(`/api/pointsys/customers/${user.pointsys_customer_id}/balance`)
-    const data = await response.json()
+    console.log('Loading points for user:', user.pointsys_customer_id)
 
-    if (response.ok && data.status === 'success') {
-      pointsBalance.value = data.data.points_balance || 0
+    const response = await fetch(`/user-points`, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      },
+      credentials: 'same-origin'
+    })
+
+    console.log('Response status:', response.status)
+    console.log('Response headers:', response.headers)
+
+    const data = await response.json()
+    console.log('Response data:', data)
+
+    if (response.ok && data.success) {
+      pointsBalance.value = data.points || 0
       customerId.value = user.pointsys_customer_id
-      customerTier.value = data.data.tier || 'bronze'
-      customerName.value = data.data.name || user.name
-      totalEarned.value = data.data.total_earned || 0
-      totalRedeemed.value = data.data.total_redeemed || 0
+      customerTier.value = data.tier || 'bronze'
+      customerName.value = data.name || user.name
+      totalEarned.value = data.total_earned || 0
+      totalRedeemed.value = data.total_redeemed || 0
+      error.value = '' // Clear any previous errors
+
+      // Show success message if provided
+      if (data.message) {
+        console.log('Points loaded successfully:', data.message)
+      }
     } else {
-      error.value = data.message || 'Failed to load points'
+      error.value = data.error || 'Failed to fetch points balance'
+      console.error('API Error:', data)
     }
   } catch (err) {
     console.error('Error loading points:', err)
@@ -342,11 +365,21 @@ const loadRewards = async () => {
   loadingRewards.value = true
 
   try {
-    const response = await fetch('/api/pointsys/rewards')
+    const response = await fetch('/api/pointsys/rewards', {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+      },
+      credentials: 'same-origin'
+    })
     const data = await response.json()
 
     if (response.ok && data.status === 'success') {
       rewards.value = data.data || []
+    } else {
+      rewards.value = [] // Ensure rewards is empty array on error
     }
   } catch (err) {
     console.error('Failed to load rewards:', err)
@@ -359,6 +392,11 @@ const loadRewards = async () => {
 
 // Redeem reward
 const redeemReward = async (rewardId: string) => {
+  if (!user?.pointsys_customer_id) {
+    alert('You are not registered in the loyalty system. Please contact support.')
+    return
+  }
+
   redeeming.value = true
 
   try {
@@ -366,11 +404,14 @@ const redeemReward = async (rewardId: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
       },
+      credentials: 'same-origin',
       body: JSON.stringify({
         reward_id: rewardId,
-        customer_id: user?.pointsys_customer_id
+        customer_id: user.pointsys_customer_id!
       })
     })
 

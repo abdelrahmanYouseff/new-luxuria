@@ -147,26 +147,23 @@ Route::get('/test-booking-payment', function () {
     return view('test_booking_payment');
 })->name('test.booking.payment');
 
-// Test PointSys Service
-Route::get('/test-pointsys-service', function () {
+// Test real PointSys API
+Route::get('/test-realtime-pointsys', function () {
     try {
         $pointSysService = app(\App\Services\PointSysService::class);
 
-        // Test with a string customer ID
+        // Test with a known customer ID from database
         $customerId = '019821eb-37b2-dbf3-6c04-8dcd83933d2d';
 
-        $result = $pointSysService->addPointsToCustomer(
-            $customerId,
-            100,
-            'Test points',
-            'TEST_REF_001'
-        );
+        $balance = $pointSysService->getCustomerBalance($customerId);
 
         return response()->json([
             'success' => true,
-            'customer_id' => $customerId,
-            'customer_id_type' => gettype($customerId),
-            'result' => $result
+            'test_customer_id' => $customerId,
+            'pointsys_response' => $balance,
+            'api_key_exists' => !empty(config('services.pointsys.api_key')),
+            'base_url' => config('services.pointsys.base_url'),
+            'use_mock' => false
         ]);
 
     } catch (\Exception $e) {
@@ -176,7 +173,109 @@ Route::get('/test-pointsys-service', function () {
             'trace' => $e->getTraceAsString()
         ], 500);
     }
-})->name('test.pointsys.service');
+})->name('test.realtime.pointsys');
+
+// Register user in PointSys API
+Route::get('/register-user-pointsys', function () {
+    try {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'error' => 'User not authenticated'
+            ], 401);
+        }
+
+        $pointSysService = app(\App\Services\PointSysService::class);
+
+        // Register user in PointSys
+        $registrationData = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? '0501234567'
+        ];
+
+        $registrationResult = $pointSysService->registerCustomer($registrationData);
+
+        if ($registrationResult && isset($registrationResult['data']['customer_id'])) {
+            // Update user's pointsys_customer_id in database
+            $user->pointsys_customer_id = $registrationResult['data']['customer_id'];
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User registered successfully in PointSys',
+                'customer_id' => $registrationResult['data']['customer_id'],
+                'registration_response' => $registrationResult
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to register user in PointSys',
+                'registration_response' => $registrationResult
+            ], 500);
+        }
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware(['auth'])->name('register.user.pointsys');
+
+// Test PointSys registration API (without auth)
+Route::get('/test-pointsys-registration', function () {
+    try {
+        $pointSysService = app(\App\Services\PointSysService::class);
+
+        // Test registration with sample data
+        $registrationData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'phone' => '0501234567'
+        ];
+
+        $registrationResult = $pointSysService->registerCustomer($registrationData);
+
+        return response()->json([
+            'success' => true,
+            'registration_data' => $registrationData,
+            'registration_response' => $registrationResult,
+            'api_key_exists' => !empty(config('services.pointsys.api_key')),
+            'base_url' => config('services.pointsys.base_url')
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->name('test.pointsys.registration');
+
+// Test user points with auto-registration
+Route::get('/test-user-points-auto-register', function () {
+    try {
+        $userPointsController = app(\App\Http\Controllers\UserPointsController::class);
+        return $userPointsController->getCurrentUserPoints();
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware(['auth'])->name('test.user.points.auto.register');
+
+
+
+
+
+
 
 // Test booking payment success simulation
 Route::post('/test-booking-payment-success', function (Request $request) {
@@ -359,18 +458,14 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::get('/invoices', [App\Http\Controllers\UserController::class, 'invoices'])->name('invoices');
 });
 
+
+
 // User Invoices Page (with sidebar and header) - removed to avoid conflict
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
-// User Points API Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/user-points', [App\Http\Controllers\UserPointsController::class, 'getCurrentUserPoints'])->name('user.points');
-    Route::post('/add-points', [App\Http\Controllers\UserPointsController::class, 'addPoints'])->name('user.add-points');
-    Route::get('/rewards', [App\Http\Controllers\UserPointsController::class, 'getRewards'])->name('user.rewards');
-    Route::post('/redeem-reward', [App\Http\Controllers\UserPointsController::class, 'redeemReward'])->name('user.redeem-reward');
-});
+
 
 // Stripe Payment Routes
 Route::middleware(['auth'])->group(function () {
@@ -379,6 +474,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/stripe/create-checkout-session', [App\Http\Controllers\StripeController::class, 'createCheckoutSession'])->name('stripe.create-checkout-session');
     Route::post('/stripe/payment-success', [App\Http\Controllers\StripeController::class, 'handlePaymentSuccess'])->name('stripe.payment-success');
     Route::get('/stripe/user-invoices', [App\Http\Controllers\StripeController::class, 'getUserInvoices'])->name('stripe.user-invoices');
+});
+
+// User Points API routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user-points', [App\Http\Controllers\UserPointsController::class, 'getCurrentUserPoints'])->name('user.points');
+    Route::post('/user-points/add', [App\Http\Controllers\UserPointsController::class, 'addPoints'])->name('user.points.add');
+
+    // PointSys API routes for frontend
+    Route::get('/api/pointsys/rewards', [App\Http\Controllers\PointSysController::class, 'getRewards'])->name('pointsys.rewards');
+    Route::post('/api/pointsys/rewards/redeem', [App\Http\Controllers\PointSysController::class, 'redeemReward'])->name('pointsys.redeem');
 });
 
 // Stripe Webhook (no auth required)

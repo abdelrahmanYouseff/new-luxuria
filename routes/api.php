@@ -21,13 +21,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // PointSys API Routes
-Route::prefix('pointsys')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('pointsys')->group(function () {
     Route::post('/customers/register', [PointSysController::class, 'registerCustomer']);
     Route::get('/customers/{id}/balance', [PointSysController::class, 'getCustomerBalance']);
     Route::post('/customers/points/add', [PointSysController::class, 'addPointsToCustomer']);
     Route::get('/rewards', [PointSysController::class, 'getRewards']);
     Route::post('/rewards/redeem', [PointSysController::class, 'redeemReward']);
 });
+
+
 
 Route::get('/vehicles', function (Request $request) {
     $auth = $request->header('RLAPP_API_AUTH');
