@@ -266,6 +266,249 @@ class VehiclesApiController extends Controller
     }
 
     /**
+     * API endpoint to get all vehicles with filtering and pagination
+     */
+    public function getVehicles(Request $request)
+    {
+        try {
+            $query = Vehicle::query();
+
+            // Filter by status
+            if ($request->has('status')) {
+                $query->where('status', 'like', '%' . $request->status . '%');
+            }
+
+            // Filter by category
+            if ($request->has('category')) {
+                $query->byCategory($request->category);
+            }
+
+            // Filter by make
+            if ($request->has('make')) {
+                $query->byMake($request->make);
+            }
+
+            // Filter by availability
+            if ($request->has('available') && $request->available == 'true') {
+                $query->available();
+            }
+
+            // Filter by visibility
+            if ($request->has('visible')) {
+                if ($request->visible == 'true') {
+                    $query->visible();
+                } else {
+                    $query->hidden();
+                }
+            } else {
+                // Default to visible only
+                $query->visible();
+            }
+
+            // Price range filtering
+            if ($request->has('min_price')) {
+                $query->where('daily_rate', '>=', $request->min_price);
+            }
+            if ($request->has('max_price')) {
+                $query->where('daily_rate', '<=', $request->max_price);
+            }
+
+            // Search by name (make + model)
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('make', 'like', '%' . $search . '%')
+                      ->orWhere('model', 'like', '%' . $search . '%')
+                      ->orWhere('plate_number', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Sorting
+            $sortBy = $request->get('sort_by', 'daily_rate');
+            $sortDirection = $request->get('sort_direction', 'asc');
+
+            if (in_array($sortBy, ['daily_rate', 'make', 'model', 'year', 'category', 'status'])) {
+                $query->orderBy($sortBy, $sortDirection);
+            }
+
+            // Pagination
+            $perPage = min($request->get('per_page', 10), 100); // Max 100 items per page
+            $vehicles = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $vehicles->items(),
+                'pagination' => [
+                    'current_page' => $vehicles->currentPage(),
+                    'last_page' => $vehicles->lastPage(),
+                    'per_page' => $vehicles->perPage(),
+                    'total' => $vehicles->total(),
+                    'from' => $vehicles->firstItem(),
+                    'to' => $vehicles->lastItem(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve vehicles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint to get a specific vehicle by ID
+     */
+    public function getVehicle($id)
+    {
+        try {
+            $vehicle = Vehicle::findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $vehicle
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vehicle not found',
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * API endpoint to get available vehicles only
+     */
+    public function getAvailableVehicles(Request $request)
+    {
+        try {
+            $query = Vehicle::available()->visible();
+
+            // Apply same filters as getVehicles but only for available vehicles
+            if ($request->has('category')) {
+                $query->byCategory($request->category);
+            }
+
+            if ($request->has('make')) {
+                $query->byMake($request->make);
+            }
+
+            if ($request->has('min_price')) {
+                $query->where('daily_rate', '>=', $request->min_price);
+            }
+            if ($request->has('max_price')) {
+                $query->where('daily_rate', '<=', $request->max_price);
+            }
+
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('make', 'like', '%' . $search . '%')
+                      ->orWhere('model', 'like', '%' . $search . '%');
+                });
+            }
+
+            $sortBy = $request->get('sort_by', 'daily_rate');
+            $sortDirection = $request->get('sort_direction', 'asc');
+
+            if (in_array($sortBy, ['daily_rate', 'make', 'model', 'year', 'category'])) {
+                $query->orderBy($sortBy, $sortDirection);
+            }
+
+            $vehicles = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $vehicles,
+                'total' => $vehicles->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve available vehicles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint to get vehicle categories
+     */
+    public function getCategories()
+    {
+        try {
+            $categories = Vehicle::select('category')
+                                ->distinct()
+                                ->whereNotNull('category')
+                                ->pluck('category');
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve categories',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint to get vehicle makes
+     */
+    public function getMakes()
+    {
+        try {
+            $makes = Vehicle::select('make')
+                           ->distinct()
+                           ->whereNotNull('make')
+                           ->pluck('make');
+
+            return response()->json([
+                'success' => true,
+                'data' => $makes
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve makes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint to sync vehicles from external API
+     */
+    public function syncVehicles()
+    {
+        try {
+            $syncResult = $this->syncVehiclesToDatabase();
+
+            return response()->json([
+                'success' => $syncResult['success'],
+                'message' => $syncResult['success'] ? 'Vehicles synced successfully' : 'Failed to sync vehicles',
+                'data' => $syncResult
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to sync vehicles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Generate description for vehicle
      */
     private function generateDescription($make, $model, $category)
