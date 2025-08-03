@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PointSysController;
 use App\Http\Controllers\VehiclesApiController;
 use App\Models\Vehicle;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,4 +66,136 @@ Route::prefix('v1/vehicles')->group(function () {
     // Get specific vehicle by ID
     Route::get('/{id}', [VehiclesApiController::class, 'getVehicle']);
 
+});
+
+// Mobile App Login API
+Route::post('/mobile/login', function (Request $request) {
+    try {
+        // Validate input
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        // Find user
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
+
+        // Create token for mobile
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ],
+                'token' => $token
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Login failed',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Mobile App Register API
+Route::post('/mobile/register', function (Request $request) {
+    try {
+        // Validate input
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6'
+        ]);
+
+        // Create user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user'
+        ]);
+
+        // Create token
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ],
+                'token' => $token
+            ]
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Registration failed',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Mobile App User Profile API
+Route::middleware('auth:sanctum')->get('/mobile/profile', function (Request $request) {
+    try {
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'emirate' => $user->emirate,
+                    'address' => $user->address
+                ]
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to get profile'
+        ], 500);
+    }
+});
+
+// Mobile App Logout API
+Route::middleware('auth:sanctum')->post('/mobile/logout', function (Request $request) {
+    try {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout successful'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Logout failed'
+        ], 500);
+    }
 });
