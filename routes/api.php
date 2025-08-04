@@ -8,6 +8,7 @@ use App\Models\Vehicle;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Services\PointSysService;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,16 +121,36 @@ Route::post('/mobile/register', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string|min:6',
+            'phone' => 'nullable|string|max:20'
         ]);
 
-        // Create user
+        // Create user in local database
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user'
+            'role' => 'user',
+            'emirate' => $request->emirate,
+            'address' => $request->address
         ]);
+
+        // Register user in PointSys system
+        $pointSysService = new PointSysService();
+        $pointSysData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone ?? '0500000000' // Default phone if not provided
+        ];
+
+        $pointSysResult = $pointSysService->registerCustomer($pointSysData);
+
+        // Update user with PointSys customer ID if registration was successful
+        if ($pointSysResult && isset($pointSysResult['status']) && $pointSysResult['status'] === 'success') {
+            $user->update([
+                'pointsys_customer_id' => $pointSysResult['data']['customer_id'] ?? null
+            ]);
+        }
 
         // Create token
         $token = $user->createToken('mobile-app')->plainTextToken;
@@ -142,9 +163,13 @@ Route::post('/mobile/register', function (Request $request) {
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role
+                    'role' => $user->role,
+                    'emirate' => $user->emirate,
+                    'address' => $user->address,
+                    'pointsys_customer_id' => $user->pointsys_customer_id
                 ],
-                'token' => $token
+                'token' => $token,
+                'pointsys_registration' => $pointSysResult
             ]
         ], 201);
 
@@ -186,7 +211,7 @@ Route::middleware('auth:sanctum')->get('/mobile/profile', function (Request $req
 // Mobile App Logout API
 Route::middleware('auth:sanctum')->post('/mobile/logout', function (Request $request) {
     try {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->where('id', $request->user()->currentAccessToken()->id)->delete();
 
         return response()->json([
             'success' => true,
