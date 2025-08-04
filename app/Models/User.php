@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'role',
         'pointsys_customer_id',
+        'external_customer_id',
     ];
 
     /**

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PointSysService;
+use App\Services\ExternalCustomerService;
 
 /*
 |--------------------------------------------------------------------------
@@ -143,7 +144,10 @@ Route::post('/mobile/register', function (Request $request) {
             'phone' => $request->phone ?? '0500000000' // Default phone if not provided
         ];
 
-        $pointSysResult = $pointSysService->registerCustomer($pointSysData);
+                $pointSysResult = $pointSysService->registerCustomer($pointSysData);
+
+        // Initialize external customer result
+        $externalCustomerResult = null;
 
         // Update user with PointSys customer ID if registration was successful
         if ($pointSysResult && isset($pointSysResult['status']) && $pointSysResult['status'] === 'success') {
@@ -171,6 +175,23 @@ Route::post('/mobile/register', function (Request $request) {
             ];
         }
 
+        // Register user in External Customer API (RLAPP)
+        $externalCustomerService = new ExternalCustomerService();
+        $externalCustomerData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone ?? '0500000000'
+        ];
+
+        $externalCustomerResult = $externalCustomerService->createExternalCustomer($externalCustomerData);
+
+        // Update user with external customer ID if successful
+        if ($externalCustomerResult && isset($externalCustomerResult['success']) && $externalCustomerResult['success']) {
+            $user->update([
+                'external_customer_id' => $externalCustomerResult['external_customer_id'] ?? null
+            ]);
+        }
+
         // Create token
         $token = $user->createToken('mobile-app')->plainTextToken;
 
@@ -185,10 +206,12 @@ Route::post('/mobile/register', function (Request $request) {
                     'role' => $user->role,
                     'emirate' => $user->emirate,
                     'address' => $user->address,
-                    'pointsys_customer_id' => $user->pointsys_customer_id
+                    'pointsys_customer_id' => $user->pointsys_customer_id,
+                    'external_customer_id' => $user->external_customer_id
                 ],
                 'token' => $token,
-                'pointsys_registration' => $pointSysResult
+                'pointsys_registration' => $pointSysResult,
+                'external_customer_registration' => $externalCustomerResult
             ]
         ], 201);
 
