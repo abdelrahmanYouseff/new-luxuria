@@ -62,6 +62,9 @@ Route::prefix('v1/vehicles')->group(function () {
     // Check vehicle status
     Route::get('/{id}/status', [VehiclesApiController::class, 'getVehicleStatus']);
 
+    // Test API connection
+    Route::get('/test/connection', [VehiclesApiController::class, 'testApiConnection']);
+
 });
 
 // Mobile App Login API

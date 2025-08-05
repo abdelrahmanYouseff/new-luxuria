@@ -48,7 +48,7 @@ class VehiclesApiController extends Controller
     {
         try {
             $response = Http::withHeaders([
-                'X-RLAPP-KEY' => $this->apiKey,
+                'X-API-KEY' => $this->apiKey,
                 'Accept' => 'application/json',
             ])->get($this->apiUrl);
 
@@ -88,7 +88,13 @@ class VehiclesApiController extends Controller
                     'success' => false,
                     'error' => 'API request failed',
                     'status_code' => $response->status(),
-                    'response' => $response->body()
+                    'response_body' => $response->body(),
+                    'url' => $this->apiUrl,
+                    'api_key' => $this->apiKey,
+                    'headers_sent' => [
+                        'X-API-KEY' => $this->apiKey,
+                        'Accept' => 'application/json'
+                    ]
                 ];
             }
         } catch (\Exception $e) {
@@ -520,6 +526,56 @@ class VehiclesApiController extends Controller
             return "Enjoy comfort and style with the {$make} {$model}. Ideal for both business and leisure travel in the UAE.";
         } else {
             return "Reliable and efficient, the {$make} {$model} offers great value for your daily transportation needs in the UAE.";
+        }
+    }
+
+    /**
+     * Test API connection endpoint
+     */
+    public function testApiConnection()
+    {
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'X-API-KEY' => $this->apiKey,
+                    'Accept' => 'application/json',
+                ])
+                ->get($this->apiUrl);
+
+            $result = [
+                'success' => $response->successful(),
+                'status_code' => $response->status(),
+                'url' => $this->apiUrl,
+                'api_key' => $this->apiKey,
+                'response_body' => $response->body(),
+                'response_size' => strlen($response->body()),
+                'timestamp' => now()->toISOString()
+            ];
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $result['parsed_data'] = $responseData;
+                $result['vehicles_count'] = count($responseData['data'] ?? []);
+                $result['message'] = 'API connection successful';
+            } else {
+                $result['message'] = 'API connection failed';
+                $result['error'] = 'HTTP ' . $response->status() . ' - ' . $response->reasonPhrase();
+            }
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            $errorResult = [
+                'success' => false,
+                'message' => 'API connection test failed',
+                'error' => $e->getMessage(),
+                'exception_type' => get_class($e),
+                'url' => $this->apiUrl,
+                'api_key' => $this->apiKey,
+                'timestamp' => now()->toISOString()
+            ];
+
+            return response()->json($errorResult, 500);
         }
     }
 
