@@ -11,16 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\PointSysService;
 use App\Services\ExternalCustomerService;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -67,6 +58,9 @@ Route::prefix('v1/vehicles')->group(function () {
 
     // Get specific vehicle by ID
     Route::get('/{id}', [VehiclesApiController::class, 'getVehicle']);
+
+    // Check vehicle status
+    Route::get('/{id}/status', [VehiclesApiController::class, 'getVehicleStatus']);
 
 });
 

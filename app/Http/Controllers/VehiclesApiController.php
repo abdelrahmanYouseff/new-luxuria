@@ -522,4 +522,80 @@ class VehiclesApiController extends Controller
             return "Reliable and efficient, the {$make} {$model} offers great value for your daily transportation needs in the UAE.";
         }
     }
+
+    /**
+     * API endpoint to check vehicle status
+     */
+    public function getVehicleStatus($id)
+    {
+        try {
+            $vehicle = Vehicle::find($id);
+
+            if (!$vehicle) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vehicle not found'
+                ], 404);
+            }
+
+            // Check if vehicle is available for booking
+            $isAvailable = strtolower($vehicle->status) === 'available';
+
+            // Get additional status information
+            $statusInfo = [
+                'status' => $vehicle->status,
+                'is_available' => $isAvailable,
+                'can_be_booked' => $isAvailable && $vehicle->is_visible,
+                'ownership_status' => $vehicle->ownership_status,
+                'last_updated' => $vehicle->updated_at
+            ];
+
+            // Add status-specific details
+            switch (strtolower($vehicle->status)) {
+                case 'available':
+                    $statusInfo['message'] = 'Vehicle is available for booking';
+                    $statusInfo['status_code'] = 'AVAILABLE';
+                    break;
+                case 'rented':
+                    $statusInfo['message'] = 'Vehicle is currently rented out';
+                    $statusInfo['status_code'] = 'RENTED';
+                    break;
+                case 'maintenance':
+                    $statusInfo['message'] = 'Vehicle is under maintenance';
+                    $statusInfo['status_code'] = 'MAINTENANCE';
+                    break;
+                case 'out_of_service':
+                    $statusInfo['message'] = 'Vehicle is out of service';
+                    $statusInfo['status_code'] = 'OUT_OF_SERVICE';
+                    break;
+                case 'reserved':
+                    $statusInfo['message'] = 'Vehicle is reserved for another customer';
+                    $statusInfo['status_code'] = 'RESERVED';
+                    break;
+                default:
+                    $statusInfo['message'] = 'Vehicle status is unknown';
+                    $statusInfo['status_code'] = 'UNKNOWN';
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'vehicle_id' => $vehicle->id,
+                    'api_id' => $vehicle->api_id,
+                    'plate_number' => $vehicle->plate_number,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'status_info' => $statusInfo
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve vehicle status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
