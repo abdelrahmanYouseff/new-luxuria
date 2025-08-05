@@ -63,13 +63,13 @@ class RegisteredUserController extends Controller
         $externalCustomerResult = $this->externalCustomerService->createExternalCustomer([
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone ?? '',
+            'phone' => $request->phone ?? '050' . rand(1000000, 9999999),
         ]);
 
         if ($externalCustomerResult['success'] && $externalCustomerResult['external_customer_id']) {
             // Store external customer ID in user record
             $user->update([
-                'pointsys_customer_id' => $externalCustomerResult['external_customer_id']
+                'external_customer_id' => $externalCustomerResult['external_customer_id']
             ]);
 
             Log::info('Customer registered in External API successfully', [
@@ -93,7 +93,7 @@ class RegisteredUserController extends Controller
                 $customerData = [
                     'name' => $request->name,
                     'email' => $request->email,
-                    'phone' => $request->phone ?? '',
+                    'phone' => $request->phone ?? '050' . rand(1000000, 9999999),
                 ];
 
                 // If phone is provided and this is a retry, generate a unique phone number
@@ -104,12 +104,10 @@ class RegisteredUserController extends Controller
                 $pointSysResponse = $this->pointSysService->registerCustomer($customerData);
 
                 if ($pointSysResponse && isset($pointSysResponse['data']['customer_id'])) {
-                    // Only update if external API failed
-                    if (!$externalCustomerResult['success']) {
-                        $user->update([
-                            'pointsys_customer_id' => $pointSysResponse['data']['customer_id']
-                        ]);
-                    }
+                    // Always update pointsys_customer_id when PointSys registration succeeds
+                    $user->update([
+                        'pointsys_customer_id' => $pointSysResponse['data']['customer_id']
+                    ]);
 
                     Log::info('Customer registered in PointSys successfully', [
                         'user_id' => $user->id,

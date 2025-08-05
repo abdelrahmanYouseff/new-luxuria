@@ -588,18 +588,18 @@ Route::get('/test-vehicles-database-updated', function () {
     return view('test_vehicles_database_updated');
 });
 
-// Test Image Upload Routes
-Route::get('/test-image-upload', [App\Http\Controllers\TestImageUploadController::class, 'index'])->name('test.image.upload');
-Route::post('/test-upload-image', [App\Http\Controllers\TestImageUploadController::class, 'upload'])->name('test.upload.image');
-Route::delete('/test-remove-image/{vehicle}', [App\Http\Controllers\TestImageUploadController::class, 'removeImage'])->name('test.remove.image');
-Route::get('/test-image-urls', [App\Http\Controllers\TestImageUploadController::class, 'testImageUrls'])->name('test.image.urls');
+// Test Image Upload Routes - REMOVED (TestImageUploadController does not exist)
+// Route::get('/test-image-upload', [App\Http\Controllers\TestImageUploadController::class, 'index'])->name('test.image.upload');
+// Route::post('/test-upload-image', [App\Http\Controllers\TestImageUploadController::class, 'upload'])->name('test.upload.image');
+// Route::delete('/test-remove-image/{vehicle}', [App\Http\Controllers\TestImageUploadController::class, 'removeImage'])->name('test.remove.image');
+// Route::get('/test-image-urls', [App\Http\Controllers\TestImageUploadController::class, 'testImageUrls'])->name('test.image.urls');
 
 // Simple Image Test
 Route::get('/simple-image-test', function () {
     $vehicles = App\Models\Vehicle::orderBy('make')->orderBy('model')->get();
     return view('simple_image_test', compact('vehicles'));
 });
-Route::post('/simple-upload', [App\Http\Controllers\TestImageUploadController::class, 'upload']);
+// Route::post('/simple-upload', [App\Http\Controllers\TestImageUploadController::class, 'upload']);
 
 // Quick Image Test
 Route::get('/quick-image-test', function () {
