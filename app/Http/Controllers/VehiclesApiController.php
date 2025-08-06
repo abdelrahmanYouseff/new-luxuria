@@ -341,9 +341,39 @@ class VehiclesApiController extends Controller
             $perPage = min($request->get('per_page', 10), 100); // Max 100 items per page
             $vehicles = $query->paginate($perPage);
 
+            // Transform vehicles to include image_url
+            $vehiclesData = $vehicles->items();
+            $transformedData = collect($vehiclesData)->map(function($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'api_id' => $vehicle->api_id,
+                    'plate_number' => $vehicle->plate_number,
+                    'status' => $vehicle->status,
+                    'ownership_status' => $vehicle->ownership_status,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'color' => $vehicle->color,
+                    'category' => $vehicle->category,
+                    'daily_rate' => $vehicle->daily_rate,
+                    'weekly_rate' => $vehicle->weekly_rate,
+                    'monthly_rate' => $vehicle->monthly_rate,
+                    'transmission' => $vehicle->transmission,
+                    'seats' => $vehicle->seats,
+                    'doors' => $vehicle->doors,
+                    'odometer' => $vehicle->odometer,
+                    'description' => $vehicle->description,
+                    'image' => $vehicle->image,
+                    'image_url' => $vehicle->image_url,
+                    'is_visible' => $vehicle->is_visible,
+                    'created_at' => $vehicle->created_at,
+                    'updated_at' => $vehicle->updated_at
+                ];
+            })->toArray();
+
             return response()->json([
                 'success' => true,
-                'data' => $vehicles->items(),
+                'data' => $transformedData,
                 'pagination' => [
                     'current_page' => $vehicles->currentPage(),
                     'last_page' => $vehicles->lastPage(),
@@ -371,9 +401,36 @@ class VehiclesApiController extends Controller
         try {
             $vehicle = Vehicle::findOrFail($id);
 
+            // Transform vehicle to include image_url
+            $vehicleData = [
+                'id' => $vehicle->id,
+                'api_id' => $vehicle->api_id,
+                'plate_number' => $vehicle->plate_number,
+                'status' => $vehicle->status,
+                'ownership_status' => $vehicle->ownership_status,
+                'make' => $vehicle->make,
+                'model' => $vehicle->model,
+                'year' => $vehicle->year,
+                'color' => $vehicle->color,
+                'category' => $vehicle->category,
+                'daily_rate' => $vehicle->daily_rate,
+                'weekly_rate' => $vehicle->weekly_rate,
+                'monthly_rate' => $vehicle->monthly_rate,
+                'transmission' => $vehicle->transmission,
+                'seats' => $vehicle->seats,
+                'doors' => $vehicle->doors,
+                'odometer' => $vehicle->odometer,
+                'description' => $vehicle->description,
+                'image' => $vehicle->image,
+                'image_url' => $vehicle->image_url,
+                'is_visible' => $vehicle->is_visible,
+                'created_at' => $vehicle->created_at,
+                'updated_at' => $vehicle->updated_at
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => $vehicle
+                'data' => $vehicleData
             ]);
 
         } catch (\Exception $e) {
@@ -426,10 +483,39 @@ class VehiclesApiController extends Controller
 
             $vehicles = $query->get();
 
+            // Transform vehicles to include image_url
+            $transformedData = $vehicles->map(function($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'api_id' => $vehicle->api_id,
+                    'plate_number' => $vehicle->plate_number,
+                    'status' => $vehicle->status,
+                    'ownership_status' => $vehicle->ownership_status,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'color' => $vehicle->color,
+                    'category' => $vehicle->category,
+                    'daily_rate' => $vehicle->daily_rate,
+                    'weekly_rate' => $vehicle->weekly_rate,
+                    'monthly_rate' => $vehicle->monthly_rate,
+                    'transmission' => $vehicle->transmission,
+                    'seats' => $vehicle->seats,
+                    'doors' => $vehicle->doors,
+                    'odometer' => $vehicle->odometer,
+                    'description' => $vehicle->description,
+                    'image' => $vehicle->image,
+                    'image_url' => $vehicle->image_url,
+                    'is_visible' => $vehicle->is_visible,
+                    'created_at' => $vehicle->created_at,
+                    'updated_at' => $vehicle->updated_at
+                ];
+            })->toArray();
+
             return response()->json([
                 'success' => true,
-                'data' => $vehicles,
-                'total' => $vehicles->count()
+                'data' => $transformedData,
+                'total' => count($transformedData)
             ]);
 
         } catch (\Exception $e) {

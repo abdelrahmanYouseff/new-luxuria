@@ -28,6 +28,8 @@ class Vehicle extends Model
         'is_visible'
     ];
 
+    protected $appends = ['image_url'];
+
     protected $casts = [
         'daily_rate' => 'decimal:2',
         'weekly_rate' => 'decimal:2',

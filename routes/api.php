@@ -37,6 +37,11 @@ Route::get('/vehicles', function (Request $request) {
     return Vehicle::all();
 });
 
+// Simple vehicles API with images
+Route::get('/api/vehicles', [VehiclesApiController::class, 'getVehicles']);
+Route::get('/api/vehicles/available', [VehiclesApiController::class, 'getAvailableVehicles']);
+Route::get('/api/vehicles/{id}', [VehiclesApiController::class, 'getVehicle']);
+
 // Advanced Vehicles API Routes
 Route::prefix('v1/vehicles')->group(function () {
 
