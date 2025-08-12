@@ -947,6 +947,22 @@ class StripeController extends Controller
                     'stripe_session_id' => $sessionId,
                 ]);
 
+                // Update local vehicle status to Rented
+                try {
+                    if ($booking->vehicle) {
+                        $booking->vehicle->update(['status' => 'Rented']);
+                        Log::info('Vehicle status updated to Rented after payment', [
+                            'vehicle_id' => $booking->vehicle->id,
+                            'booking_id' => $booking->id,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to update vehicle status after payment', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
                 // Update external booking status if exists (prefer UID if available)
                 if ($booking->external_reservation_uid || $booking->external_reservation_id) {
                     $externalUpdateResult = null;

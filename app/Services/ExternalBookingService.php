@@ -70,7 +70,8 @@ class ExternalBookingService
                 'customer_id' => $externalCustomerId,
                 'vehicle_id' => $vehicle->api_id ?? $this->findVehicleByPlate($vehicle->plate_number),
                 'pickup_date' => $this->formatDateTime($bookingData['start_date']),
-                'pickup_location' => $this->mapEmirateToLocation($bookingData['emirate']),
+                // Send the exact emirate selected by the user
+                'pickup_location' => $bookingData['emirate'] ?? $this->mapEmirateToLocation($bookingData['emirate'] ?? ''),
                 'return_date' => $this->formatDateTime($bookingData['end_date']),
                 'rate' => (float) $bookingData['applied_rate'],
                 'status' => 'pending',
