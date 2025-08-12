@@ -1,0 +1,315 @@
+{
+  "info": {
+    "name": "Luxuria UAE Vehicles API",
+    "description": "Collection for testing Luxuria UAE Vehicles API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Vehicles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""]
+        }
+      }
+    },
+    {
+      "name": "Get Available Vehicles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/available",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", "available"]
+        }
+      }
+    },
+    {
+      "name": "Filter by Category (Luxury)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?category=Luxury",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "category",
+              "value": "Luxury"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter by Make (BMW)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?make=BMW",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "make",
+              "value": "BMW"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Search Vehicles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?search=BMW&available=true",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "search",
+              "value": "BMW"
+            },
+            {
+              "key": "available",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Price Range Filter",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?min_price=100&max_price=500",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "min_price",
+              "value": "100"
+            },
+            {
+              "key": "max_price",
+              "value": "500"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Sort by Price (Ascending)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?sort_by=daily_rate&sort_direction=asc",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "sort_by",
+              "value": "daily_rate"
+            },
+            {
+              "key": "sort_direction",
+              "value": "asc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pagination Test",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?per_page=5&page=1",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "per_page",
+              "value": "5"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Vehicle Categories",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/categories",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", "categories"]
+        }
+      }
+    },
+    {
+      "name": "Get Vehicle Makes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/makes",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", "makes"]
+        }
+      }
+    },
+    {
+      "name": "Get Specific Vehicle",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/1",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", "1"]
+        }
+      }
+    },
+    {
+      "name": "Advanced Filter (Multiple Parameters)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/vehicles/?category=Luxury&available=true&sort_by=daily_rate&sort_direction=desc&per_page=10",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "v1", "vehicles", ""],
+          "query": [
+            {
+              "key": "category",
+              "value": "Luxury"
+            },
+            {
+              "key": "available",
+              "value": "true"
+            },
+            {
+              "key": "sort_by",
+              "value": "daily_rate"
+            },
+            {
+              "key": "sort_direction",
+              "value": "desc"
+            },
+            {
+              "key": "per_page",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
