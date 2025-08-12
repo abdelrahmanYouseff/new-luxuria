@@ -13,9 +13,11 @@ class ExternalBookingService
     private string $apiUrl;
     private string $apiKey;
     private bool $useTest;
+    private ExternalCustomerService $externalCustomerService;
 
-    public function __construct()
+    public function __construct(ExternalCustomerService $externalCustomerService)
     {
+        $this->externalCustomerService = $externalCustomerService;
         $baseUrl = rtrim(config('services.rlapp.base_url', 'https://rlapp.rentluxuria.com'), '/');
         $this->useTest = (bool) config('services.rlapp.use_test', true);
         $prefix = $this->useTest ? '/api/v1/test' : '/api/v1';
@@ -33,16 +35,51 @@ class ExternalBookingService
             $user = User::findOrFail($userId);
             $vehicle = Vehicle::findOrFail($vehicleId);
 
+            // Decide the external customer id to use: prefer saved external_customer_id; otherwise create one with user's real email/phone
+            $externalCustomerId = $user->external_customer_id;
+            if (empty($externalCustomerId)) {
+                try {
+                    $customerPayload = [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone ?? '0500000000',
+                    ];
+                    $createResult = $this->externalCustomerService->createExternalCustomer($customerPayload);
+                    if (is_array($createResult) && ($createResult['success'] ?? false)) {
+                        // Try to fetch id from response
+                        $data = $createResult['response_data'] ?? [];
+                        $externalCustomerId = $data['id'] ?? ($data['data']['id'] ?? null);
+                        if ($externalCustomerId) {
+                            $user->external_customer_id = $externalCustomerId;
+                            $user->save();
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to create external customer; will fallback to pointsys id', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+            if (empty($externalCustomerId)) {
+                $externalCustomerId = $user->pointsys_customer_id ?? $this->generateCustomerId($user);
+            }
+
             // Prepare the request data for external API
             $externalBookingData = [
-                'customer_id' => $user->pointsys_customer_id ?? $this->generateCustomerId($user),
+                'customer_id' => $externalCustomerId,
                 'vehicle_id' => $vehicle->api_id ?? $this->findVehicleByPlate($vehicle->plate_number),
                 'pickup_date' => $this->formatDateTime($bookingData['start_date']),
                 'pickup_location' => $this->mapEmirateToLocation($bookingData['emirate']),
                 'return_date' => $this->formatDateTime($bookingData['end_date']),
                 'rate' => (float) $bookingData['applied_rate'],
                 'status' => 'pending',
-                'notes' => $bookingData['notes'] ?? ''
+                'notes' => $bookingData['notes'] ?? '',
+                // extra customer context
+                'customer_email' => $user->email,
+                'customer_name' => $user->name,
+                // some APIs might expect generic keys
+                'email' => $user->email,
             ];
 
             // Make the API request
