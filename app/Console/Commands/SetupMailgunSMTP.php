@@ -38,16 +38,24 @@ class SetupMailgunSMTP extends Command
         // Read current .env file
         $envContent = File::get(base_path('.env'));
 
-        // Mailgun SMTP settings
+        // Mailgun SMTP settings (no hardcoded secrets)
+        $host = env('MAIL_HOST', 'smtp.mailgun.org');
+        $port = env('MAIL_PORT', '587');
+        $username = env('MAIL_USERNAME', '');
+        $fromAddress = env('MAIL_FROM_ADDRESS', '');
+        $fromName = env('MAIL_FROM_NAME', config('app.name', 'Laravel'));
+        $encryption = env('MAIL_ENCRYPTION', 'tls');
+        $password = $this->secret('Enter MAIL_PASSWORD (hidden)');
+
         $smtpSettings = [
             'MAIL_MAILER=smtp',
-            'MAIL_HOST=smtp.eu.mailgun.org',
-            'MAIL_PORT=587',
-            'MAIL_USERNAME=info@rentluxuria.com',
-            'MAIL_PASSWORD=[REDACTED_MAILGUN_KEY]',
-            'MAIL_ENCRYPTION=tls',
-            'MAIL_FROM_ADDRESS=noreply@rentluxuria.com',
-            'MAIL_FROM_NAME="Luxuria UAE"'
+            'MAIL_HOST=' . $host,
+            'MAIL_PORT=' . $port,
+            'MAIL_USERNAME=' . $username,
+            'MAIL_PASSWORD=' . $password,
+            'MAIL_ENCRYPTION=' . $encryption,
+            'MAIL_FROM_ADDRESS=' . $fromAddress,
+            'MAIL_FROM_NAME="' . $fromName . '"'
         ];
 
         $this->info('📝 Updating .env file...');
@@ -86,12 +94,12 @@ class SetupMailgunSMTP extends Command
             ['Setting', 'Value'],
             [
                 ['Mailer', 'smtp'],
-                ['Host', 'smtp.eu.mailgun.org'],
-                ['Port', '587'],
-                ['Encryption', 'tls'],
-                ['Username', 'info@rentluxuria.com'],
-                ['From Address', 'noreply@rentluxuria.com'],
-                ['From Name', 'Luxuria UAE'],
+                ['Host', $host],
+                ['Port', $port],
+                ['Encryption', $encryption],
+                ['Username', $username],
+                ['From Address', $fromAddress],
+                ['From Name', $fromName],
             ]
         );
 
