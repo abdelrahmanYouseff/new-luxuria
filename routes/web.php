@@ -76,7 +76,42 @@ Route::get('dashboard', function () {
 
 Route::get('/cars/{id}', function ($id) {
     $vehicle = App\Models\Vehicle::findOrFail($id);
-    return view('cars.show', compact('vehicle'));
+    // Siblings of same make+model
+    $siblings = App\Models\Vehicle::where('make', $vehicle->make)
+        ->where('model', $vehicle->model)
+        ->get();
+
+    // Prefer an Available unit to represent/pricing this model on details page
+    $effectiveVehicle = $siblings->first(function ($v) {
+        return strtolower($v->status) === 'available';
+    }) ?? $vehicle;
+
+    // Effective rates come from the effective vehicle; if missing fall back to first non-zero among siblings, then to current vehicle
+    $daily = (float) ($effectiveVehicle->daily_rate ?? 0);
+    $weekly = (float) ($effectiveVehicle->weekly_rate ?? 0);
+    $monthly = (float) ($effectiveVehicle->monthly_rate ?? 0);
+
+    if ($daily <= 0) {
+        $daily = (float) (optional($siblings)->pluck('daily_rate')->filter(fn($v) => (float) $v > 0)->first() ?? ($vehicle->daily_rate ?? 0));
+    }
+    if ($weekly <= 0) {
+        $weekly = (float) (optional($siblings)->pluck('weekly_rate')->filter(fn($v) => (float) $v > 0)->first() ?? ($vehicle->weekly_rate ?? 0));
+    }
+    if ($monthly <= 0) {
+        $monthly = (float) (optional($siblings)->pluck('monthly_rate')->filter(fn($v) => (float) $v > 0)->first() ?? ($vehicle->monthly_rate ?? 0));
+    }
+
+    $effectiveRates = [
+        'daily' => $daily,
+        'weekly' => $weekly,
+        'monthly' => $monthly,
+    ];
+
+    return view('cars.show', [
+        'vehicle' => $vehicle,
+        'effectiveVehicle' => $effectiveVehicle,
+        'effectiveRates' => $effectiveRates,
+    ]);
 })->name('cars.show');
 
 // Booking routes

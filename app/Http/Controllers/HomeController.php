@@ -56,7 +56,14 @@ class HomeController extends Controller
             'Vans' => []
         ];
 
-        foreach ($vehicles as $vehicle) {
+        // Show only one representative card per make+model (grouped), regardless of number of plates
+        $grouped = $vehicles->groupBy(function($v){
+            return strtolower(trim(($v->make ?? '') . '|' . ($v->model ?? '')));
+        });
+
+        foreach ($grouped as $group) {
+            // Prefer an Available unit to represent the model, otherwise take the first
+            $vehicle = $group->first(function($v){ return strtolower($v->status) === 'available'; }) ?? $group->first();
             $category = $this->mapCategory($vehicle->category ?? 'economy');
 
             $transformedVehicle = [

@@ -21,6 +21,34 @@ class BookingController extends Controller
     }
 
     /**
+     * Pick an available vehicle from the same make+model group (different plates)
+     */
+    private function findAvailableVehicleFromSameModel(Vehicle $vehicle, string $startDate, string $endDate): ?Vehicle
+    {
+        // Get all units of the same model
+        $siblings = Vehicle::where('make', $vehicle->make)
+            ->where('model', $vehicle->model)
+            ->orderBy('status')
+            ->get();
+
+        // Prefer units explicitly marked Available and not conflicting for the selected range
+        foreach ($siblings as $candidate) {
+            if (strtolower($candidate->status) === 'available' && !Booking::hasConflict($candidate->id, $startDate, $endDate)) {
+                return $candidate;
+            }
+        }
+
+        // If none marked Available, try any unit without conflict (in case status not synced)
+        foreach ($siblings as $candidate) {
+            if (!Booking::hasConflict($candidate->id, $startDate, $endDate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Check vehicle availability
      */
     public function checkAvailability($vehicleId, Request $request)
@@ -85,6 +113,14 @@ class BookingController extends Controller
             if (!isset($bookingData[$field])) {
                 return redirect()->route('cars.show', $vehicleId)->with('error', 'Invalid booking data. Please try again.');
             }
+        }
+
+        // Auto-select an available unit for summary as well to keep consistency
+        $selectedVehicle = $this->findAvailableVehicleFromSameModel($vehicle, $bookingData['start_date'], $bookingData['end_date']);
+        if ($selectedVehicle) {
+            $vehicle = $selectedVehicle;
+            $vehicleId = $vehicle->id;
+            $bookingData['vehicle_id'] = $vehicle->id;
         }
 
         // Check for existing pending booking for this user/vehicle/dates
@@ -204,6 +240,14 @@ class BookingController extends Controller
             $bookingData = json_decode($request->booking_data, true);
             $vehicle = Vehicle::findOrFail($bookingData['vehicle_id']);
 
+            // Ensure we are booking a currently available unit for this model
+            $selectedVehicle = $this->findAvailableVehicleFromSameModel($vehicle, $bookingData['start_date'], $bookingData['end_date']);
+            if (!$selectedVehicle) {
+                return redirect()->back()->with('error', 'No available units for this model on the selected dates.');
+            }
+            $vehicle = $selectedVehicle;
+            $bookingData['vehicle_id'] = $vehicle->id;
+
             Log::info('Vehicle found', [
                 'vehicle_id' => $vehicle->id,
                 'vehicle_status' => $vehicle->status
@@ -219,9 +263,9 @@ class BookingController extends Controller
             }
 
             // Check for date conflicts
-            if (Booking::hasConflict($bookingData['vehicle_id'], $bookingData['start_date'], $bookingData['end_date'])) {
+            if (Booking::hasConflict($vehicle->id, $bookingData['start_date'], $bookingData['end_date'])) {
                 Log::warning('Date conflict detected', [
-                    'vehicle_id' => $bookingData['vehicle_id'],
+                    'vehicle_id' => $vehicle->id,
                     'start_date' => $bookingData['start_date'],
                     'end_date' => $bookingData['end_date']
                 ]);
@@ -230,7 +274,7 @@ class BookingController extends Controller
 
             Log::info('Checking for existing pending booking for this user/vehicle/dates');
             $userId = Auth::id();
-            $vehicleId = $bookingData['vehicle_id'];
+            $vehicleId = $vehicle->id;
             $startDate = $bookingData['start_date'];
             $endDate = $bookingData['end_date'];
 
@@ -357,21 +401,15 @@ class BookingController extends Controller
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
 
-        // Check if vehicle is available
-        if (strtolower($vehicle->status) !== 'available') {
+        // Auto-pick an available vehicle from the same make & model (different plates)
+        $selectedVehicle = $this->findAvailableVehicleFromSameModel($vehicle, $request->start_date, $request->end_date);
+        if (!$selectedVehicle) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vehicle is not available for booking.',
+                'message' => 'No available units for this model on the selected dates.',
             ], 400);
         }
-
-        // Check for date conflicts
-        if (Booking::hasConflict($request->vehicle_id, $request->start_date, $request->end_date)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vehicle is already booked for the selected dates.',
-            ], 400);
-        }
+        $vehicle = $selectedVehicle; // Use the selected plate
 
         // Calculate total days and amount with smart pricing
         $startDate = Carbon::parse($request->start_date);
@@ -400,7 +438,7 @@ class BookingController extends Controller
 
         // Prepare booking data for summary page
         $bookingData = [
-            'vehicle_id' => $request->vehicle_id,
+            'vehicle_id' => $vehicle->id,
             'emirate' => $request->emirate,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,

@@ -38,7 +38,7 @@
                             <div class="lux-pricing-label-compact mb-1">Daily</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
-                                <span class="lux-pricing-value-compact">{{ number_format($vehicle->daily_rate ?? 0) }}</span>
+                                <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}</span>
                             </div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                             <div class="lux-pricing-label-compact mb-1">Weekly</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
-                                <span class="lux-pricing-value-compact">{{ number_format($vehicle->weekly_rate ?? 0) }}</span>
+                                <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0)))) }}</span>
                             </div>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                             <div class="lux-pricing-label-compact mb-1">Monthly</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
-                                <span class="lux-pricing-value-compact">{{ number_format($vehicle->monthly_rate ?? 0) }}</span>
+                                <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0)))) }}</span>
                             </div>
                         </div>
                     </div>
@@ -119,19 +119,19 @@
                         <div class="luxury-pricing-item">
                             <div class="luxury-pricing-duration">1-7 days</div>
                             <div class="luxury-pricing-rate">Daily Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format($vehicle->daily_rate ?? 0) }}/day</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}/day</div>
                         </div>
                         <div class="luxury-pricing-item">
                             <div class="luxury-pricing-duration">8-27 days</div>
                             <div class="luxury-pricing-rate">Weekly Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format(($vehicle->weekly_rate ?? 0) / 7) }}/day</div>
-                            <div class="luxury-pricing-savings">Save {{ round((1 - (($vehicle->weekly_rate ?? 0) / 7) / ($vehicle->daily_rate ?? 1)) * 100) }}%</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7)) }}/day</div>
+                            <div class="luxury-pricing-savings">Save {{ round((1 - ((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1))) * 100) }}%</div>
                         </div>
                         <div class="luxury-pricing-item">
                             <div class="luxury-pricing-duration">28+ days</div>
                             <div class="luxury-pricing-rate">Monthly Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format(round(($vehicle->monthly_rate ?? 0) / 30)) }}/day</div>
-                            <div class="luxury-pricing-savings">Save {{ round((1 - (round(($vehicle->monthly_rate ?? 0) / 30)) / ($vehicle->daily_rate ?? 1)) * 100) }}%</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/day</div>
+                            <div class="luxury-pricing-savings">Save {{ round((1 - (((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1)))) * 100) }}%</div>
                         </div>
                     </div>
                 </div>
@@ -189,9 +189,9 @@
                                     <div class="luxury-summary-item">
                                         <div class="luxury-summary-label">Smart Pricing</div>
                                         <div class="luxury-summary-rates">
-                                            <div class="luxury-rate-item">Daily: AED {{ number_format($vehicle->daily_rate ?? 0) }}</div>
-                                            <div class="luxury-rate-item">Weekly: AED {{ number_format(($vehicle->weekly_rate ?? 0) / 7) }}/day</div>
-                                            <div class="luxury-rate-item">Monthly: AED {{ number_format(round(($vehicle->monthly_rate ?? 0) / 30)) }}/day</div>
+                                            <div class="luxury-rate-item">Daily: AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}</div>
+                                            <div class="luxury-rate-item">Weekly: AED {{ number_format(((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7))) }}/day</div>
+                                            <div class="luxury-rate-item">Monthly: AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/day</div>
                                         </div>
                                     </div>
                                     <div class="luxury-summary-item">
@@ -1208,9 +1208,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const vehicleId = bookNowBtn.dataset.vehicleId;
     const vehicleStatus = bookNowBtn.dataset.vehicleStatus;
-    const dailyRate = {{ $vehicle->daily_rate ?? 0 }};
-    const weeklyRate = {{ $vehicle->weekly_rate ?? 0 }};
-    const monthlyRate = {{ $vehicle->monthly_rate ?? 0 }};
+    const dailyRate = {{ ($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))) }};
+    const weeklyRate = {{ ($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) }};
+    const monthlyRate = {{ ($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) }};
 
     // Initialize current vehicle rates (can be updated for alternative vehicles)
     window.currentVehicleRates = {
