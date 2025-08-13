@@ -18,7 +18,9 @@ class ApiCheckoutController extends Controller
     public function createCheckout(Request $request)
     {
         $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
+            // استخدم واحد من الاثنين: vehicle_api_id أو vehicle_id
+            'vehicle_api_id' => 'required_without:vehicle_id',
+            'vehicle_id' => 'required_without:vehicle_api_id|exists:vehicles,id',
             'start_date' => 'required|date|after:today',
             'end_date' => 'required|date|after:start_date',
             'emirate' => 'required|string|max:100',
@@ -29,7 +31,13 @@ class ApiCheckoutController extends Controller
         ]);
 
         try {
-            $vehicle = Vehicle::findOrFail($request->vehicle_id);
+            // ابحث عن السيارة باستخدام api_id إن وُجد، وإلا استخدم id المحلي
+            if ($request->filled('vehicle_api_id')) {
+                $vehicle = Vehicle::where('api_id', $request->input('vehicle_api_id'))
+                    ->firstOrFail();
+            } else {
+                $vehicle = Vehicle::findOrFail($request->vehicle_id);
+            }
 
             // Resolve user: prefer authenticated token -> user_id -> email create/find
             $user = $request->user();
