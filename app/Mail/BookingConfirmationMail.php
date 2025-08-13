@@ -53,6 +53,7 @@ class BookingConfirmationMail extends Mailable
                 'vehicle' => $this->booking->vehicle,
                 'customerName' => $this->user->name,
                 'bookingId' => $this->booking->id,
+                'externalUid' => $this->booking->external_reservation_uid,
                 'vehicleName' => $this->booking->vehicle->make . ' ' . $this->booking->vehicle->model,
                 'startDate' => optional($this->booking->start_date)->format('d/m/Y'),
                 'endDate' => optional($this->booking->end_date)->format('d/m/Y'),

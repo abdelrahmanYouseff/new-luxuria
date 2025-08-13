@@ -931,6 +931,7 @@ class StripeController extends Controller
                     'booking_id' => $booking->id,
                     'start_date' => optional($booking->start_date)->format('d/m/Y'),
                     'end_date' => optional($booking->end_date)->format('d/m/Y'),
+                    'external_reservation_uid' => $booking->external_reservation_uid,
                 ]);
             }
 
@@ -1044,6 +1045,7 @@ class StripeController extends Controller
                     'booking_id' => $booking->id,
                     'start_date' => optional($booking->start_date)->format('d/m/Y'),
                     'end_date' => optional($booking->end_date)->format('d/m/Y'),
+                    'external_reservation_uid' => $booking->external_reservation_uid,
                 ]);
 
             } else {

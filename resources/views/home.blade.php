@@ -468,6 +468,10 @@
                             <small class="text-muted">Booking ID:</small>
                             <div class="fw-bold" id="successBookingId">-</div>
                         </div>
+							<div class="col-6">
+								<small class="text-muted">Reservation UID:</small>
+								<div class="fw-bold" id="successExternalUid">-</div>
+							</div>
                         <div class="col-6">
                             <small class="text-muted">Start Date:</small>
                             <div class="fw-bold" id="successStartDate">-</div>
@@ -503,6 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Populate modal with booking data
     document.getElementById('successVehicleName').textContent = successData.vehicle_name;
     document.getElementById('successBookingId').textContent = '#' + successData.booking_id;
+	document.getElementById('successExternalUid').textContent = successData.external_reservation_uid || '-';
     document.getElementById('successStartDate').textContent = successData.start_date;
     document.getElementById('successEndDate').textContent = successData.end_date;
 

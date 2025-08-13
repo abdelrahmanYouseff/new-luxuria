@@ -234,6 +234,10 @@
                     <span class="detail-value">#{{ $bookingId }}</span>
                 </div>
                 <div class="detail-row">
+                    <span class="detail-label">Reservation UID:</span>
+                    <span class="detail-value">{{ $externalUid ?? 'N/A' }}</span>
+                </div>
+                <div class="detail-row">
                     <span class="detail-label">Customer Name:</span>
                     <span class="detail-value">{{ $customerName }}</span>
                 </div>
