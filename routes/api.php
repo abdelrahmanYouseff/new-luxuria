@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PointSysService;
 use App\Services\ExternalCustomerService;
+use App\Http\Controllers\ApiCheckoutController;
 
 
 
@@ -44,6 +45,9 @@ Route::get('/api/vehicles/{id}', [VehiclesApiController::class, 'getVehicle']);
 
 // Booking API
 Route::post('/bookings/create', [App\Http\Controllers\BookingController::class, 'createBookingInBothSystems']);
+
+// Generic checkout creation (vehicle + user + booking details → Stripe checkout URL)
+Route::post('/checkout/create', [ApiCheckoutController::class, 'createCheckout'])->name('api.checkout.create');
 
 // Advanced Vehicles API Routes
 Route::prefix('v1/vehicles')->group(function () {
