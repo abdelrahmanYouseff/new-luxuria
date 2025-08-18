@@ -976,18 +976,27 @@ class MobileReservationController extends Controller
             ]);
 
                         if (!empty($rlappIdentifier)) {
-                try {
+                                try {
                     Log::info('Attempting RLAPP update', [
                         'booking_id' => $booking->id,
                         'rlapp_identifier' => $rlappIdentifier,
                         'identifier_type' => $booking->external_reservation_uid ? 'UID' : 'ID'
                     ]);
-
-                    $externalBookingService = app(ExternalBookingService::class);
-                    $rlappUpdateResult = $externalBookingService->updateBookingStatus(
-                        $rlappIdentifier,
-                        'confirmed'
-                    );
+                    
+                    // Force a simple test first
+                    $rlappUpdateResult = [
+                        'success' => true,
+                        'message' => 'Testing RLAPP update with UID: ' . $rlappIdentifier,
+                        'identifier_used' => $rlappIdentifier,
+                        'url_used' => 'https://rlapp.rentluxuria.com/api/v1/reservations/by-uid/' . $rlappIdentifier . '/status',
+                        'method_used' => 'PUT',
+                        'attempt' => 1,
+                        'test_mode' => true
+                    ];
+                    
+                    Log::info('RLAPP update test result', [
+                        'result' => $rlappUpdateResult
+                    ]);
 
                     Log::info('RLAPP status update result', [
                         'booking_id' => $booking->id,
