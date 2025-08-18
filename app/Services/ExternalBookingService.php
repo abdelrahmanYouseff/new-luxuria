@@ -467,87 +467,107 @@ class ExternalBookingService
     }
 
     /**
-     * Update booking status in RLAPP system
+     * Update booking status in RLAPP system using UID
      */
-    public function updateBookingStatus($externalBookingId, $status = 'confirmed')
+    public function updateBookingStatus($externalBookingIdOrUid, $status = 'confirmed')
     {
         try {
             Log::info('Updating RLAPP booking status', [
-                'external_booking_id' => $externalBookingId,
+                'external_booking_id_or_uid' => $externalBookingIdOrUid,
                 'new_status' => $status
             ]);
 
-            // Build the update URL
+            // Build the update URL - try both UID and ID endpoints
             $baseUrl = rtrim(config('services.rlapp.base_url', 'https://rlapp.rentluxuria.com'), '/');
             $prefix = $this->useTest ? '/api/v1/test' : '/api/v1';
-            $updateUrl = $baseUrl . $prefix . '/custom-reservation/' . $externalBookingId;
+
+            // Try UID-based endpoint first, then fallback to ID-based
+            $updateUrls = [
+                $baseUrl . $prefix . '/custom-reservation/uid/' . $externalBookingIdOrUid,
+                $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid
+            ];
 
             // Prepare update payload
             $updatePayload = [
                 'status' => $status
             ];
 
-            Log::info('RLAPP Update Request', [
-                'url' => $updateUrl,
-                'payload' => $updatePayload,
-                'headers' => [
-                    'Authorization' => 'Bearer ' . substr($this->apiKey, 0, 10) . '...',
-                    'Content-Type' => 'application/json'
-                ]
-            ]);
-
-            // Make the PATCH request to update booking status
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->patch($updateUrl, $updatePayload);
-
-            $statusCode = $response->status();
-            $responseBody = $response->body();
-            $responseData = $response->json();
-
-            Log::info('RLAPP Update Response', [
-                'status_code' => $statusCode,
-                'response_body' => $responseBody,
-                'response_data' => $responseData
-            ]);
-
-            if ($response->successful()) {
-                return [
-                    'success' => true,
-                    'message' => 'Booking status updated successfully in RLAPP',
-                    'updated_status' => $status,
-                    'external_booking_id' => $externalBookingId,
-                    'response_data' => $responseData
-                ];
-            } else {
-                Log::warning('RLAPP update request failed', [
-                    'status_code' => $statusCode,
-                    'response' => $responseData,
-                    'external_booking_id' => $externalBookingId
+            // Try each URL until one succeeds
+            $lastError = null;
+            foreach ($updateUrls as $index => $updateUrl) {
+                Log::info('RLAPP Update Request Attempt', [
+                    'attempt' => $index + 1,
+                    'url' => $updateUrl,
+                    'payload' => $updatePayload,
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . substr($this->apiKey, 0, 10) . '...',
+                        'Content-Type' => 'application/json'
+                    ]
                 ]);
 
-                return [
-                    'success' => false,
-                    'error' => 'Failed to update booking status in RLAPP',
+                // Make the PATCH request to update booking status
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])->patch($updateUrl, $updatePayload);
+
+                $statusCode = $response->status();
+                $responseBody = $response->body();
+                $responseData = $response->json();
+
+                Log::info('RLAPP Update Response', [
+                    'attempt' => $index + 1,
+                    'url' => $updateUrl,
                     'status_code' => $statusCode,
-                    'response' => $responseData
-                ];
+                    'response_body' => $responseBody,
+                    'response_data' => $responseData
+                ]);
+
+                if ($response->successful()) {
+                    return [
+                        'success' => true,
+                        'message' => 'Booking status updated successfully in RLAPP',
+                        'updated_status' => $status,
+                        'external_booking_id_or_uid' => $externalBookingIdOrUid,
+                        'url_used' => $updateUrl,
+                        'attempt' => $index + 1,
+                        'response_data' => $responseData
+                    ];
+                } else {
+                    $lastError = [
+                        'url' => $updateUrl,
+                        'status_code' => $statusCode,
+                        'response' => $responseData
+                    ];
+                }
             }
+
+            // If all attempts failed
+            Log::warning('All RLAPP update attempts failed', [
+                'external_booking_id_or_uid' => $externalBookingIdOrUid,
+                'last_error' => $lastError
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Failed to update booking status in RLAPP after trying all endpoints',
+                'last_error' => $lastError,
+                'external_booking_id_or_uid' => $externalBookingIdOrUid
+            ];
 
         } catch (\Exception $e) {
             Log::error('Exception during RLAPP status update', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'external_booking_id' => $externalBookingId,
+                'external_booking_id_or_uid' => $externalBookingIdOrUid,
                 'status' => $status
             ]);
 
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'external_booking_id' => $externalBookingId
+                'external_booking_id_or_uid' => $externalBookingIdOrUid
             ];
         }
     }

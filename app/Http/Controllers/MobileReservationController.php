@@ -886,7 +886,7 @@ class MobileReservationController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             Log::info('Payment confirmation initiated', [
                 'reservation_id' => $reservationId,
                 'user_id' => $user->id,
@@ -946,7 +946,7 @@ class MobileReservationController extends Controller
                     ->where('end_date', $booking->end_date)
                     ->where('status', 'pending')
                     ->first();
-                
+
                 if ($reservation) {
                     $reservation->update([
                         'status' => 'confirmed',
@@ -955,20 +955,40 @@ class MobileReservationController extends Controller
                 }
             }
 
-            // Update status in RLAPP system
-            $rlappUpdateResult = null;
-            if ($booking->external_reservation_id) {
+                                    // Update status in RLAPP system
+            $rlappUpdateResult = ['success' => false, 'message' => 'No external booking ID'];
+
+            Log::info('Checking external booking ID for RLAPP update', [
+                'booking_id' => $booking->id,
+                'external_reservation_id' => $booking->external_reservation_id,
+                'has_external_id' => !empty($booking->external_reservation_id)
+            ]);
+
+                        // Try UID first, then fallback to external_reservation_id
+            $rlappIdentifier = $booking->external_reservation_uid ?? $booking->external_reservation_id;
+
+            if (!empty($rlappIdentifier)) {
                 $externalBookingService = app(ExternalBookingService::class);
                 $rlappUpdateResult = $externalBookingService->updateBookingStatus(
-                    $booking->external_reservation_id, 
+                    $rlappIdentifier,
                     'confirmed'
                 );
 
                 Log::info('RLAPP status update result', [
                     'booking_id' => $booking->id,
+                    'rlapp_identifier' => $rlappIdentifier,
+                    'identifier_type' => $booking->external_reservation_uid ? 'UID' : 'ID',
                     'external_reservation_id' => $booking->external_reservation_id,
+                    'external_reservation_uid' => $booking->external_reservation_uid,
                     'rlapp_result' => $rlappUpdateResult
                 ]);
+            } else {
+                Log::warning('No external booking UID or ID found for RLAPP update', [
+                    'booking_id' => $booking->id,
+                    'external_reservation_id' => $booking->external_reservation_id,
+                    'external_reservation_uid' => $booking->external_reservation_uid
+                ]);
+                $rlappUpdateResult = ['success' => false, 'message' => 'External booking UID and ID are both missing or empty'];
             }
 
             Log::info('Payment confirmation completed', [
@@ -999,9 +1019,15 @@ class MobileReservationController extends Controller
                     ] : null,
                     'rlapp_update' => [
                         'success' => $rlappUpdateResult['success'] ?? false,
-                        'message' => $rlappUpdateResult['message'] ?? 'No RLAPP update attempted',
+                        'message' => $rlappUpdateResult['message'] ?? 'Unknown RLAPP update status',
+                        'identifier_used' => $rlappIdentifier ?? null,
+                        'identifier_type' => (!empty($booking->external_reservation_uid)) ? 'UID' : 'ID',
                         'external_booking_id' => $booking->external_reservation_id,
-                        'updated_status' => $rlappUpdateResult['updated_status'] ?? null
+                        'external_booking_uid' => $booking->external_reservation_uid,
+                        'updated_status' => $rlappUpdateResult['updated_status'] ?? null,
+                        'url_used' => $rlappUpdateResult['url_used'] ?? null,
+                        'attempt' => $rlappUpdateResult['attempt'] ?? null,
+                        'response_data' => $rlappUpdateResult['response_data'] ?? null
                     ],
                     'summary' => [
                         'local_booking_confirmed' => true,
