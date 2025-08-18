@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\User;
+use App\Models\Reservation;
 use App\Services\ExternalBookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -159,6 +160,96 @@ class MobileReservationController extends Controller
                 ], 500);
             }
 
+                        // Get the UID from RLAPP response
+            $rlappBookingId = $rlappResult['external_booking_id'] ?? null;
+            $rlappBookingUid = $rlappResult['external_booking_uid'] ?? null;
+
+            // Log the full RLAPP response to debug UID issue
+            Log::info('Full RLAPP response for debugging UID', [
+                'rlapp_result' => $rlappResult,
+                'extracted_booking_id' => $rlappBookingId,
+                'extracted_booking_uid' => $rlappBookingUid
+            ]);
+
+            // Try multiple ways to extract UID from response
+            if (!$rlappBookingUid && isset($rlappResult['response_data'])) {
+                $responseData = $rlappResult['response_data'];
+                if (isset($responseData['data']['uid'])) {
+                    $rlappBookingUid = $responseData['data']['uid'];
+                } elseif (isset($responseData['uid'])) {
+                    $rlappBookingUid = $responseData['uid'];
+                } elseif (isset($responseData['data']['id'])) {
+                    // Sometimes ID might be the UID
+                    $rlappBookingUid = $responseData['data']['id'];
+                }
+            }
+
+            // If still no UID, try to extract from different response structure
+            if (!$rlappBookingUid && isset($rlappResult['data'])) {
+                $data = $rlappResult['data'];
+                if (isset($data['uid'])) {
+                    $rlappBookingUid = $data['uid'];
+                } elseif (isset($data['id'])) {
+                    $rlappBookingUid = $data['id'];
+                }
+            }
+
+            // If we have booking ID but still no UID, try to fetch details from RLAPP to get UID
+            if ($rlappBookingId && !$rlappBookingUid) {
+                Log::info('Fetching UID from RLAPP for newly created booking', [
+                    'external_booking_id' => $rlappBookingId
+                ]);
+
+                $rlappDetailsResult = $this->externalBookingService->getExternalBookingDetails(
+                    $rlappBookingId,
+                    false // using ID, not UID
+                );
+
+                Log::info('RLAPP details fetch result', [
+                    'success' => $rlappDetailsResult['success'],
+                    'details_response' => $rlappDetailsResult
+                ]);
+
+                if ($rlappDetailsResult['success']) {
+                    $rlappDetails = $rlappDetailsResult['data'];
+
+                    // Extract UID from RLAPP response
+                    if (isset($rlappDetails['data']['uid'])) {
+                        $rlappBookingUid = $rlappDetails['data']['uid'];
+                    } elseif (isset($rlappDetails['uid'])) {
+                        $rlappBookingUid = $rlappDetails['uid'];
+                    } elseif (isset($rlappDetails['data']['id'])) {
+                        $rlappBookingUid = $rlappDetails['data']['id'];
+                    } elseif (isset($rlappDetails['id'])) {
+                        $rlappBookingUid = $rlappDetails['id'];
+                    }
+
+                    if ($rlappBookingUid) {
+                        Log::info('Successfully fetched UID from RLAPP details', [
+                            'external_booking_id' => $rlappBookingId,
+                            'external_booking_uid' => $rlappBookingUid
+                        ]);
+                    } else {
+                        Log::warning('UID still not found in RLAPP details', [
+                            'external_booking_id' => $rlappBookingId,
+                            'rlapp_details' => $rlappDetails
+                        ]);
+                    }
+                } else {
+                    Log::warning('Failed to fetch details from RLAPP', [
+                        'external_booking_id' => $rlappBookingId,
+                        'error' => $rlappDetailsResult['message']
+                    ]);
+                }
+            }
+
+            // Final logging of what we have
+            Log::info('Final booking IDs after all attempts', [
+                'rlapp_booking_id' => $rlappBookingId,
+                'rlapp_booking_uid' => $rlappBookingUid,
+                'uid_found' => !empty($rlappBookingUid)
+            ]);
+
             // Create local booking record
             $localBooking = Booking::create([
                 'user_id' => $user->id,
@@ -173,22 +264,35 @@ class MobileReservationController extends Controller
                 'total_amount' => $totalAmount,
                 'notes' => $request->notes ?? '',
                 'status' => 'pending',
-                'external_reservation_id' => $rlappResult['external_booking_id'] ?? null,
-                'external_reservation_uid' => $rlappResult['external_booking_uid'] ?? null,
+                'external_reservation_id' => $rlappBookingId,
+                'external_reservation_uid' => $rlappBookingUid,
             ]);
 
-            Log::info('Mobile reservation created successfully', [
+            // Create reservation record in reservations table
+            $localReservation = Reservation::create([
+                'user_id' => $user->id,
+                'car_id' => $vehicle->id,
+                'status' => 'pending',
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'payment_status' => 'pending',
+                'pickup_location' => $request->pickup_location ?? $request->emirate,
+                'user_notes' => $request->notes ?? '',
+            ]);
+
+            Log::info('Mobile reservation created successfully in both systems', [
                 'local_booking_id' => $localBooking->id,
+                'local_reservation_id' => $localReservation->id,
                 'external_reservation_id' => $localBooking->external_reservation_id,
                 'external_reservation_uid' => $localBooking->external_reservation_uid
             ]);
 
-            // Return success response with booking details
+            // Return success response with booking details and RLAPP UID
             return response()->json([
                 'success' => true,
-                'message' => 'تم إنشاء الحجز بنجاح',
+                'message' => 'تم إنشاء الحجز بنجاح في جميع الأنظمة (المحلي - قاعدة البيانات - RLAPP)',
                 'data' => [
-                    'reservation' => [
+                    'booking' => [
                         'id' => $localBooking->id,
                         'external_reservation_id' => $localBooking->external_reservation_id,
                         'external_reservation_uid' => $localBooking->external_reservation_uid,
@@ -219,7 +323,46 @@ class MobileReservationController extends Controller
                         'notes' => $localBooking->notes,
                         'created_at' => $localBooking->created_at->toISOString()
                     ],
-                    'rlapp_response' => $rlappResult
+                    'reservation_db' => [
+                        'id' => $localReservation->id,
+                        'user_id' => $localReservation->user_id,
+                        'car_id' => $localReservation->car_id,
+                        'status' => $localReservation->status,
+                        'payment_status' => $localReservation->payment_status,
+                        'start_date' => $localReservation->start_date,
+                        'end_date' => $localReservation->end_date,
+                        'pickup_location' => $localReservation->pickup_location,
+                        'user_notes' => $localReservation->user_notes,
+                        'created_at' => $localReservation->created_at->toISOString(),
+                        'updated_at' => $localReservation->updated_at->toISOString()
+                    ],
+                    'rlapp' => [
+                        'booking_id' => $rlappBookingId,
+                        'booking_uid' => $rlappBookingUid,
+                        'uid_found' => !empty($rlappBookingUid),
+                        'status' => 'pending',
+                        'api_response' => $rlappResult,
+                        'debug_info' => [
+                            'attempted_uid_extraction' => true,
+                            'original_response_keys' => array_keys($rlappResult),
+                            'uid_extraction_note' => $rlappBookingUid ? 'UID found successfully' : 'UID not found in response'
+                        ]
+                    ],
+                    'summary' => [
+                        'systems_created' => [
+                            'local_booking_id' => $localBooking->id,
+                            'local_reservation_id' => $localReservation->id,
+                            'rlapp_booking_id' => $rlappBookingId,
+                            'rlapp_booking_uid' => $rlappBookingUid
+                        ],
+                        'vehicle_info' => $vehicle->make . ' ' . $vehicle->model . ' (' . $vehicle->year . ')',
+                        'booking_details' => [
+                            'total_amount' => $localBooking->total_amount . ' AED',
+                            'duration' => $localBooking->total_days . ' أيام',
+                            'pickup_location' => $localReservation->pickup_location,
+                            'status' => 'pending - في انتظار الدفع'
+                        ]
+                    ]
                 ]
             ], 201);
 
@@ -351,12 +494,55 @@ class MobileReservationController extends Controller
                 ], 400);
             }
 
+                        $rlappBookingDetails = null;
+            $rlappCancellationResult = null;
+
             // Update status in RLAPP if external reservation exists
             if ($booking->external_reservation_id || $booking->external_reservation_uid) {
                 $identifier = $booking->external_reservation_uid ?? $booking->external_reservation_id;
                 $isUid = !empty($booking->external_reservation_uid);
 
-                $rlappResult = $this->externalBookingService->updateExternalBookingStatus(
+                // First, try to get booking details from RLAPP to fetch the UID
+                Log::info('Fetching booking details from RLAPP before cancellation', [
+                    'booking_id' => $booking->id,
+                    'external_identifier' => $identifier,
+                    'is_uid' => $isUid
+                ]);
+
+                $rlappDetailsResult = $this->externalBookingService->getExternalBookingDetails(
+                    $identifier,
+                    $isUid
+                );
+
+                if ($rlappDetailsResult['success']) {
+                    $rlappBookingDetails = $rlappDetailsResult['data'];
+
+                    // Extract UID from RLAPP response if available
+                    $rlappUid = null;
+                    if (isset($rlappBookingDetails['data']['uid'])) {
+                        $rlappUid = $rlappBookingDetails['data']['uid'];
+                    } elseif (isset($rlappBookingDetails['uid'])) {
+                        $rlappUid = $rlappBookingDetails['uid'];
+                    }
+
+                    Log::info('RLAPP booking details fetched', [
+                        'booking_id' => $booking->id,
+                        'rlapp_uid' => $rlappUid,
+                        'rlapp_details' => $rlappBookingDetails
+                    ]);
+
+                    // Update local booking with UID if not already present
+                    if ($rlappUid && !$booking->external_reservation_uid) {
+                        $booking->update(['external_reservation_uid' => $rlappUid]);
+                        Log::info('Updated local booking with RLAPP UID', [
+                            'booking_id' => $booking->id,
+                            'rlapp_uid' => $rlappUid
+                        ]);
+                    }
+                }
+
+                // Now cancel the booking in RLAPP
+                $rlappCancellationResult = $this->externalBookingService->updateExternalBookingStatus(
                     $identifier,
                     'cancelled',
                     $isUid
@@ -365,20 +551,48 @@ class MobileReservationController extends Controller
                 Log::info('RLAPP cancellation result', [
                     'booking_id' => $booking->id,
                     'external_id' => $identifier,
-                    'rlapp_result' => $rlappResult
+                    'rlapp_result' => $rlappCancellationResult
                 ]);
             }
 
             // Update local booking status
             $booking->update(['status' => 'cancelled']);
 
+            // Prepare response data
+            $responseData = [
+                'reservation_id' => $booking->id,
+                'status' => $booking->status,
+                'external_reservation_id' => $booking->external_reservation_id,
+                'external_reservation_uid' => $booking->external_reservation_uid,
+                'cancellation_timestamp' => now()->toISOString()
+            ];
+
+            // Include RLAPP booking details if available
+            if ($rlappBookingDetails) {
+                $responseData['rlapp_booking_details'] = $rlappBookingDetails;
+
+                // Extract specific RLAPP information for easier access
+                if (isset($rlappBookingDetails['data'])) {
+                    $rlappData = $rlappBookingDetails['data'];
+                    $responseData['rlapp_info'] = [
+                        'uid' => $rlappData['uid'] ?? $rlappBookingDetails['uid'] ?? null,
+                        'id' => $rlappData['id'] ?? $rlappBookingDetails['id'] ?? null,
+                        'status' => $rlappData['status'] ?? $rlappBookingDetails['status'] ?? null,
+                        'created_at' => $rlappData['created_at'] ?? $rlappBookingDetails['created_at'] ?? null,
+                        'updated_at' => $rlappData['updated_at'] ?? $rlappBookingDetails['updated_at'] ?? null
+                    ];
+                }
+            }
+
+            // Include RLAPP cancellation result
+            if ($rlappCancellationResult) {
+                $responseData['rlapp_cancellation_result'] = $rlappCancellationResult;
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم إلغاء الحجز بنجاح',
-                'data' => [
-                    'reservation_id' => $booking->id,
-                    'status' => $booking->status
-                ]
+                'data' => $responseData
             ]);
 
         } catch (\Exception $e) {

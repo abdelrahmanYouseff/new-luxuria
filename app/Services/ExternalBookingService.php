@@ -104,14 +104,43 @@ class ExternalBookingService
                 // Extract external booking ID and UID from response
                 $externalBookingId = null;
                 $externalBookingUid = null;
+
+                // Try multiple ways to extract booking ID
                 if (isset($responseData['data']['id'])) {
                     $externalBookingId = $responseData['data']['id'];
                 } elseif (isset($responseData['booking_id'])) {
                     $externalBookingId = $responseData['booking_id'];
+                } elseif (isset($responseData['id'])) {
+                    $externalBookingId = $responseData['id'];
                 }
+
+                // Try multiple ways to extract UID
                 if (isset($responseData['data']['uid'])) {
                     $externalBookingUid = $responseData['data']['uid'];
+                } elseif (isset($responseData['uid'])) {
+                    $externalBookingUid = $responseData['uid'];
+                } elseif (isset($responseData['data']['unique_id'])) {
+                    $externalBookingUid = $responseData['data']['unique_id'];
+                } elseif (isset($responseData['unique_id'])) {
+                    $externalBookingUid = $responseData['unique_id'];
+                } elseif (isset($responseData['data']['reservation_uid'])) {
+                    $externalBookingUid = $responseData['data']['reservation_uid'];
+                } elseif (isset($responseData['reservation_uid'])) {
+                    $externalBookingUid = $responseData['reservation_uid'];
+                } elseif (isset($responseData['data']['external_uid'])) {
+                    $externalBookingUid = $responseData['data']['external_uid'];
+                } elseif (isset($responseData['external_uid'])) {
+                    $externalBookingUid = $responseData['external_uid'];
                 }
+
+                // Log the response structure for debugging
+                Log::info('RLAPP Response Structure Analysis', [
+                    'response_keys' => array_keys($responseData),
+                    'data_keys' => isset($responseData['data']) ? array_keys($responseData['data']) : 'no data key',
+                    'extracted_id' => $externalBookingId,
+                    'extracted_uid' => $externalBookingUid,
+                    'full_response' => $responseData
+                ]);
 
                 return [
                     'success' => true,
@@ -346,6 +375,93 @@ class ExternalBookingService
             return [
                 'success' => false,
                 'message' => 'Error updating external booking status: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Get external booking details by ID or UID
+     */
+    public function getExternalBookingDetails($externalBookingIdOrUid, bool $isUid = false)
+    {
+        try {
+            $baseUrl = rtrim(config('services.rlapp.base_url', 'https://rlapp.rentluxuria.com'), '/');
+            $prefixes = $this->useTest ? ['/api/v1/test', '/api/v1'] : ['/api/v1', '/api/v1/test'];
+            $paths = $isUid
+                ? [
+                    '/reservations/by-uid/' . $externalBookingIdOrUid,
+                ]
+                : [
+                    '/reservations/' . $externalBookingIdOrUid,
+                    '/custom-reservation/' . $externalBookingIdOrUid,
+                ];
+            $endpoints = [];
+            foreach ($prefixes as $p) {
+                foreach ($paths as $path) {
+                    $endpoints[] = $baseUrl . $p . $path;
+                }
+            }
+
+            // Header strategies
+            $headerStrategies = [
+                fn () => [
+                    'X-API-KEY' => $this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                fn () => [
+                    'X-RLAPP-KEY' => $this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                fn () => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+            ];
+
+            foreach ($endpoints as $endpoint) {
+                foreach ($headerStrategies as $headersFactory) {
+                    $headers = $headersFactory();
+
+                    $response = Http::withHeaders($headers)->get($endpoint);
+
+                    Log::info('External Booking Details Fetch Attempt', [
+                        'external_booking_id_or_uid' => $externalBookingIdOrUid,
+                        'fetch_url' => $endpoint,
+                        'headers_used' => array_keys($headers),
+                        'response_status' => $response->status(),
+                        'response_body' => $response->body()
+                    ]);
+
+                    if ($response->successful()) {
+                        $responseData = $response->json();
+                        return [
+                            'success' => true,
+                            'data' => $responseData,
+                            'message' => 'External booking details retrieved successfully'
+                        ];
+                    }
+                }
+            }
+
+            // If we reach here, all attempts failed
+            return [
+                'success' => false,
+                'message' => 'Failed to retrieve external booking details after multiple attempts'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('External Booking Details Fetch Exception', [
+                'external_booking_id_or_uid' => $externalBookingIdOrUid,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Error retrieving external booking details: ' . $e->getMessage()
             ];
         }
     }
