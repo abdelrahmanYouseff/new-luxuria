@@ -484,9 +484,8 @@ class ExternalBookingService
             // Use the correct RLAPP endpoint for status update
             $updateUrls = [
                 $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid
+                $baseUrl . '/api/v1/test/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
+                $baseUrl . $prefix . '/reservations/by-uid/' . $externalBookingIdOrUid . '/status'
             ];
 
             // Prepare update payload
