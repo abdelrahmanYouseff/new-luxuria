@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Stripe\Stripe;
+use Stripe\Checkout\Session as StripeSession;
 
 class MobileReservationController extends Controller
 {
@@ -389,6 +391,272 @@ class MobileReservationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'فشل في إلغاء الحجز',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create Stripe checkout session for mobile reservation payment
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createCheckoutSession(Request $request)
+    {
+        try {
+            // Validate the request
+            $validator = Validator::make($request->all(), [
+                'reservation_id' => 'required|exists:bookings,id',
+                'success_url' => 'nullable|url',
+                'cancel_url' => 'nullable|url'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'بيانات غير صحيحة',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get authenticated user
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يجب تسجيل الدخول أولاً'
+                ], 401);
+            }
+
+            // Get the reservation
+            $reservation = Booking::with('vehicle')->where('id', $request->reservation_id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$reservation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الحجز غير موجود أو لا يخصك'
+                ], 404);
+            }
+
+            // Check if reservation is already paid
+            if ($reservation->status === 'confirmed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الحجز مؤكد ومدفوع مسبقاً'
+                ], 400);
+            }
+
+            if ($reservation->status === 'cancelled') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الحجز ملغي ولا يمكن الدفع له'
+                ], 400);
+            }
+
+            // Set Stripe API key
+            Stripe::setApiKey(config('services.stripe.secret_key'));
+
+            // Default URLs if not provided
+            $successUrl = $request->success_url ?? 'https://wpp.rentluxuria.com/booking/payment/success';
+            $cancelUrl = $request->cancel_url ?? 'https://wpp.rentluxuria.com/booking/payment/cancel';
+
+            // Prepare line items for Stripe
+            $lineItems = [
+                [
+                    'price_data' => [
+                        'currency' => 'aed',
+                        'product_data' => [
+                            'name' => $reservation->vehicle->make . ' ' . $reservation->vehicle->model . ' (' . $reservation->vehicle->year . ')',
+                            'description' => 'إيجار سيارة من ' . $reservation->start_date . ' إلى ' . $reservation->end_date . ' (' . $reservation->total_days . ' أيام)',
+                            'images' => [$reservation->vehicle->image_url ?? 'https://wpp.rentluxuria.com/asset/image.png'],
+                            'metadata' => [
+                                'vehicle_plate' => $reservation->vehicle->plate_number,
+                                'reservation_id' => $reservation->id,
+                                'emirate' => $reservation->emirate
+                            ]
+                        ],
+                        'unit_amount' => (int) ($reservation->total_amount * 100), // Convert to fils (cents)
+                    ],
+                    'quantity' => 1,
+                ]
+            ];
+
+            // Create Stripe checkout session
+            $session = StripeSession::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $lineItems,
+                'mode' => 'payment',
+                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}&reservation_id=' . $reservation->id,
+                'cancel_url' => $cancelUrl . '?reservation_id=' . $reservation->id,
+                'customer_email' => $user->email,
+                'client_reference_id' => $reservation->id,
+                'metadata' => [
+                    'reservation_id' => $reservation->id,
+                    'user_id' => $user->id,
+                    'vehicle_id' => $reservation->vehicle_id,
+                    'external_reservation_id' => $reservation->external_reservation_id ?? '',
+                    'external_reservation_uid' => $reservation->external_reservation_uid ?? '',
+                    'start_date' => $reservation->start_date,
+                    'end_date' => $reservation->end_date,
+                    'total_amount' => $reservation->total_amount,
+                    'emirate' => $reservation->emirate
+                ],
+                'expires_at' => time() + (30 * 60), // Session expires in 30 minutes
+                'billing_address_collection' => 'auto',
+                'shipping_address_collection' => [
+                    'allowed_countries' => ['AE']
+                ]
+            ]);
+
+            Log::info('Stripe checkout session created for mobile reservation', [
+                'reservation_id' => $reservation->id,
+                'user_id' => $user->id,
+                'session_id' => $session->id,
+                'checkout_url' => $session->url,
+                'amount' => $reservation->total_amount
+            ]);
+
+            // Return the checkout URL
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إنشاء رابط الدفع بنجاح',
+                'data' => [
+                    'checkout_url' => $session->url,
+                    'session_id' => $session->id,
+                    'expires_at' => date('Y-m-d H:i:s', $session->expires_at),
+                    'reservation' => [
+                        'id' => $reservation->id,
+                        'vehicle' => $reservation->vehicle->make . ' ' . $reservation->vehicle->model,
+                        'total_amount' => $reservation->total_amount,
+                        'currency' => 'AED',
+                        'dates' => [
+                            'start_date' => $reservation->start_date,
+                            'end_date' => $reservation->end_date,
+                            'total_days' => $reservation->total_days
+                        ]
+                    ]
+                ]
+            ]);
+
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            Log::error('Stripe API error creating checkout session', [
+                'user_id' => Auth::id(),
+                'reservation_id' => $request->reservation_id,
+                'error' => $e->getMessage(),
+                'stripe_error_type' => $e->getError()->type ?? 'unknown'
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في نظام الدفع',
+                'error' => 'فشل في إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.'
+            ], 500);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create checkout session for mobile reservation', [
+                'user_id' => Auth::id(),
+                'reservation_id' => $request->reservation_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل في إنشاء رابط الدفع',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create quick checkout session (create reservation + payment in one step)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createQuickCheckout(Request $request)
+    {
+        try {
+            // Validate the request
+            $validator = Validator::make($request->all(), [
+                'vehicle_id' => 'required|exists:vehicles,id',
+                'start_date' => 'required|date|after_or_equal:today',
+                'end_date' => 'required|date|after:start_date',
+                'emirate' => 'required|string|in:Dubai,Abu Dhabi,Sharjah,Ajman,Umm Al Quwain,Ras Al Khaimah,Fujairah',
+                'user_email' => 'required|email',
+                'notes' => 'nullable|string|max:500',
+                'pickup_location' => 'nullable|string|max:255',
+                'dropoff_location' => 'nullable|string|max:255',
+                'success_url' => 'nullable|url',
+                'cancel_url' => 'nullable|url'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'بيانات غير صحيحة',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // First create the reservation
+            $reservationRequest = new Request($request->only([
+                'vehicle_id', 'start_date', 'end_date', 'emirate', 'user_email',
+                'notes', 'pickup_location', 'dropoff_location'
+            ]));
+
+            $reservationResponse = $this->createReservation($reservationRequest);
+            $reservationData = $reservationResponse->getData(true);
+
+            if (!$reservationData['success']) {
+                return $reservationResponse;
+            }
+
+            $reservationId = $reservationData['data']['reservation']['id'];
+
+            // Create checkout session for the new reservation
+            $checkoutRequest = new Request([
+                'reservation_id' => $reservationId,
+                'success_url' => $request->success_url,
+                'cancel_url' => $request->cancel_url
+            ]);
+
+            $checkoutResponse = $this->createCheckoutSession($checkoutRequest);
+            $checkoutData = $checkoutResponse->getData(true);
+
+            if (!$checkoutData['success']) {
+                // If checkout fails, we might want to cancel the reservation
+                Log::warning('Checkout failed after reservation creation', [
+                    'reservation_id' => $reservationId,
+                    'checkout_error' => $checkoutData['message']
+                ]);
+
+                return $checkoutResponse;
+            }
+
+            // Return combined response
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إنشاء الحجز ورابط الدفع بنجاح',
+                'data' => [
+                    'reservation' => $reservationData['data']['reservation'],
+                    'checkout' => $checkoutData['data']
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create quick checkout', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل في إنشاء الحجز والدفع',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -75,6 +75,21 @@
             <div id="reservationsList" class="space-y-4"></div>
         </div>
 
+        <!-- Stripe Checkout Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">إنشاء رابط الدفع Stripe</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input type="number" id="checkoutReservationId" placeholder="رقم الحجز للدفع" class="px-4 py-2 border rounded-lg">
+                <input type="url" id="successUrl" placeholder="رابط النجاح (اختياري)" value="https://wpp.rentluxuria.com/booking/payment/success" class="px-4 py-2 border rounded-lg">
+                <input type="url" id="cancelUrlCheckout" placeholder="رابط الإلغاء (اختياري)" value="https://wpp.rentluxuria.com/booking/payment/cancel" class="px-4 py-2 border rounded-lg">
+                <button onclick="createCheckout()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">إنشاء رابط الدفع</button>
+            </div>
+            <div class="border-t pt-4">
+                <h3 class="font-semibold mb-2">الدفع السريع (حجز + دفع معاً)</h3>
+                <button onclick="createQuickCheckout()" class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600">حجز ودفع فوري</button>
+            </div>
+        </div>
+
         <!-- Cancel Reservation Section -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-xl font-semibold mb-4">إلغاء حجز</h2>
@@ -263,6 +278,98 @@
 
                 const response = await axios.patch(`/api/mobile/reservations/${reservationId}/cancel`);
                 updateResponse(response.data);
+            } catch (error) {
+                updateResponse(error.response?.data || error.message);
+            }
+        }
+
+        async function createCheckout() {
+            try {
+                if (!authToken) {
+                    updateResponse({error: 'يجب تسجيل الدخول أولاً'});
+                    return;
+                }
+
+                const reservationId = document.getElementById('checkoutReservationId').value;
+                const successUrl = document.getElementById('successUrl').value;
+                const cancelUrl = document.getElementById('cancelUrlCheckout').value;
+
+                if (!reservationId) {
+                    updateResponse({error: 'يرجى إدخال رقم الحجز'});
+                    return;
+                }
+
+                const checkoutData = {
+                    reservation_id: parseInt(reservationId)
+                };
+
+                if (successUrl) checkoutData.success_url = successUrl;
+                if (cancelUrl) checkoutData.cancel_url = cancelUrl;
+
+                const response = await axios.post('/api/mobile/reservations/checkout', checkoutData);
+                updateResponse(response.data);
+
+                // If successful, open checkout URL
+                if (response.data.success && response.data.data.checkout_url) {
+                    setTimeout(() => {
+                        if (confirm('هل تريد فتح رابط الدفع الآن؟')) {
+                            window.open(response.data.data.checkout_url, '_blank');
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                updateResponse(error.response?.data || error.message);
+            }
+        }
+
+        async function createQuickCheckout() {
+            try {
+                if (!authToken) {
+                    updateResponse({error: 'يجب تسجيل الدخول أولاً'});
+                    return;
+                }
+
+                const vehicleId = document.getElementById('vehicleId').value;
+                const emirate = document.getElementById('emirate').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const pickupLocation = document.getElementById('pickupLocation').value;
+                const dropoffLocation = document.getElementById('dropoffLocation').value;
+                const notes = document.getElementById('notes').value;
+                const userEmail = document.getElementById('email').value;
+                const successUrl = document.getElementById('successUrl').value;
+                const cancelUrl = document.getElementById('cancelUrlCheckout').value;
+
+                if (!vehicleId || !emirate || !startDate || !endDate) {
+                    updateResponse({error: 'يرجى ملء جميع الحقول المطلوبة للحجز'});
+                    return;
+                }
+
+                const quickCheckoutData = {
+                    vehicle_id: parseInt(vehicleId),
+                    emirate: emirate,
+                    start_date: startDate,
+                    end_date: endDate,
+                    user_email: userEmail,
+                    notes: notes || null
+                };
+
+                if (pickupLocation) quickCheckoutData.pickup_location = pickupLocation;
+                if (dropoffLocation) quickCheckoutData.dropoff_location = dropoffLocation;
+                if (successUrl) quickCheckoutData.success_url = successUrl;
+                if (cancelUrl) quickCheckoutData.cancel_url = cancelUrl;
+
+                const response = await axios.post('/api/mobile/reservations/quick-checkout', quickCheckoutData);
+                updateResponse(response.data);
+
+                // If successful, open checkout URL
+                if (response.data.success && response.data.data.checkout && response.data.data.checkout.checkout_url) {
+                    setTimeout(() => {
+                        if (confirm('تم إنشاء الحجز! هل تريد المتابعة للدفع الآن؟')) {
+                            window.open(response.data.data.checkout.checkout_url, '_blank');
+                        }
+                    }, 1000);
+                }
             } catch (error) {
                 updateResponse(error.response?.data || error.message);
             }

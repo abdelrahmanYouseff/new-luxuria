@@ -281,4 +281,8 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
     Route::post('/', [App\Http\Controllers\MobileReservationController::class, 'createReservation']);
     Route::get('/', [App\Http\Controllers\MobileReservationController::class, 'getUserReservations']);
     Route::patch('/{id}/cancel', [App\Http\Controllers\MobileReservationController::class, 'cancelReservation']);
+
+    // Stripe Checkout Routes
+    Route::post('/checkout', [App\Http\Controllers\MobileReservationController::class, 'createCheckoutSession']);
+    Route::post('/quick-checkout', [App\Http\Controllers\MobileReservationController::class, 'createQuickCheckout']);
 });
