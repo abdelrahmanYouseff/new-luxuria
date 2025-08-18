@@ -1026,6 +1026,7 @@ class MobileReservationController extends Controller
                         'external_booking_uid' => $booking->external_reservation_uid,
                         'updated_status' => $rlappUpdateResult['updated_status'] ?? null,
                         'url_used' => $rlappUpdateResult['url_used'] ?? null,
+                        'method_used' => $rlappUpdateResult['method_used'] ?? null,
                         'attempt' => $rlappUpdateResult['attempt'] ?? null,
                         'response_data' => $rlappUpdateResult['response_data'] ?? null
                     ],
