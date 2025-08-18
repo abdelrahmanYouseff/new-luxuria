@@ -16,9 +16,15 @@
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-xl font-semibold mb-4">المصادقة</h2>
             <div class="flex gap-4 mb-4">
-                <input type="email" id="email" placeholder="البريد الإلكتروني" class="flex-1 px-4 py-2 border rounded-lg">
-                <input type="password" id="password" placeholder="كلمة المرور" class="flex-1 px-4 py-2 border rounded-lg">
+                <input type="email" id="email" placeholder="البريد الإلكتروني" value="test06@gmail.com" class="flex-1 px-4 py-2 border rounded-lg">
+                <input type="password" id="password" placeholder="كلمة المرور" value="password" class="flex-1 px-4 py-2 border rounded-lg">
                 <button onclick="login()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">تسجيل الدخول</button>
+            </div>
+            <div class="text-sm text-gray-600 mb-2">
+                <p><strong>حسابات تجريبية:</strong></p>
+                <p>• test06@gmail.com / password</p>
+                <p>• test11@gmail.com / password</p>
+                <p>• abdelrahmanyouseff@gmail.com / password (Admin)</p>
             </div>
             <div id="authStatus" class="text-sm text-gray-600"></div>
         </div>
@@ -26,11 +32,26 @@
         <!-- Create Reservation Section -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-xl font-semibold mb-4">إنشاء حجز جديد</h2>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <h3 class="font-semibold mb-2">السيارات المتاحة للاختبار:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <div>• ID: 126 - Hyundai Venue 2022 (99 AED/يوم)</div>
+                    <div>• ID: 127 - Nissan Versa 2021 (79 AED/يوم)</div>
+                    <div>• ID: 129 - Hyundai Santa Fe 2023 (199 AED/يوم)</div>
+                    <div>• ID: 131 - Mitsubishi Outlander 2024 (200 AED/يوم)</div>
+                </div>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input type="number" id="vehicleId" placeholder="رقم المركبة" class="px-4 py-2 border rounded-lg">
+                <select id="vehicleId" class="px-4 py-2 border rounded-lg">
+                    <option value="">اختر المركبة</option>
+                    <option value="126">Hyundai Venue 2022 (ID: 126) - 99 AED/يوم</option>
+                    <option value="127">Nissan Versa 2021 (ID: 127) - 79 AED/يوم</option>
+                    <option value="129">Hyundai Santa Fe 2023 (ID: 129) - 199 AED/يوم</option>
+                    <option value="131">Mitsubishi Outlander 2024 (ID: 131) - 200 AED/يوم</option>
+                </select>
                 <select id="emirate" class="px-4 py-2 border rounded-lg">
                     <option value="">اختر الإمارة</option>
-                    <option value="Dubai">دبي</option>
+                    <option value="Dubai" selected>دبي</option>
                     <option value="Abu Dhabi">أبو ظبي</option>
                     <option value="Sharjah">الشارقة</option>
                     <option value="Ajman">عجمان</option>
@@ -40,8 +61,8 @@
                 </select>
                 <input type="date" id="startDate" class="px-4 py-2 border rounded-lg">
                 <input type="date" id="endDate" class="px-4 py-2 border rounded-lg">
-                <input type="text" id="pickupLocation" placeholder="مكان الاستلام (اختياري)" class="px-4 py-2 border rounded-lg">
-                <input type="text" id="dropoffLocation" placeholder="مكان التسليم (اختياري)" class="px-4 py-2 border rounded-lg">
+                <input type="text" id="pickupLocation" placeholder="مكان الاستلام (اختياري)" value="مطار دبي الدولي" class="px-4 py-2 border rounded-lg">
+                <input type="text" id="dropoffLocation" placeholder="مكان التسليم (اختياري)" value="مطار دبي الدولي" class="px-4 py-2 border rounded-lg">
             </div>
             <textarea id="notes" placeholder="ملاحظات (اختياري)" class="w-full px-4 py-2 border rounded-lg mb-4" rows="3"></textarea>
             <button onclick="createReservation()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">إنشاء حجز</button>
@@ -138,11 +159,14 @@
                     return;
                 }
 
+                const userEmail = document.getElementById('email').value;
+
                 const reservationData = {
                     vehicle_id: parseInt(vehicleId),
                     emirate: emirate,
                     start_date: startDate,
                     end_date: endDate,
+                    user_email: userEmail,
                     notes: notes || null
                 };
 

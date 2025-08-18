@@ -36,6 +36,7 @@ class MobileReservationController extends Controller
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date',
                 'emirate' => 'required|string|in:Dubai,Abu Dhabi,Sharjah,Ajman,Umm Al Quwain,Ras Al Khaimah,Fujairah',
+                'user_email' => 'required|email',
                 'notes' => 'nullable|string|max:500',
                 'pickup_location' => 'nullable|string|max:255',
                 'dropoff_location' => 'nullable|string|max:255'
@@ -56,6 +57,14 @@ class MobileReservationController extends Controller
                     'success' => false,
                     'message' => 'يجب تسجيل الدخول أولاً'
                 ], 401);
+            }
+
+            // Verify that the provided email matches the authenticated user's email
+            if ($request->user_email !== $user->email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'البريد الإلكتروني المرسل لا يطابق المستخدم المسجل الدخول'
+                ], 403);
             }
 
             // Get vehicle
@@ -122,6 +131,7 @@ class MobileReservationController extends Controller
 
             Log::info('Mobile app creating reservation in RLAPP', [
                 'user_id' => $user->id,
+                'user_email' => $request->user_email,
                 'vehicle_id' => $vehicle->id,
                 'booking_data' => $bookingData
             ]);
@@ -181,6 +191,7 @@ class MobileReservationController extends Controller
                         'external_reservation_id' => $localBooking->external_reservation_id,
                         'external_reservation_uid' => $localBooking->external_reservation_uid,
                         'status' => $localBooking->status,
+                        'user_email' => $request->user_email,
                         'vehicle' => [
                             'id' => $vehicle->id,
                             'make' => $vehicle->make,
