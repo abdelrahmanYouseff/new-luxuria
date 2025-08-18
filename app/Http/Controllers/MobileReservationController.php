@@ -291,7 +291,8 @@ class MobileReservationController extends Controller
             // Return success response with booking details and RLAPP UID
             return response()->json([
                 'success' => true,
-                'message' => 'تم إنشاء الحجز بنجاح في جميع الأنظمة (المحلي - قاعدة البيانات - RLAPP)',
+                'message' => 'تم إنشاء الحجز بنجاح',
+                'reservation_uid' => $rlappBookingUid,  // UID prominently displayed
                 'data' => [
                     'booking' => [
                         'id' => $localBooking->id,
@@ -873,6 +874,155 @@ class MobileReservationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'فشل في إنشاء الحجز والدفع',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm payment and update booking status to confirmed in both local and RLAPP systems
+     */
+    public function confirmPayment(Request $request, $reservationId)
+    {
+        try {
+            $user = $request->user();
+            
+            Log::info('Payment confirmation initiated', [
+                'reservation_id' => $reservationId,
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
+
+            // Validate input
+            $validator = Validator::make([
+                'reservation_id' => $reservationId,
+                'payment_status' => $request->payment_status ?? 'paid'
+            ], [
+                'reservation_id' => 'required|integer|exists:bookings,id',
+                'payment_status' => 'required|string|in:paid,confirmed'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'بيانات غير صحيحة',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Find the booking
+            $booking = Booking::where('id', $reservationId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الحجز غير موجود أو غير مصرح لك بالوصول إليه'
+                ], 404);
+            }
+
+            // Check if booking is in pending status
+            if ($booking->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكن تأكيد الدفع لحجز غير معلق',
+                    'current_status' => $booking->status
+                ], 400);
+            }
+
+            // Update local booking status
+            $booking->update([
+                'status' => 'confirmed',
+                'payment_status' => 'paid'
+            ]);
+
+            // Update corresponding reservation if exists
+            $reservation = null;
+            if ($booking->id) {
+                $reservation = Reservation::where('user_id', $user->id)
+                    ->where('vehicle_id', $booking->vehicle_id)
+                    ->where('start_date', $booking->start_date)
+                    ->where('end_date', $booking->end_date)
+                    ->where('status', 'pending')
+                    ->first();
+                
+                if ($reservation) {
+                    $reservation->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid'
+                    ]);
+                }
+            }
+
+            // Update status in RLAPP system
+            $rlappUpdateResult = null;
+            if ($booking->external_reservation_id) {
+                $externalBookingService = app(ExternalBookingService::class);
+                $rlappUpdateResult = $externalBookingService->updateBookingStatus(
+                    $booking->external_reservation_id, 
+                    'confirmed'
+                );
+
+                Log::info('RLAPP status update result', [
+                    'booking_id' => $booking->id,
+                    'external_reservation_id' => $booking->external_reservation_id,
+                    'rlapp_result' => $rlappUpdateResult
+                ]);
+            }
+
+            Log::info('Payment confirmation completed', [
+                'booking_id' => $booking->id,
+                'local_status_updated' => true,
+                'reservation_updated' => $reservation ? true : false,
+                'rlapp_updated' => $rlappUpdateResult['success'] ?? false
+            ]);
+
+            // Return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تأكيد الدفع وتحديث حالة الحجز بنجاح في جميع الأنظمة',
+                'data' => [
+                    'booking' => [
+                        'id' => $booking->id,
+                        'status' => $booking->status,
+                        'payment_status' => $booking->payment_status,
+                        'external_reservation_id' => $booking->external_reservation_id,
+                        'external_reservation_uid' => $booking->external_reservation_uid,
+                        'updated_at' => $booking->updated_at->toISOString()
+                    ],
+                    'reservation' => $reservation ? [
+                        'id' => $reservation->id,
+                        'status' => $reservation->status,
+                        'payment_status' => $reservation->payment_status,
+                        'updated_at' => $reservation->updated_at->toISOString()
+                    ] : null,
+                    'rlapp_update' => [
+                        'success' => $rlappUpdateResult['success'] ?? false,
+                        'message' => $rlappUpdateResult['message'] ?? 'No RLAPP update attempted',
+                        'external_booking_id' => $booking->external_reservation_id,
+                        'updated_status' => $rlappUpdateResult['updated_status'] ?? null
+                    ],
+                    'summary' => [
+                        'local_booking_confirmed' => true,
+                        'local_reservation_confirmed' => $reservation ? true : false,
+                        'rlapp_system_confirmed' => $rlappUpdateResult['success'] ?? false,
+                        'confirmation_timestamp' => now()->toISOString()
+                    ]
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to confirm payment', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'reservation_id' => $reservationId,
+                'user_id' => $user->id ?? null
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تأكيد الدفع',
                 'error' => $e->getMessage()
             ], 500);
         }
