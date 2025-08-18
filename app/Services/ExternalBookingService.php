@@ -481,12 +481,12 @@ class ExternalBookingService
             $baseUrl = rtrim(config('services.rlapp.base_url', 'https://rlapp.rentluxuria.com'), '/');
             $prefix = $this->useTest ? '/api/v1/test' : '/api/v1';
 
-            // Try different endpoint patterns for RLAPP update
+            // Use the correct RLAPP endpoint for status update
             $updateUrls = [
+                $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
+                $baseUrl . $prefix . '/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
                 $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid,
-                $baseUrl . $prefix . '/reservations/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/reservations/' . $externalBookingIdOrUid
+                $baseUrl . $prefix . '/custom-reservation/' . $externalBookingIdOrUid
             ];
 
             // Prepare update payload
@@ -496,7 +496,7 @@ class ExternalBookingService
 
             // Try each URL with different HTTP methods until one succeeds
             $lastError = null;
-            $httpMethods = ['patch', 'put', 'post'];
+            $httpMethods = ['put', 'patch', 'post']; // PUT first since it's common for status updates
 
             foreach ($updateUrls as $urlIndex => $updateUrl) {
                 foreach ($httpMethods as $methodIndex => $method) {
