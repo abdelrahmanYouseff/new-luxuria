@@ -35,7 +35,7 @@ class MobileReservationController extends Controller
         try {
             // Validate the request
             $validator = Validator::make($request->all(), [
-                'vehicle_id' => 'required|exists:vehicles,id',
+                'api_id' => 'required|string|exists:vehicles,api_id',
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date',
                 'emirate' => 'required|string|in:Dubai,Abu Dhabi,Sharjah,Ajman,Umm Al Quwain,Ras Al Khaimah,Fujairah',
@@ -70,8 +70,8 @@ class MobileReservationController extends Controller
                 ], 403);
             }
 
-            // Get vehicle
-            $vehicle = Vehicle::findOrFail($request->vehicle_id);
+            // Get vehicle by api_id
+            $vehicle = Vehicle::where('api_id', $request->api_id)->firstOrFail();
 
             // Check vehicle availability
             if (strtolower($vehicle->status) !== 'available') {
@@ -82,8 +82,8 @@ class MobileReservationController extends Controller
                 ], 400);
             }
 
-            // Check for booking conflicts
-            if (Booking::hasConflict($request->vehicle_id, $request->start_date, $request->end_date)) {
+            // Check for booking conflicts using vehicle ID
+            if (Booking::hasConflict($vehicle->id, $request->start_date, $request->end_date)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'المركبة محجوزة في التواريخ المحددة'
@@ -300,6 +300,7 @@ class MobileReservationController extends Controller
                         'user_email' => $request->user_email,
                         'vehicle' => [
                             'id' => $vehicle->id,
+                            'api_id' => $vehicle->api_id,
                             'make' => $vehicle->make,
                             'model' => $vehicle->model,
                             'year' => $vehicle->year,
@@ -796,7 +797,7 @@ class MobileReservationController extends Controller
         try {
             // Validate the request
             $validator = Validator::make($request->all(), [
-                'vehicle_id' => 'required|exists:vehicles,id',
+                'api_id' => 'required|string|exists:vehicles,api_id',
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date',
                 'emirate' => 'required|string|in:Dubai,Abu Dhabi,Sharjah,Ajman,Umm Al Quwain,Ras Al Khaimah,Fujairah',
@@ -816,9 +817,9 @@ class MobileReservationController extends Controller
                 ], 422);
             }
 
-            // First create the reservation
+                        // First create the reservation
             $reservationRequest = new Request($request->only([
-                'vehicle_id', 'start_date', 'end_date', 'emirate', 'user_email',
+                'api_id', 'start_date', 'end_date', 'emirate', 'user_email',
                 'notes', 'pickup_location', 'dropoff_location'
             ]));
 
