@@ -9,7 +9,7 @@ class Reservation extends Model
 {
     protected $fillable = [
         'user_id',
-        'car_id',
+        'vehicle_id',  // Changed from car_id to vehicle_id
         'status',
         'start_date',
         'end_date',
@@ -32,18 +32,10 @@ class Reservation extends Model
     }
 
     /**
-     * Get the car that is reserved.
-     */
-    public function car(): BelongsTo
-    {
-        return $this->belongsTo(Car::class);
-    }
-
-    /**
-     * Get the vehicle that is reserved (alias for car).
+     * Get the vehicle that is reserved.
      */
     public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(Vehicle::class, 'car_id');
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 }

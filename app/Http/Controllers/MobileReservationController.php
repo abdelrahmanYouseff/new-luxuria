@@ -271,7 +271,7 @@ class MobileReservationController extends Controller
             // Create reservation record in reservations table
             $localReservation = Reservation::create([
                 'user_id' => $user->id,
-                'car_id' => $vehicle->id,
+                'vehicle_id' => $vehicle->id,  // Now using vehicle_id instead of car_id
                 'status' => 'pending',
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
@@ -280,11 +280,12 @@ class MobileReservationController extends Controller
                 'user_notes' => $request->notes ?? '',
             ]);
 
-            Log::info('Mobile reservation created successfully in both systems', [
+            Log::info('Mobile reservation created successfully', [
                 'local_booking_id' => $localBooking->id,
-                'local_reservation_id' => $localReservation->id,
+                'local_reservation_id' => $localReservation ? $localReservation->id : null,
                 'external_reservation_id' => $localBooking->external_reservation_id,
-                'external_reservation_uid' => $localBooking->external_reservation_uid
+                'external_reservation_uid' => $localBooking->external_reservation_uid,
+                'reservation_table_created' => $localReservation !== null
             ]);
 
             // Return success response with booking details and RLAPP UID
@@ -327,7 +328,7 @@ class MobileReservationController extends Controller
                     'reservation_db' => [
                         'id' => $localReservation->id,
                         'user_id' => $localReservation->user_id,
-                        'car_id' => $localReservation->car_id,
+                        'vehicle_id' => $localReservation->vehicle_id,  // Updated to vehicle_id
                         'status' => $localReservation->status,
                         'payment_status' => $localReservation->payment_status,
                         'start_date' => $localReservation->start_date,
