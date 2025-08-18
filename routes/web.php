@@ -581,6 +581,10 @@ Route::get('/test-tier', function () {
     return view('test_tier');
 });
 
+Route::get('/test-mobile-reservations', function () {
+    return view('test_mobile_reservations');
+})->name('test.mobile.reservations');
+
 Route::get('/test-vehicles', function () {
     return view('test_vehicles');
 });

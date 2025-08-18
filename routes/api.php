@@ -275,3 +275,10 @@ Route::middleware('auth:sanctum')->post('/mobile/logout', function (Request $req
         ], 500);
     }
 });
+
+// Mobile App Reservation API Routes
+Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function () {
+    Route::post('/', [App\Http\Controllers\MobileReservationController::class, 'createReservation']);
+    Route::get('/', [App\Http\Controllers\MobileReservationController::class, 'getUserReservations']);
+    Route::patch('/{id}/cancel', [App\Http\Controllers\MobileReservationController::class, 'cancelReservation']);
+});
