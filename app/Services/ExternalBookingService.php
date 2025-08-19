@@ -483,7 +483,9 @@ class ExternalBookingService
 
             // Use the correct RLAPP endpoint for status update
             $updateUrls = [
-                $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status'
+                $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status', // UID endpoint with API Key
+                $baseUrl . '/api/v1/reservations/' . $externalBookingIdOrUid . '/status', // ID endpoint with Bearer Token
+                $baseUrl . '/api/v1/reservations/' . $externalBookingIdOrUid . '/change-status' // Alternative endpoint
             ];
 
             // Prepare update payload - match RLAPP's expected format
@@ -499,23 +501,37 @@ class ExternalBookingService
                 foreach ($httpMethods as $methodIndex => $method) {
                     $attemptNumber = ($urlIndex * count($httpMethods)) + $methodIndex + 1;
 
+                    // Prepare headers for logging
+                    $logHeaders = [];
+                    if (strpos($updateUrl, '/by-uid/') !== false) {
+                        $logHeaders['X-API-KEY'] = substr($this->apiKey, 0, 10) . '...';
+                    } else {
+                        $logHeaders['Authorization'] = 'Bearer ' . substr($this->apiKey, 0, 10) . '...';
+                    }
+                    $logHeaders['Content-Type'] = 'application/json';
+
                     Log::info('RLAPP Update Request Attempt', [
                         'attempt' => $attemptNumber,
                         'url' => $updateUrl,
                         'method' => strtoupper($method),
                         'payload' => $updatePayload,
-                        'headers' => [
-                            'Authorization' => 'Bearer ' . substr($this->apiKey, 0, 10) . '...',
-                            'Content-Type' => 'application/json'
-                        ]
+                        'headers' => $logHeaders
                     ]);
 
                     // Make the HTTP request to update booking status
-                    $response = Http::withHeaders([
-                        'Authorization' => 'Bearer ' . $this->apiKey,
+                    $headers = [
                         'Content-Type' => 'application/json',
                         'Accept' => 'application/json',
-                    ])->{$method}($updateUrl, $updatePayload);
+                    ];
+
+                    // Use X-API-KEY for UID endpoint, Bearer Token for others
+                    if (strpos($updateUrl, '/by-uid/') !== false) {
+                        $headers['X-API-KEY'] = $this->apiKey;
+                    } else {
+                        $headers['Authorization'] = 'Bearer ' . $this->apiKey;
+                    }
+
+                    $response = Http::withHeaders($headers)->{$method}($updateUrl, $updatePayload);
 
                     $statusCode = $response->status();
                     $responseBody = $response->body();

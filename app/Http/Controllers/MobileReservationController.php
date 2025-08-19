@@ -957,7 +957,7 @@ class MobileReservationController extends Controller
 
                                     // Update status in RLAPP system
             $rlappUpdateResult = ['success' => false, 'message' => 'No RLAPP update attempted'];
-            
+
             Log::info('Checking external booking ID for RLAPP update', [
                 'booking_id' => $booking->id,
                 'external_reservation_id' => $booking->external_reservation_id,
@@ -985,20 +985,20 @@ class MobileReservationController extends Controller
 
                     // Test direct call to ExternalBookingService
                     $externalBookingService = app(ExternalBookingService::class);
-                    
+
                     Log::info('About to call ExternalBookingService', [
                         'booking_id' => $booking->id,
                         'rlapp_identifier' => $rlappIdentifier,
                         'service_class' => get_class($externalBookingService)
                     ]);
-                    
+
                     // Add more detailed error handling
                     try {
                         $rlappUpdateResult = $externalBookingService->updateBookingStatus(
                             $rlappIdentifier,
                             'confirmed'
                         );
-                        
+
                         Log::info('ExternalBookingService call completed', [
                             'booking_id' => $booking->id,
                             'result' => $rlappUpdateResult
@@ -1011,7 +1011,7 @@ class MobileReservationController extends Controller
                             'exception_class' => get_class($serviceException),
                             'trace' => $serviceException->getTraceAsString()
                         ]);
-                        
+
                         $rlappUpdateResult = [
                             'success' => false,
                             'message' => 'Service Exception: ' . $serviceException->getMessage(),
