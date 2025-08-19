@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Car;
+use App\Models\Vehicle;
 
 
 
@@ -68,7 +69,7 @@ Route::get('dashboard', function () {
         'reservationsCount' => Reservation::count(),
         'invoicesCount' => Transaction::count(),
         'couponsCount' => Coupon::count(),
-        'vehicalsCount' => Car::count(),
+        'vehicalsCount' => Vehicle::count(),
     ]);
 })->middleware(['auth'])->name('dashboard');
 
@@ -483,6 +484,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users');
     Route::get('/vehicles', [App\Http\Controllers\AdminController::class, 'vehicles'])->name('vehicles');
     Route::get('/analytics', [App\Http\Controllers\AdminController::class, 'analytics'])->name('analytics');
+    
+    // Coupon Website Routes
+    Route::get('/coupon-website', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'index'])->name('coupon-website.index');
+    Route::get('/coupon-website/create', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'create'])->name('coupon-website.create');
+    Route::post('/coupon-website', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'store'])->name('coupon-website.store');
+    Route::get('/coupon-website/{coupon}/edit', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'edit'])->name('coupon-website.edit');
+    Route::put('/coupon-website/{coupon}', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'update'])->name('coupon-website.update');
+    Route::delete('/coupon-website/{coupon}', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'destroy'])->name('coupon-website.destroy');
 });
 
 // User Routes (for regular users)

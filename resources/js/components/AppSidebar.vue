@@ -27,6 +27,11 @@ if (userRole === 'admin') {
             icon: Car,
         },
         {
+            title: 'Coupon Website',
+            href: '/admin/coupon-website',
+            icon: Ticket,
+        },
+        {
             title: 'Invoices',
             href: '/view-invoices',
             icon: FileText,
