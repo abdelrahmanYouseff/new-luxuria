@@ -956,6 +956,8 @@ class MobileReservationController extends Controller
             }
 
                                     // Update status in RLAPP system
+            $rlappUpdateResult = ['success' => false, 'message' => 'No RLAPP update attempted'];
+            
             Log::info('Checking external booking ID for RLAPP update', [
                 'booking_id' => $booking->id,
                 'external_reservation_id' => $booking->external_reservation_id,
@@ -981,11 +983,41 @@ class MobileReservationController extends Controller
                         'identifier_type' => $booking->external_reservation_uid ? 'UID' : 'ID'
                     ]);
 
+                    // Test direct call to ExternalBookingService
                     $externalBookingService = app(ExternalBookingService::class);
-                    $rlappUpdateResult = $externalBookingService->updateBookingStatus(
-                        $rlappIdentifier,
-                        'confirmed'
-                    );
+                    
+                    Log::info('About to call ExternalBookingService', [
+                        'booking_id' => $booking->id,
+                        'rlapp_identifier' => $rlappIdentifier,
+                        'service_class' => get_class($externalBookingService)
+                    ]);
+                    
+                    // Add more detailed error handling
+                    try {
+                        $rlappUpdateResult = $externalBookingService->updateBookingStatus(
+                            $rlappIdentifier,
+                            'confirmed'
+                        );
+                        
+                        Log::info('ExternalBookingService call completed', [
+                            'booking_id' => $booking->id,
+                            'result' => $rlappUpdateResult
+                        ]);
+                    } catch (\Throwable $serviceException) {
+                        Log::error('Exception in ExternalBookingService call', [
+                            'booking_id' => $booking->id,
+                            'rlapp_identifier' => $rlappIdentifier,
+                            'exception_message' => $serviceException->getMessage(),
+                            'exception_class' => get_class($serviceException),
+                            'trace' => $serviceException->getTraceAsString()
+                        ]);
+                        
+                        $rlappUpdateResult = [
+                            'success' => false,
+                            'message' => 'Service Exception: ' . $serviceException->getMessage(),
+                            'exception_class' => get_class($serviceException)
+                        ];
+                    }
 
                     Log::info('RLAPP status update result', [
                         'booking_id' => $booking->id,

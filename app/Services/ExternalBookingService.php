@@ -483,19 +483,17 @@ class ExternalBookingService
 
             // Use the correct RLAPP endpoint for status update
             $updateUrls = [
-                $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . '/api/v1/test/reservations/by-uid/' . $externalBookingIdOrUid . '/status',
-                $baseUrl . $prefix . '/reservations/by-uid/' . $externalBookingIdOrUid . '/status'
+                $baseUrl . '/api/v1/reservations/by-uid/' . $externalBookingIdOrUid . '/status'
             ];
 
-            // Prepare update payload
+            // Prepare update payload - match RLAPP's expected format
             $updatePayload = [
                 'status' => $status
             ];
 
             // Try each URL with different HTTP methods until one succeeds
             $lastError = null;
-            $httpMethods = ['put', 'patch', 'post']; // PUT first since it's common for status updates
+            $httpMethods = ['patch', 'put', 'post']; // PATCH first since RLAPP expects PATCH
 
             foreach ($updateUrls as $urlIndex => $updateUrl) {
                 foreach ($httpMethods as $methodIndex => $method) {
