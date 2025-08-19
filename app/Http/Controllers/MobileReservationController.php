@@ -956,9 +956,7 @@ class MobileReservationController extends Controller
             }
 
                                     // Update status in RLAPP system
-            $rlappUpdateResult = ['success' => false, 'message' => 'No external booking ID'];
-
-                        Log::info('Checking external booking ID for RLAPP update', [
+            Log::info('Checking external booking ID for RLAPP update', [
                 'booking_id' => $booking->id,
                 'external_reservation_id' => $booking->external_reservation_id,
                 'external_reservation_uid' => $booking->external_reservation_uid,
@@ -975,15 +973,15 @@ class MobileReservationController extends Controller
                 'identifier_source' => $booking->external_reservation_uid ? 'UID' : 'ID'
             ]);
 
-                        if (!empty($rlappIdentifier)) {
-                                try {
+            if (!empty($rlappIdentifier)) {
+                try {
                     Log::info('Attempting RLAPP update', [
                         'booking_id' => $booking->id,
                         'rlapp_identifier' => $rlappIdentifier,
                         'identifier_type' => $booking->external_reservation_uid ? 'UID' : 'ID'
                     ]);
 
-                                        $externalBookingService = app(ExternalBookingService::class);
+                    $externalBookingService = app(ExternalBookingService::class);
                     $rlappUpdateResult = $externalBookingService->updateBookingStatus(
                         $rlappIdentifier,
                         'confirmed'
