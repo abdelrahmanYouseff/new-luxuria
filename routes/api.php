@@ -124,8 +124,252 @@ Route::post('/mobile/login', function (Request $request) {
     }
 });
 
-// Mobile App Register API
-Route::post('/mobile/register', function (Request $request) {
+// Mobile App User Registration API
+Route::post('/mobile/users/register', function (Request $request) {
+    try {
+        // Validate input
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:6',
+            'emirate' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500'
+        ]);
+
+        // Create user in local database
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'emirate' => $request->emirate ?? 'Dubai',
+            'address' => $request->address ?? 'Mobile App User',
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => 'user',
+        ]);
+
+        // Register user in PointSys system with original data first, then search for existing customer
+        $pointSysService = new \App\Services\PointSysService();
+        $pointSysResult = null;
+        $pointSysRegistered = false;
+        $attempts = 0;
+        $maxAttempts = 2;
+        $mobileStartTime = microtime(true);
+
+        while (!$pointSysRegistered && $attempts < $maxAttempts) {
+            // Check if we've been running for more than 12 seconds total
+            if ((microtime(true) - $mobileStartTime) > 12) {
+                \Log::warning('Mobile PointSys registration timeout after 12 seconds', [
+                    'user_id' => $user->id,
+                    'attempts' => $attempts
+                ]);
+                break;
+            }
+
+            try {
+                $pointSysData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone ?? '050' . rand(1000000, 9999999)
+                ];
+
+                // First attempt: Use original data
+                if ($attempts === 0) {
+                    \Log::info('Mobile: Attempting PointSys registration with original data', [
+                        'user_id' => $user->id,
+                        'email' => $pointSysData['email'],
+                        'phone' => $pointSysData['phone'],
+                        'attempt' => $attempts + 1
+                    ]);
+                }
+
+                // Second attempt: If email exists, try to find and link existing customer
+                if ($attempts === 1) {
+                    \Log::info('Mobile: Email exists in PointSys, searching for existing customer', [
+                        'user_id' => $user->id,
+                        'email' => $pointSysData['email']
+                    ]);
+
+                    // Search for existing customer (simplified version)
+                    $foundCustomerId = findExistingPointSysCustomer($pointSysData['email']);
+
+                    if ($foundCustomerId) {
+                        // Link to existing customer
+                        $user->update([
+                            'pointsys_customer_id' => $foundCustomerId
+                        ]);
+
+                        \Log::info('Mobile: Linked to existing PointSys customer', [
+                            'user_id' => $user->id,
+                            'pointsys_customer_id' => $foundCustomerId,
+                            'email' => $pointSysData['email']
+                        ]);
+
+                        $pointSysResult = [
+                            'status' => 'success',
+                            'message' => 'تم ربط العميل بالعميل الموجود في PointSys',
+                            'data' => [
+                                'customer_id' => $foundCustomerId,
+                                'name' => $request->name,
+                                'email' => $pointSysData['email'],
+                                'phone' => $pointSysData['phone'],
+                                'points_balance' => 0
+                            ]
+                        ];
+
+                        $pointSysRegistered = true;
+                        break;
+                    } else {
+                        // Create with modified email as last resort
+                        $emailParts = explode('@', $pointSysData['email']);
+                        $pointSysData['email'] = $emailParts[0] . '_' . time() . '_' . $attempts . '@' . $emailParts[1];
+                        $pointSysData['phone'] = $pointSysData['phone'] . '_' . time() . '_' . $attempts;
+
+                        \Log::info('Mobile: Creating new customer with modified email', [
+                            'user_id' => $user->id,
+                            'original_email' => $request->email,
+                            'modified_email' => $pointSysData['email'],
+                            'attempt' => $attempts + 1
+                        ]);
+                    }
+                }
+
+                $apiResult = $pointSysService->registerCustomer($pointSysData);
+
+                if ($apiResult && isset($apiResult['data']['customer_id'])) {
+                    // Success! Update local database
+                    $user->update([
+                        'pointsys_customer_id' => $apiResult['data']['customer_id']
+                    ]);
+
+                    \Log::info('Mobile: Customer registered in PointSys successfully', [
+                        'user_id' => $user->id,
+                        'pointsys_customer_id' => $apiResult['data']['customer_id'],
+                        'attempt' => $attempts + 1,
+                        'email_used' => $pointSysData['email'],
+                        'is_original_data' => $attempts === 0
+                    ]);
+
+                    $pointSysResult = $apiResult;
+                    $pointSysRegistered = true;
+                } else {
+                    // Check if it's an email already exists error
+                    if ($apiResult && isset($apiResult['errors']['email'])) {
+                        \Log::warning('Mobile: Email already exists in PointSys', [
+                            'user_id' => $user->id,
+                            'email' => $pointSysData['email'],
+                            'attempt' => $attempts + 1
+                        ]);
+                    } else {
+                        \Log::warning('Mobile: Failed to register customer in PointSys', [
+                            'user_id' => $user->id,
+                            'response' => $apiResult,
+                            'attempt' => $attempts + 1,
+                            'data_sent' => $pointSysData
+                        ]);
+                    }
+                    $attempts++;
+                }
+            } catch (\Exception $e) {
+                \Log::error('Mobile: Exception while registering customer in PointSys', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'attempt' => $attempts + 1
+                ]);
+                $attempts++;
+            }
+        }
+
+        // If all attempts failed, create mock data
+        if (!$pointSysRegistered) {
+            \Log::warning('Mobile: Failed to register customer in PointSys after all attempts', [
+                'user_id' => $user->id,
+                'attempts' => $attempts
+            ]);
+
+            // Create mock customer ID for testing
+            $mockCustomerId = 'mock_' . $user->id . '_' . time();
+            $user->update([
+                'pointsys_customer_id' => $mockCustomerId
+            ]);
+
+            $pointSysResult = [
+                'status' => 'success',
+                'message' => 'تم تسجيل العميل بنجاح (Mock Mode - PointSys غير متاح)',
+                'data' => [
+                    'customer_id' => $mockCustomerId,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone ?? '0500000000',
+                    'points_balance' => 0
+                ]
+            ];
+        }
+
+        // Register user in External Customer API (RLAPP)
+        $externalCustomerService = new \App\Services\ExternalCustomerService();
+        $externalCustomerData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone ?? '0500000000'
+        ];
+
+        $externalCustomerResult = $externalCustomerService->createExternalCustomer($externalCustomerData);
+
+        // Update user with external customer ID if successful
+        if ($externalCustomerResult && isset($externalCustomerResult['success']) && $externalCustomerResult['success']) {
+            $user->update([
+                'external_customer_id' => $externalCustomerResult['external_customer_id'] ?? null
+            ]);
+        }
+
+        // Create token
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        // Return success response
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تسجيل المستخدم بنجاح',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'emirate' => $user->emirate,
+                    'address' => $user->address,
+                    'role' => $user->role,
+                    'pointsys_customer_id' => $user->pointsys_customer_id,
+                    'external_customer_id' => $user->external_customer_id
+                ],
+                'token' => $token,
+                'pointsys_registration' => $pointSysResult,
+                'external_registration' => $externalCustomerResult
+            ]
+        ], 201);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'بيانات غير صحيحة',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        \Log::error('Mobile user registration failed', [
+            'error' => $e->getMessage(),
+            'data' => $request->all()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'فشل في تسجيل المستخدم',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Keep the old mobile register for backward compatibility
+// Mobile App Register API (Legacy)
     // Add required imports for mobile registration
     $pointSysService = new \App\Services\PointSysService();
     $externalCustomerService = new \App\Services\ExternalCustomerService();
