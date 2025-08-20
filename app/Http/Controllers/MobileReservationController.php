@@ -1507,4 +1507,149 @@ class MobileReservationController extends Controller
             return number_format($value) . ' درهم';
         }
     }
+
+    /**
+     * Create checkout session for coupon purchase
+     */
+    public function createCouponCheckout(Request $request)
+    {
+        try {
+            $request->validate([
+                'coupon_id' => 'required|integer',
+                'success_url' => 'nullable|url',
+                'cancel_url' => 'nullable|url'
+            ]);
+
+            // Get coupon details
+            $pointSysService = new PointSysService();
+            $response = $pointSysService->getCoupons();
+
+            if (!$response || !isset($response['data'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكن جلب بيانات الكوبونات'
+                ], 400);
+            }
+
+            $coupons = $response['data'];
+            $coupon = null;
+
+            foreach ($coupons as $c) {
+                if ($c['id'] == $request->coupon_id) {
+                    $coupon = $c;
+                    break;
+                }
+            }
+
+            if (!$coupon) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الكوبون غير موجود'
+                ], 404);
+            }
+
+            // Check if coupon is active and not expired
+            if (!$coupon['is_active'] || ($coupon['is_expired'] ?? false)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الكوبون غير متاح للشراء'
+                ], 400);
+            }
+
+            // Set default URLs if not provided
+            $successUrl = $request->success_url ?? 'https://wpp.rentluxuria.com/coupons?payment=success';
+            $cancelUrl = $request->cancel_url ?? 'https://wpp.rentluxuria.com/coupons?payment=cancelled';
+
+            // Create Stripe checkout session
+            $stripeSecretKey = config('services.stripe.secret_key');
+            Log::info('Stripe configuration check', [
+                'secret_key_exists' => !empty($stripeSecretKey),
+                'secret_key_prefix' => substr($stripeSecretKey, 0, 7),
+                'coupon_price' => $coupon['price'],
+                'coupon_id' => $coupon['id']
+            ]);
+
+            \Stripe\Stripe::setApiKey($stripeSecretKey);
+
+            $checkoutSession = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'aed',
+                            'product_data' => [
+                                'name' => $coupon['title'] ?? $coupon['name'] ?? 'كوبون خصم',
+                                'description' => $coupon['description'] ?: 'كوبون خصم من Luxuria UAE - استمتع بخصم حصري على خدماتنا',
+                            ],
+                            'unit_amount' => (int)($coupon['price'] * 100), // Convert to cents
+                        ],
+                        'quantity' => 1,
+                    ],
+                ],
+                'mode' => 'payment',
+                'success_url' => $successUrl,
+                'cancel_url' => $cancelUrl,
+                'metadata' => [
+                    'coupon_id' => $coupon['id'],
+                    'coupon_code' => $coupon['code'],
+                    'coupon_title' => $coupon['title'] ?? $coupon['name'],
+                    'coupon_price' => $coupon['price'],
+                    'discount_value' => $coupon['discount_value'],
+                    'discount_type' => $coupon['discount_type'],
+                    'user_id' => $request->user()->id ?? null,
+                    'type' => 'coupon_purchase'
+                ],
+                'customer_email' => $request->user()->email ?? null,
+            ]);
+
+            Log::info('Stripe coupon checkout session created', [
+                'session_id' => $checkoutSession->id,
+                'coupon_id' => $coupon['id'],
+                'coupon_code' => $coupon['code'],
+                'amount' => $coupon['price'],
+                'user_id' => $request->user()->id ?? null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إنشاء رابط الدفع بنجاح',
+                'data' => [
+                    'checkout_url' => $checkoutSession->url,
+                    'session_id' => $checkoutSession->id,
+                    'coupon' => [
+                        'id' => $coupon['id'],
+                        'code' => $coupon['code'],
+                        'title' => $coupon['title'] ?? $coupon['name'],
+                        'price' => $coupon['price'],
+                        'discount_value' => $coupon['discount_value'],
+                        'discount_type' => $coupon['discount_type']
+                    ]
+                ]
+            ]);
+
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            Log::error('Stripe API error in coupon checkout', [
+                'error' => $e->getMessage(),
+                'coupon_id' => $request->coupon_id,
+                'user_id' => $request->user()->id ?? null
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في إعداد الدفع: ' . $e->getMessage()
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Error creating coupon checkout session', [
+                'error' => $e->getMessage(),
+                'coupon_id' => $request->coupon_id,
+                'user_id' => $request->user()->id ?? null
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في إنشاء رابط الدفع'
+            ], 500);
+        }
+    }
 }
