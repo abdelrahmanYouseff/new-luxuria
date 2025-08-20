@@ -1204,4 +1204,220 @@ class MobileReservationController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get available coupons from PointSys system
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCoupons(Request $request)
+    {
+        try {
+            // Initialize PointSys service
+            $pointSysService = new PointSysService();
+
+            // Get coupons from PointSys
+            $couponsResponse = $pointSysService->getCoupons();
+
+            if ($couponsResponse && isset($couponsResponse['data'])) {
+                $coupons = $couponsResponse['data'];
+
+                // Format coupons for mobile app
+                $formattedCoupons = [];
+                foreach ($coupons as $coupon) {
+                    $formattedCoupons[] = [
+                        'id' => $coupon['id'] ?? null,
+                        'code' => $coupon['code'] ?? '',
+                        'title' => $coupon['title'] ?? $coupon['name'] ?? 'كوبون خصم',
+                        'description' => $coupon['description'] ?? '',
+                        'discount_type' => $coupon['discount_type'] ?? 'fixed',
+                        'discount_value' => $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                        'min_order_value' => $coupon['min_order_value'] ?? 0,
+                        'max_discount' => $coupon['max_discount'] ?? null,
+                        'usage_limit' => $coupon['usage_limit'] ?? null,
+                        'used_count' => $coupon['used_count'] ?? 0,
+                        'is_active' => $coupon['is_active'] ?? true,
+                        'start_date' => $coupon['start_date'] ?? null,
+                        'end_date' => $coupon['end_date'] ?? null,
+                        'applicable_categories' => $coupon['applicable_categories'] ?? [],
+                        'applicable_products' => $coupon['applicable_products'] ?? [],
+                        'formatted_discount' => $this->formatDiscountValue(
+                            $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                            $coupon['discount_type'] ?? 'fixed'
+                        ),
+                        'is_expired' => $this->isCouponExpired($coupon),
+                        'days_remaining' => $this->getCouponDaysRemaining($coupon)
+                    ];
+                }
+
+                Log::info('Coupons retrieved from PointSys', [
+                    'total_coupons' => count($formattedCoupons),
+                    'active_coupons' => count(array_filter($formattedCoupons, fn($c) => $c['is_active'] && !$c['is_expired']))
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم جلب الكوبونات بنجاح',
+                    'data' => [
+                        'coupons' => $formattedCoupons,
+                        'total_count' => count($formattedCoupons),
+                        'active_count' => count(array_filter($formattedCoupons, fn($c) => $c['is_active'] && !$c['is_expired']))
+                    ]
+                ]);
+            } else {
+                Log::warning('Failed to get coupons from PointSys', [
+                    'response' => $couponsResponse
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل في جلب الكوبونات من PointSys',
+                    'data' => [
+                        'coupons' => [],
+                        'total_count' => 0,
+                        'active_count' => 0
+                    ]
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error getting coupons from PointSys', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب الكوبونات',
+                'error' => $e->getMessage(),
+                'data' => [
+                    'coupons' => [],
+                    'total_count' => 0,
+                    'active_count' => 0
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Validate coupon code
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function validateCouponCode(Request $request)
+    {
+        try {
+            // Validate input
+            $request->validate([
+                'code' => 'required|string|max:50'
+            ]);
+
+            $user = $request->user();
+            $couponCode = $request->code;
+
+            // Initialize PointSys service
+            $pointSysService = new PointSysService();
+
+            // Validate coupon
+            $validationResponse = $pointSysService->validateCoupon(
+                $couponCode,
+                $user->pointsys_customer_id ?? null
+            );
+
+            if ($validationResponse && isset($validationResponse['data'])) {
+                $validationData = $validationResponse['data'];
+
+                Log::info('Coupon validation successful', [
+                    'user_id' => $user->id,
+                    'coupon_code' => $couponCode,
+                    'is_valid' => $validationData['is_valid'] ?? false
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم التحقق من الكوبون بنجاح',
+                    'data' => [
+                        'is_valid' => $validationData['is_valid'] ?? false,
+                        'coupon' => $validationData['coupon'] ?? null,
+                        'discount_amount' => $validationData['discount_amount'] ?? 0,
+                        'message' => $validationData['message'] ?? 'كوبون صالح للاستخدام'
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'كوبون غير صالح أو منتهي الصلاحية',
+                    'data' => [
+                        'is_valid' => false,
+                        'discount_amount' => 0
+                    ]
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error validating coupon code', [
+                'user_id' => $request->user()->id ?? null,
+                'coupon_code' => $request->code ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء التحقق من الكوبون',
+                'error' => $e->getMessage(),
+                'data' => [
+                    'is_valid' => false,
+                    'discount_amount' => 0
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper method to format discount value
+     */
+    private function formatDiscountValue($value, $type)
+    {
+        if ($type === 'percentage') {
+            return $value . '%';
+        } else {
+            return number_format($value) . ' درهم';
+        }
+    }
+
+    /**
+     * Helper method to check if coupon is expired
+     */
+    private function isCouponExpired($coupon)
+    {
+        if (!isset($coupon['end_date']) || empty($coupon['end_date'])) {
+            return false;
+        }
+
+        $endDate = strtotime($coupon['end_date']);
+        return $endDate < time();
+    }
+
+    /**
+     * Helper method to get remaining days for coupon
+     */
+    private function getCouponDaysRemaining($coupon)
+    {
+        if (!isset($coupon['end_date']) || empty($coupon['end_date'])) {
+            return null;
+        }
+
+        $endDate = strtotime($coupon['end_date']);
+        $currentTime = time();
+        $diff = $endDate - $currentTime;
+
+        if ($diff <= 0) {
+            return 0;
+        }
+
+        return ceil($diff / (60 * 60 * 24)); // Convert to days
+    }
 }

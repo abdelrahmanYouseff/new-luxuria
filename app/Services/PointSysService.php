@@ -345,4 +345,47 @@ class PointSysService
 
         return $this->addPointsToCustomer($user->pointsys_customer_id, $points, $description, $referenceId);
     }
+
+    /**
+     * Get available coupons from PointSys
+     */
+    public function getCoupons()
+    {
+        return $this->makeRequest('coupons', [], 'GET');
+    }
+
+    /**
+     * Get specific coupon details
+     */
+    public function getCoupon(string $couponId)
+    {
+        return $this->makeRequest('coupons/' . $couponId, [], 'GET');
+    }
+
+    /**
+     * Validate coupon code
+     */
+    public function validateCoupon(string $couponCode, $customerId = null)
+    {
+        $data = [
+            'code' => $couponCode
+        ];
+
+        if ($customerId) {
+            $data['customer_id'] = $customerId;
+        }
+
+        return $this->makeRequest('coupons/validate', $data, 'POST');
+    }
+
+    /**
+     * Apply coupon for customer
+     */
+    public function applyCoupon(string $couponCode, $customerId)
+    {
+        return $this->makeRequest('coupons/apply', [
+            'code' => $couponCode,
+            'customer_id' => $customerId
+        ], 'POST');
+    }
 }
