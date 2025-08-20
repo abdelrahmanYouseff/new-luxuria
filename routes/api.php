@@ -126,6 +126,9 @@ Route::post('/mobile/login', function (Request $request) {
 
 // Mobile App Register API
 Route::post('/mobile/register', function (Request $request) {
+    // Add required imports for mobile registration
+    $pointSysService = new \App\Services\PointSysService();
+    $externalCustomerService = new \App\Services\ExternalCustomerService();
     try {
         // Validate input
         $request->validate([
@@ -145,35 +148,152 @@ Route::post('/mobile/register', function (Request $request) {
             'address' => $request->address
         ]);
 
-        // Register user in PointSys system
-        $pointSysService = new PointSysService();
-        $pointSysData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone ?? '0500000000' // Default phone if not provided
-        ];
+        // Register user in PointSys system with original data first, then search for existing customer
+        $pointSysResult = null;
+        $pointSysRegistered = false;
+        $attempts = 0;
+        $maxAttempts = 2;
+        $mobileStartTime = microtime(true);
 
-                $pointSysResult = $pointSysService->registerCustomer($pointSysData);
+        while (!$pointSysRegistered && $attempts < $maxAttempts) {
+            // Check if we've been running for more than 12 seconds total
+            if ((microtime(true) - $mobileStartTime) > 12) {
+                \Log::warning('Mobile PointSys registration timeout after 12 seconds', [
+                    'user_id' => $user->id,
+                    'attempts' => $attempts
+                ]);
+                break;
+            }
+            try {
+                $pointSysData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone ?? '0500000000'
+                ];
 
-        // Initialize external customer result
-        $externalCustomerResult = null;
+                // First attempt: Use original data
+                if ($attempts === 0) {
+                    \Log::info('Mobile: Attempting PointSys registration with original data', [
+                        'user_id' => $user->id,
+                        'email' => $pointSysData['email'],
+                        'phone' => $pointSysData['phone'],
+                        'attempt' => $attempts + 1
+                    ]);
+                }
 
-        // Update user with PointSys customer ID if registration was successful
-        if ($pointSysResult && isset($pointSysResult['status']) && $pointSysResult['status'] === 'success') {
-            $user->update([
-                'pointsys_customer_id' => $pointSysResult['data']['customer_id'] ?? null
+                // Second attempt: If email exists, try to find and link existing customer
+                if ($attempts === 1) {
+                    \Log::info('Mobile: Email exists in PointSys, searching for existing customer', [
+                        'user_id' => $user->id,
+                        'email' => $pointSysData['email']
+                    ]);
+
+                    // Search for existing customer (simplified version)
+                    $foundCustomerId = $this->findExistingPointSysCustomer($pointSysData['email']);
+
+                    if ($foundCustomerId) {
+                        // Link to existing customer
+                        $user->update([
+                            'pointsys_customer_id' => $foundCustomerId
+                        ]);
+
+                        \Log::info('Mobile: Linked to existing PointSys customer', [
+                            'user_id' => $user->id,
+                            'pointsys_customer_id' => $foundCustomerId,
+                            'email' => $pointSysData['email']
+                        ]);
+
+                        $pointSysResult = [
+                            'status' => 'success',
+                            'message' => 'تم ربط العميل بالعميل الموجود في PointSys',
+                            'data' => [
+                                'customer_id' => $foundCustomerId,
+                                'name' => $request->name,
+                                'email' => $pointSysData['email'],
+                                'phone' => $pointSysData['phone'],
+                                'points_balance' => 0
+                            ]
+                        ];
+
+                        $pointSysRegistered = true;
+                        break;
+                    } else {
+                        // Create with modified email as last resort
+                        $emailParts = explode('@', $pointSysData['email']);
+                        $pointSysData['email'] = $emailParts[0] . '_' . time() . '_' . $attempts . '@' . $emailParts[1];
+                        $pointSysData['phone'] = $pointSysData['phone'] . '_' . time() . '_' . $attempts;
+
+                        \Log::info('Mobile: Creating new customer with modified email', [
+                            'user_id' => $user->id,
+                            'original_email' => $request->email,
+                            'modified_email' => $pointSysData['email'],
+                            'attempt' => $attempts + 1
+                        ]);
+                    }
+                }
+
+                $apiResult = $pointSysService->registerCustomer($pointSysData);
+
+                if ($apiResult && isset($apiResult['data']['customer_id'])) {
+                    // Success! Update local database
+                    $user->update([
+                        'pointsys_customer_id' => $apiResult['data']['customer_id']
+                    ]);
+
+                    \Log::info('Mobile: Customer registered in PointSys successfully', [
+                        'user_id' => $user->id,
+                        'pointsys_customer_id' => $apiResult['data']['customer_id'],
+                        'attempt' => $attempts + 1,
+                        'email_used' => $pointSysData['email'],
+                        'is_original_data' => $attempts === 0
+                    ]);
+
+                    $pointSysResult = $apiResult;
+                    $pointSysRegistered = true;
+                } else {
+                    // Check if it's an email already exists error
+                    if ($apiResult && isset($apiResult['errors']['email'])) {
+                        \Log::warning('Mobile: Email already exists in PointSys', [
+                            'user_id' => $user->id,
+                            'email' => $pointSysData['email'],
+                            'attempt' => $attempts + 1
+                        ]);
+                    } else {
+                        \Log::warning('Mobile: Failed to register customer in PointSys', [
+                            'user_id' => $user->id,
+                            'response' => $apiResult,
+                            'attempt' => $attempts + 1,
+                            'data_sent' => $pointSysData
+                        ]);
+                    }
+                    $attempts++;
+                }
+            } catch (\Exception $e) {
+                \Log::error('Mobile: Exception while registering customer in PointSys', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'attempt' => $attempts + 1
+                ]);
+                $attempts++;
+            }
+        }
+
+        // If all attempts failed, create mock data
+        if (!$pointSysRegistered) {
+            \Log::warning('Mobile: Failed to register customer in PointSys after all attempts', [
+                'user_id' => $user->id,
+                'attempts' => $attempts
             ]);
-        } else {
-            // If PointSys registration fails, create a mock customer ID for testing
+
+            // Create mock customer ID for testing
             $mockCustomerId = 'mock_' . $user->id . '_' . time();
             $user->update([
                 'pointsys_customer_id' => $mockCustomerId
             ]);
 
-            // Create mock PointSys response
             $pointSysResult = [
                 'status' => 'success',
-                'message' => 'تم تسجيل العميل بنجاح (Mock Mode - API Key غير صحيح)',
+                'message' => 'تم تسجيل العميل بنجاح (Mock Mode - PointSys غير متاح)',
                 'data' => [
                     'customer_id' => $mockCustomerId,
                     'name' => $request->name,
@@ -276,6 +396,51 @@ Route::middleware('auth:sanctum')->post('/mobile/logout', function (Request $req
     }
 });
 
+// Helper function to find existing PointSys customer
+function findExistingPointSysCustomer(string $email): ?int
+{
+    try {
+        $pointSysService = new \App\Services\PointSysService();
+        // Search through customer IDs to find one with matching email
+        // Limited search to avoid timeout
+        $maxCustomerId = 30; // Reduced from 200 to 30
+        $startTime = microtime(true);
+
+        for ($i = 1; $i <= $maxCustomerId; $i++) {
+            // Check if we've been running for more than 8 seconds
+            if ((microtime(true) - $startTime) > 8) {
+                \Log::warning('PointSys customer search timeout after 8 seconds', [
+                    'email' => $email,
+                    'customers_checked' => $i
+                ]);
+                break;
+            }
+
+            try {
+                $balance = $pointSysService->getCustomerBalance($i);
+
+                if ($balance && isset($balance['data']['email']) && $balance['data']['email'] === $email) {
+                    return $i;
+                }
+
+                usleep(20000); // Reduced from 50ms to 20ms
+
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return null;
+
+    } catch (\Exception $e) {
+        \Log::error('Error while searching for existing PointSys customer', [
+            'email' => $email,
+            'error' => $e->getMessage()
+        ]);
+        return null;
+    }
+}
+
 // Mobile App Reservation API Routes
 Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function () {
     Route::post('/', [App\Http\Controllers\MobileReservationController::class, 'createReservation']);
@@ -292,7 +457,7 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
 Route::prefix('coupons')->group(function () {
     // Validate coupon code
     Route::post('/validate', [App\Http\Controllers\Api\CouponController::class, 'validateCoupon']);
-    
+
     // Get all active coupons
     Route::get('/active', [App\Http\Controllers\Api\CouponController::class, 'getActiveCoupons']);
 });
