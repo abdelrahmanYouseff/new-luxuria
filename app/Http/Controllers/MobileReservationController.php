@@ -625,6 +625,7 @@ class MobileReservationController extends Controller
             // Validate the request
             $validator = Validator::make($request->all(), [
                 'reservation_id' => 'required|exists:bookings,id',
+                'total_amount' => 'required|numeric|min:0',
                 'success_url' => 'nullable|url',
                 'cancel_url' => 'nullable|url'
             ]);
@@ -695,7 +696,7 @@ class MobileReservationController extends Controller
                                 'emirate' => $reservation->emirate
                             ]
                         ],
-                        'unit_amount' => (int) ($reservation->total_amount * 100), // Convert to fils (cents)
+                        'unit_amount' => (int) ($request->total_amount * 100), // Convert to fils (cents)
                     ],
                     'quantity' => 1,
                 ]
@@ -718,7 +719,7 @@ class MobileReservationController extends Controller
                     'external_reservation_uid' => $reservation->external_reservation_uid ?? '',
                     'start_date' => $reservation->start_date,
                     'end_date' => $reservation->end_date,
-                    'total_amount' => $reservation->total_amount,
+                    'total_amount' => $request->total_amount,
                     'emirate' => $reservation->emirate
                 ],
                 'expires_at' => time() + (30 * 60), // Session expires in 30 minutes
@@ -733,7 +734,7 @@ class MobileReservationController extends Controller
                 'user_id' => $user->id,
                 'session_id' => $session->id,
                 'checkout_url' => $session->url,
-                'amount' => $reservation->total_amount
+                'amount' => $request->total_amount
             ]);
 
             // Return the checkout URL
@@ -747,7 +748,7 @@ class MobileReservationController extends Controller
                     'reservation' => [
                         'id' => $reservation->id,
                         'vehicle' => $reservation->vehicle->make . ' ' . $reservation->vehicle->model,
-                        'total_amount' => $reservation->total_amount,
+                        'total_amount' => $request->total_amount,
                         'currency' => 'AED',
                         'dates' => [
                             'start_date' => $reservation->start_date,
