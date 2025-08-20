@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Models\User;
 use App\Models\Reservation;
 use App\Services\ExternalBookingService;
+use App\Services\PointSysService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -1106,6 +1107,100 @@ class MobileReservationController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تأكيد الدفع',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get user points from PointSys system
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserPoints(Request $request)
+    {
+        try {
+            // Get authenticated user
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المستخدم غير مصدق عليه'
+                ], 401);
+            }
+
+            // Check if user has PointSys customer ID
+            if (!$user->pointsys_customer_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المستخدم غير مرتبط بنظام PointSys',
+                    'data' => [
+                        'points' => 0,
+                        'customer_id' => null
+                    ]
+                ], 200);
+            }
+
+            // Initialize PointSys service
+            $pointSysService = new PointSysService();
+
+            // Get customer balance from PointSys
+            $balance = $pointSysService->getCustomerBalance($user->pointsys_customer_id);
+
+            if ($balance && isset($balance['data'])) {
+                $pointsData = $balance['data'];
+                $points = $pointsData['points_balance'] ?? 0;
+
+                Log::info('User points retrieved from PointSys', [
+                    'user_id' => $user->id,
+                    'pointsys_customer_id' => $user->pointsys_customer_id,
+                    'points' => $points,
+                    'customer_data' => $pointsData
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم جلب النقاط بنجاح',
+                    'data' => [
+                        'points' => $points,
+                        'customer_id' => $user->pointsys_customer_id,
+                        'customer_data' => $pointsData,
+                        'formatted_points' => number_format($points) . ' نقطة'
+                    ]
+                ]);
+            } else {
+                Log::warning('Failed to get points from PointSys', [
+                    'user_id' => $user->id,
+                    'pointsys_customer_id' => $user->pointsys_customer_id,
+                    'response' => $balance
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل في جلب النقاط من PointSys',
+                    'data' => [
+                        'points' => 0,
+                        'customer_id' => $user->pointsys_customer_id
+                    ]
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error getting user points from PointSys', [
+                'user_id' => $request->user()->id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء جلب النقاط',
+                'error' => $e->getMessage(),
+                'data' => [
+                    'points' => 0,
+                    'customer_id' => null
+                ]
             ], 500);
         }
     }

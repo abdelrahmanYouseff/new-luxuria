@@ -694,6 +694,9 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
     Route::post('/quick-checkout', [App\Http\Controllers\MobileReservationController::class, 'createQuickCheckout']);
 });
 
+// Mobile App User Points API
+Route::middleware('auth:sanctum')->get('/mobile/points', [App\Http\Controllers\MobileReservationController::class, 'getUserPoints']);
+
 // Coupons API Routes
 Route::prefix('coupons')->group(function () {
     // Validate coupon code
