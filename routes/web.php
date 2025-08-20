@@ -16,6 +16,9 @@ use App\Models\Vehicle;
 Route::get('/coupons', [App\Http\Controllers\CouponController::class, 'index'])->name('coupons.index');
 Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])->name('coupons.store')->withoutMiddleware(['web']);
 
+// API endpoint for frontend coupons
+Route::get('/api/coupons', [App\Http\Controllers\CouponController::class, 'getCouponsApi'])->name('api.coupons.index')->withoutMiddleware(['web']);
+
 
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -484,7 +487,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users');
     Route::get('/vehicles', [App\Http\Controllers\AdminController::class, 'vehicles'])->name('vehicles');
     Route::get('/analytics', [App\Http\Controllers\AdminController::class, 'analytics'])->name('analytics');
-    
+
     // Coupon Website Routes
     Route::get('/coupon-website', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'index'])->name('coupon-website.index');
     Route::get('/coupon-website/create', [App\Http\Controllers\Admin\CouponWebsiteController::class, 'create'])->name('coupon-website.create');

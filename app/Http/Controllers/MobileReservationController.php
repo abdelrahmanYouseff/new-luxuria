@@ -1272,7 +1272,7 @@ class MobileReservationController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'فشل في جلب الكوبونات من PointSys',
+                    'message' => 'لا توجد كوبونات متاحة حالياً',
                     'data' => [
                         'coupons' => [],
                         'total_count' => 0,
@@ -1377,14 +1377,89 @@ class MobileReservationController extends Controller
     }
 
     /**
-     * Helper method to format discount value
+     * Get coupons for mobile app
      */
-    private function formatDiscountValue($value, $type)
+    public function getMobileCoupons(Request $request)
     {
-        if ($type === 'percentage') {
-            return $value . '%';
-        } else {
-            return number_format($value) . ' درهم';
+        try {
+            // استخدام PointSysService لجلب الكوبونات
+            $pointSysService = new PointSysService();
+            $response = $pointSysService->getCoupons();
+
+            if ($response && isset($response['data'])) {
+                $coupons = $response['data'];
+
+                // تحويل البيانات إلى الشكل المطلوب للتطبيق
+                $formattedCoupons = [];
+
+                foreach ($coupons as $coupon) {
+                    $formattedCoupons[] = [
+                        'id' => $coupon['id'] ?? uniqid(),
+                        'code' => $coupon['code'] ?? '',
+                        'title' => $coupon['title'] ?? $coupon['name'] ?? 'كوبون خصم',
+                        'description' => $coupon['description'] ?? '',
+                        'discount_type' => $coupon['discount_type'] ?? 'fixed',
+                        'discount_value' => $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                        'min_order_value' => $coupon['min_order_value'] ?? $coupon['minimum_amount'] ?? 0,
+                        'max_discount' => $coupon['max_discount'] ?? null,
+                        'usage_limit' => $coupon['usage_limit'] ?? null,
+                        'used_count' => $coupon['used_count'] ?? 0,
+                        'is_active' => $coupon['is_active'] ?? true,
+                        'start_date' => $coupon['start_date'] ?? null,
+                        'end_date' => $coupon['end_date'] ?? null,
+                        'price' => $coupon['price'] ?? $coupon['points_required'] ?? 0,
+                        'points_required' => $coupon['points_required'] ?? 0,
+                        'formatted_discount' => $this->formatDiscountValue(
+                            $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                            $coupon['discount_type'] ?? 'fixed'
+                        ),
+                        'is_expired' => $this->isCouponExpired($coupon),
+                        'days_remaining' => $this->getCouponDaysRemaining($coupon)
+                    ];
+                }
+
+                // فلترة الكوبونات النشطة والصالحة فقط
+                $activeCoupons = array_filter($formattedCoupons, function($coupon) {
+                    return $coupon['is_active'] && !$coupon['is_expired'];
+                });
+
+                Log::info('Mobile coupons retrieved from PointSys: ' . count($activeCoupons));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم جلب الكوبونات بنجاح',
+                    'data' => [
+                        'coupons' => array_values($activeCoupons),
+                        'total_count' => count($activeCoupons),
+                        'active_count' => count($activeCoupons)
+                    ]
+                ]);
+
+            } else {
+                Log::warning('No valid coupon data from PointSys API for mobile');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد كوبونات متاحة حالياً',
+                    'data' => [
+                        'coupons' => [],
+                        'total_count' => 0,
+                        'active_count' => 0
+                    ]
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error getting mobile coupons from PointSys: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب الكوبونات',
+                'error' => $e->getMessage(),
+                'data' => [
+                    'coupons' => [],
+                    'total_count' => 0,
+                    'active_count' => 0
+                ]
+            ], 500);
         }
     }
 
@@ -1419,5 +1494,17 @@ class MobileReservationController extends Controller
         }
 
         return ceil($diff / (60 * 60 * 24)); // Convert to days
+    }
+
+    /**
+     * Helper method to format discount value
+     */
+    private function formatDiscountValue($value, $type)
+    {
+        if ($type === 'percentage') {
+            return $value . '%';
+        } else {
+            return number_format($value) . ' درهم';
+        }
     }
 }

@@ -351,7 +351,43 @@ class PointSysService
      */
     public function getCoupons()
     {
-        return $this->makeRequest('coupons', [], 'GET');
+        $response = $this->makeRequest('coupons', [], 'GET');
+
+        // Transform the response to match our expected format
+        if ($response && isset($response['status']) && $response['status'] === 'success' && isset($response['data'])) {
+            $transformedCoupons = [];
+
+            foreach ($response['data'] as $coupon) {
+                $transformedCoupons[] = [
+                    'id' => $coupon['id'],
+                    'code' => $coupon['code'],
+                    'title' => $coupon['name'] ?? $coupon['code'],
+                    'name' => $coupon['name'] ?? $coupon['code'],
+                    'description' => $coupon['description'] ?? '',
+                    'discount_type' => $coupon['type'],
+                    'discount_value' => (float) $coupon['value'],
+                    'min_order_value' => (float) ($coupon['minimum_purchase'] ?? 0),
+                    'max_discount' => null,
+                    'usage_limit' => $coupon['usage_limit'],
+                    'used_count' => $coupon['used_count'] ?? 0,
+                    'is_active' => $coupon['status'] === 'active',
+                    'start_date' => $coupon['starts_at'],
+                    'end_date' => $coupon['expires_at'],
+                    'points_required' => (int) $coupon['points_required'],
+                    'price' => (float) $coupon['price'],
+                    'is_valid' => $coupon['is_valid'] ?? true,
+                    'applicable_categories' => [],
+                    'applicable_products' => []
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $transformedCoupons
+            ];
+        }
+
+        return $response;
     }
 
     /**

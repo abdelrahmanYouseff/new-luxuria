@@ -5,245 +5,194 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\PointSysService;
 
 class CouponController extends Controller
 {
     public function index()
     {
         try {
-            // استدعاء API للحصول على الكوبونات
-            $response = Http::timeout(10)->withHeaders([
-                'Authorization' => 'Bearer [REDACTED_STRIPE_LIVE]',
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ])->get('https://www.pointsys.clarastars.com/api/v1/coupons');
+            // استخدام PointSysService لجلب الكوبونات
+            $pointSysService = new PointSysService();
+            $response = $pointSysService->getCoupons();
 
-            // إضافة تفاصيل التصحيح
-            Log::info('API Response Status: ' . $response->status());
-            Log::info('API Response Body: ' . $response->body());
+            if ($response && isset($response['data'])) {
+                $coupons = $response['data'];
 
+                // تحويل البيانات إلى الشكل المطلوب للصفحة
+                $formattedCoupons = collect($coupons)->map(function ($coupon) {
+                    $formattedCoupon = [
+                        'id' => $coupon['id'] ?? uniqid(),
+                        'code' => $coupon['code'] ?? '',
+                        'name' => $coupon['title'] ?? $coupon['name'] ?? 'كوبون خصم',
+                        'description' => $coupon['description'] ?? '',
+                        'discount_value' => $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                        'discount_type' => $coupon['discount_type'] ?? 'fixed',
+                        'minimum_amount' => $coupon['min_order_value'] ?? $coupon['minimum_amount'] ?? 0,
+                        'points_required' => $coupon['points_required'] ?? 0,
+                        'usage_limit' => $coupon['usage_limit'] ?? null,
+                        'used_count' => $coupon['used_count'] ?? 0,
+                        'status' => $coupon['is_active'] ? 'active' : 'inactive',
+                        'is_valid' => $coupon['is_active'] ?? true,
+                        'starts_at' => $coupon['start_date'] ?? $coupon['created_at'] ?? now(),
+                        'expires_at' => $coupon['end_date'] ?? $coupon['expires_at'] ?? '2025-12-31',
+                        'formatted_price' => $this->formatCouponPrice(
+                            $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                            $coupon['discount_type'] ?? 'fixed'
+                        ),
+                        'price' => $coupon['price'] ?? $coupon['points_required'] ?? 0
+                    ];
 
+                    Log::info('Formatted coupon from PointSys: ' . json_encode($formattedCoupon));
+                    return $formattedCoupon;
+                })->filter(function ($coupon) {
+                    // عرض الكوبونات النشطة والصالحة فقط
+                    return $coupon['status'] === 'active' && $coupon['is_valid'] === true;
+                })->values();
 
-            if ($response->successful()) {
-                $responseData = $response->json();
-
-                // التحقق من نجاح الاستجابة ووجود البيانات
-                if (isset($responseData['status']) && $responseData['status'] === 'success' && isset($responseData['data'])) {
-                    $coupons = $responseData['data'];
-
-                    // تحويل البيانات إلى الشكل المطلوب للصفحة
-                    $formattedCoupons = collect($coupons)->map(function ($coupon) {
-                        $formattedCoupon = [
-                            'id' => $coupon['id'] ?? uniqid(),
-                            'code' => $coupon['code'] ?? '',
-                            'name' => $coupon['name'] ?? '',
-                            'description' => $coupon['description'] ?? '',
-                            'discount_value' => $coupon['value'] ?? 0,
-                            'discount_type' => $coupon['type'] ?? 'fixed',
-                            'minimum_amount' => $coupon['minimum_purchase'] ?? 0,
-                            'points_required' => $coupon['points_required'] ?? 0,
-                            'usage_limit' => $coupon['usage_limit'] ?? null,
-                            'used_count' => $coupon['used_count'] ?? 0,
-                            'status' => $coupon['status'] ?? 'active',
-                            'is_valid' => $coupon['is_valid'] ?? true,
-                            'starts_at' => $coupon['starts_at'] ?? $coupon['created_at'] ?? now(),
-                            'expires_at' => $coupon['expires_at'] ?? '2025-12-31',
-                            'formatted_price' => $coupon['formatted_price'] ?? '',
-                            'price' => $coupon['price'] ?? $coupon['points_required'] ?? 0
-                        ];
-
-                        Log::info('Formatted coupon: ' . json_encode($formattedCoupon));
-                        return $formattedCoupon;
-                    })->filter(function ($coupon) {
-                        // عرض الكوبونات النشطة والصالحة فقط
-                        return $coupon['status'] === 'active' && $coupon['is_valid'] === true;
-                    })->values();
-
-                    Log::info('Final formatted coupons count: ' . $formattedCoupons->count());
-                    return view('coupons', compact('formattedCoupons'));
-                } else {
-                    // في حالة عدم وجود بيانات صحيحة، إضافة كوبونات تجريبية
-                    Log::info('No valid API data, using sample coupons');
-                    $formattedCoupons = collect([
-                        [
-                            'id' => 1,
-                            'code' => 'WELCOME20',
-                            'name' => 'Welcome Coupon',
-                            'description' => '20% discount on all services',
-                            'discount_value' => 20,
-                            'discount_type' => 'percentage',
-                            'minimum_amount' => 100,
-                            'points_required' => 0,
-                            'usage_limit' => 50,
-                            'used_count' => 15,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '20%',
-                            'price' => 50
-                        ],
-                        [
-                            'id' => 2,
-                            'code' => 'LUXURY50',
-                            'name' => 'Luxury Coupon',
-                            'description' => '50 AED discount on luxury cars',
-                            'discount_value' => 50,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 200,
-                            'points_required' => 100,
-                            'usage_limit' => 25,
-                            'used_count' => 8,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 AED',
-                            'price' => 100
-                        ],
-                        [
-                            'id' => 3,
-                            'code' => 'PREMIUM100',
-                            'name' => 'Premium Coupon',
-                            'description' => '100 AED discount on premium vehicles',
-                            'discount_value' => 100,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 500,
-                            'points_required' => 200,
-                            'usage_limit' => 10,
-                            'used_count' => 3,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 AED',
-                            'price' => 200
-                        ]
-                    ]);
-                    return view('coupons', compact('formattedCoupons'));
-                }
-            } else {
-                // في حالة فشل API، إضافة كوبونات تجريبية
-                Log::info('API failed, using sample coupons');
-                $formattedCoupons = collect([
-                                            [
-                            'id' => 1,
-                            'code' => 'WELCOME20',
-                            'name' => 'Welcome Coupon',
-                            'description' => '20% discount on all services',
-                            'discount_value' => 20,
-                            'discount_type' => 'percentage',
-                            'minimum_amount' => 100,
-                            'points_required' => 0,
-                            'usage_limit' => 50,
-                            'used_count' => 15,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '20%',
-                            'price' => 50
-                        ],
-                        [
-                            'id' => 2,
-                            'code' => 'LUXURY50',
-                            'name' => 'Luxury Coupon',
-                            'description' => '50 AED discount on luxury cars',
-                            'discount_value' => 50,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 200,
-                            'points_required' => 100,
-                            'usage_limit' => 25,
-                            'used_count' => 8,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 AED',
-                            'price' => 100
-                        ],
-                        [
-                            'id' => 3,
-                            'code' => 'PREMIUM100',
-                            'name' => 'Premium Coupon',
-                            'description' => '100 AED discount on premium vehicles',
-                            'discount_value' => 100,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 500,
-                            'points_required' => 200,
-                            'usage_limit' => 10,
-                            'used_count' => 3,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 AED',
-                            'price' => 200
-                        ]
-                ]);
+                Log::info('Final formatted coupons count from PointSys: ' . $formattedCoupons->count());
                 return view('coupons', compact('formattedCoupons'));
+            } else {
+                Log::warning('No valid coupon data from PointSys API');
+                return view('coupons', ['formattedCoupons' => collect([])]);
             }
+
         } catch (\Exception $e) {
-            // في حالة حدوث خطأ، إضافة كوبونات تجريبية
-            Log::error('Exception occurred: ' . $e->getMessage());
-            $formattedCoupons = collect([
-                                        [
-                            'id' => 1,
-                            'code' => 'WELCOME20',
-                            'name' => 'Welcome Coupon',
-                            'description' => '20% discount on all services',
-                            'discount_value' => 20,
-                            'discount_type' => 'percentage',
-                            'minimum_amount' => 100,
-                            'points_required' => 0,
-                            'usage_limit' => 50,
-                            'used_count' => 15,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '20%',
-                            'price' => 50
-                        ],
-                        [
-                            'id' => 2,
-                            'code' => 'LUXURY50',
-                            'name' => 'Luxury Coupon',
-                            'description' => '50 AED discount on luxury cars',
-                            'discount_value' => 50,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 200,
-                            'points_required' => 100,
-                            'usage_limit' => 25,
-                            'used_count' => 8,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '50 AED',
-                            'price' => 100
-                        ],
-                        [
-                            'id' => 3,
-                            'code' => 'PREMIUM100',
-                            'name' => 'Premium Coupon',
-                            'description' => '100 AED discount on premium vehicles',
-                            'discount_value' => 100,
-                            'discount_type' => 'fixed',
-                            'minimum_amount' => 500,
-                            'points_required' => 200,
-                            'usage_limit' => 10,
-                            'used_count' => 3,
-                            'status' => 'active',
-                            'is_valid' => true,
-                            'starts_at' => now(),
-                            'expires_at' => '2025-12-31',
-                            'formatted_price' => '100 AED',
-                            'price' => 200
-                        ]
-            ]);
-            return view('coupons', compact('formattedCoupons'));
+            Log::error('Exception occurred while fetching coupons: ' . $e->getMessage());
+            return view('coupons', ['formattedCoupons' => collect([])]);
         }
+    }
+
+
+
+    /**
+     * Format coupon price for display
+     */
+    private function formatCouponPrice($value, $type)
+    {
+        if ($type === 'percentage' || $type === 'percent') {
+            return $value . '%';
+        } else {
+            return number_format($value) . ' AED';
+        }
+    }
+
+    /**
+     * Get coupons as JSON for frontend API
+     */
+    public function getCouponsApi()
+    {
+        try {
+            // استخدام PointSysService لجلب الكوبونات
+            $pointSysService = new PointSysService();
+            $response = $pointSysService->getCoupons();
+
+            if ($response && isset($response['data'])) {
+                $coupons = $response['data'];
+
+                // تحويل البيانات إلى الشكل المطلوب للـ API
+                $formattedCoupons = collect($coupons)->map(function ($coupon) {
+                    return [
+                        'id' => $coupon['id'] ?? uniqid(),
+                        'code' => $coupon['code'] ?? '',
+                        'title' => $coupon['title'] ?? $coupon['name'] ?? 'كوبون خصم',
+                        'description' => $coupon['description'] ?? '',
+                        'discount_type' => $coupon['discount_type'] ?? 'fixed',
+                        'discount_value' => $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                        'min_order_value' => $coupon['min_order_value'] ?? $coupon['minimum_amount'] ?? 0,
+                        'max_discount' => $coupon['max_discount'] ?? null,
+                        'usage_limit' => $coupon['usage_limit'] ?? null,
+                        'used_count' => $coupon['used_count'] ?? 0,
+                        'is_active' => $coupon['is_active'] ?? true,
+                        'start_date' => $coupon['start_date'] ?? null,
+                        'end_date' => $coupon['end_date'] ?? null,
+                        'applicable_categories' => $coupon['applicable_categories'] ?? [],
+                        'applicable_products' => $coupon['applicable_products'] ?? [],
+                        'formatted_discount' => $this->formatCouponPrice(
+                            $coupon['discount_value'] ?? $coupon['amount'] ?? 0,
+                            $coupon['discount_type'] ?? 'fixed'
+                        ),
+                        'price' => $coupon['price'] ?? $coupon['points_required'] ?? 0,
+                        'is_expired' => $this->isCouponExpired($coupon),
+                        'days_remaining' => $this->getCouponDaysRemaining($coupon)
+                    ];
+                })->filter(function ($coupon) {
+                    // عرض الكوبونات النشطة والصالحة فقط
+                    return $coupon['is_active'] && !$coupon['is_expired'];
+                })->values();
+
+                Log::info('API coupons retrieved from PointSys: ' . $formattedCoupons->count());
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم جلب الكوبونات بنجاح',
+                    'data' => [
+                        'coupons' => $formattedCoupons,
+                        'total_count' => $formattedCoupons->count(),
+                        'active_count' => $formattedCoupons->where('is_active', true)->where('is_expired', false)->count()
+                    ]
+                ]);
+            } else {
+                Log::warning('No valid coupon data from PointSys API for frontend');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد كوبونات متاحة حالياً',
+                    'data' => [
+                        'coupons' => [],
+                        'total_count' => 0,
+                        'active_count' => 0
+                    ]
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Exception occurred while fetching coupons for API: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ في جلب الكوبونات',
+                'error' => $e->getMessage(),
+                'data' => [
+                    'coupons' => [],
+                    'total_count' => 0,
+                    'active_count' => 0
+                ]
+            ], 500);
+        }
+    }
+
+
+
+    /**
+     * Helper method to check if coupon is expired
+     */
+    private function isCouponExpired($coupon)
+    {
+        if (!isset($coupon['end_date']) || empty($coupon['end_date'])) {
+            return false;
+        }
+
+        $endDate = strtotime($coupon['end_date']);
+        return $endDate < time();
+    }
+
+    /**
+     * Helper method to get remaining days for coupon
+     */
+    private function getCouponDaysRemaining($coupon)
+    {
+        if (!isset($coupon['end_date']) || empty($coupon['end_date'])) {
+            return null;
+        }
+
+        $endDate = strtotime($coupon['end_date']);
+        $currentTime = time();
+        $diff = $endDate - $currentTime;
+
+        if ($diff <= 0) {
+            return 0;
+        }
+
+        return ceil($diff / (60 * 60 * 24));
     }
 
     public function store(Request $request)

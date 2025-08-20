@@ -698,8 +698,11 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
 Route::middleware('auth:sanctum')->get('/mobile/points', [App\Http\Controllers\MobileReservationController::class, 'getUserPoints']);
 
 // Mobile App Coupons API
-Route::middleware('auth:sanctum')->get('/mobile/coupons', [App\Http\Controllers\MobileReservationController::class, 'getCoupons']);
+Route::middleware('auth:sanctum')->get('/mobile/coupons', [App\Http\Controllers\MobileReservationController::class, 'getMobileCoupons']);
 Route::middleware('auth:sanctum')->post('/mobile/coupons/validate', [App\Http\Controllers\MobileReservationController::class, 'validateCouponCode']);
+
+// Temporary route for testing mobile coupons without auth
+Route::get('/mobile/coupons/test', [App\Http\Controllers\MobileReservationController::class, 'getMobileCoupons']);
 
 // Coupons API Routes
 Route::prefix('coupons')->group(function () {
