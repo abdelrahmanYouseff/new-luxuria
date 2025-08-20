@@ -368,11 +368,8 @@ Route::post('/mobile/users/register', function (Request $request) {
     }
 });
 
-// Keep the old mobile register for backward compatibility
-// Mobile App Register API (Legacy)
-    // Add required imports for mobile registration
-    $pointSysService = new \App\Services\PointSysService();
-    $externalCustomerService = new \App\Services\ExternalCustomerService();
+// Mobile App Register API (Legacy) - This route is deprecated, use /mobile/users/register instead
+Route::post('/mobile/register', function (Request $request) {
     try {
         // Validate input
         $request->validate([
