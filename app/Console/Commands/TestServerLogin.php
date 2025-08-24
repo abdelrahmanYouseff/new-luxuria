@@ -99,6 +99,13 @@ class TestServerLogin extends Command
                 $this->info("📊 Sessions in database: {$sessionCount}");
             }
 
+            // Test frontend redirect
+            $this->info("🌐 Testing frontend redirect...");
+            $this->info("📱 Try accessing: https://rentluxuria.com/test-login");
+            $this->info("💻 Or try: https://rentluxuria.com/login");
+            $this->info("🔍 Check browser console for errors");
+            $this->info("🌐 Expected redirect: https://rentluxuria.com/dashboard");
+
             Auth::logout();
             Session::flush();
             $this->info("✅ Logged out and session cleared");
