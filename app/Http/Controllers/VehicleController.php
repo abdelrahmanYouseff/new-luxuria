@@ -11,7 +11,12 @@ use Illuminate\Support\Facades\Log;
 class VehicleController extends Controller
 {
     private $apiUrl = 'https://rlapp.rentluxuria.com/api/vehicles';
-    private $apiKey = '[REDACTED_RLAPP_API_KEY]';
+    private $apiKey;
+
+    public function __construct()
+    {
+        $this->apiKey = config('services.rlapp.api_key');
+    }
 
     public function index()
     {
@@ -319,7 +324,7 @@ class VehicleController extends Controller
     {
         try {
             $response = Http::withHeaders([
-                'X-RLAPP-KEY' => $this->apiKey,
+                'X-API-KEY' => $this->apiKey,
                 'Accept' => 'application/json',
             ])->get($this->apiUrl);
 

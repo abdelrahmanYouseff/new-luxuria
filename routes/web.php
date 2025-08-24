@@ -461,6 +461,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vehicles-auth', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.index');
     Route::post('/vehicles/sync', [App\Http\Controllers\VehicleController::class, 'syncFromApi'])->name('vehicles.sync');
     Route::get('/vehicles-api', [App\Http\Controllers\VehiclesApiController::class, 'index'])->name('vehicles.api');
+Route::get('/vehicles-sync', function () {
+    return Inertia::render('VehiclesSync');
+})->name('vehicles.sync.page');
 
     Route::get('/vehicles/{id}/image', function ($id) {
         return Inertia::render('VehicleImageManager', ['vehicleId' => $id]);
