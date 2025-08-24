@@ -10,7 +10,12 @@ use Inertia\Inertia;
 class VehiclesApiController extends Controller
 {
     private $apiUrl = 'https://rlapp.rentluxuria.com/api/vehicles';
-    private $apiKey = '[REDACTED_RLAPP_API_KEY]';
+    private $apiKey;
+
+    public function __construct()
+    {
+        $this->apiKey = config('services.rlapp.api_key');
+    }
 
     public function index()
     {
@@ -26,7 +31,8 @@ class VehiclesApiController extends Controller
                 'apiStatus' => $syncResult['success'] ? 'success' : 'error',
                 'error' => $syncResult['success'] ? null : $syncResult['error'],
                 'totalCount' => $vehicles->count(),
-                'syncResult' => $syncResult
+                'syncResult' => $syncResult,
+                'apiKey' => $this->apiKey
             ]);
         } catch (\Exception $e) {
             // Fallback to database data on exception
@@ -36,7 +42,8 @@ class VehiclesApiController extends Controller
                 'vehicles' => $vehicles,
                 'apiStatus' => 'error',
                 'error' => 'API connection failed. Showing database data.',
-                'totalCount' => $vehicles->count()
+                'totalCount' => $vehicles->count(),
+                'apiKey' => $this->apiKey
             ]);
         }
     }

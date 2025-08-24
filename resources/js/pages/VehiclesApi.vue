@@ -53,7 +53,7 @@
                 <Icon name="key" class="w-5 h-5 text-green-600 mr-2" />
                 <div>
                   <p class="text-sm font-medium text-green-900">API Key</p>
-                  <p class="text-sm text-green-700">28izx09iasdasd</p>
+                  <p class="text-sm text-green-700">{{ apiKey || 'Loading...' }}</p>
                 </div>
               </div>
             </div>
@@ -262,6 +262,7 @@ const apiStatus = ref(page.props.apiStatus || 'loading')
 const error = ref(page.props.error || null)
 const totalCount = ref(page.props.totalCount || 0)
 const syncResult = ref<SyncResult | null>(page.props.syncResult as SyncResult || null)
+const apiKey = ref(page.props.apiKey || 'Loading...')
 
 const refreshData = () => {
   window.location.reload()
