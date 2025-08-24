@@ -26,4 +26,12 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    build: {
+        outDir: 'public/build',
+        assetsDir: 'assets',
+        manifest: true,
+        rollupOptions: {
+            input: ['resources/js/app.ts', 'resources/css/app.css'],
+        },
+    },
 });
