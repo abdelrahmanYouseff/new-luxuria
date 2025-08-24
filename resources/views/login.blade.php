@@ -54,8 +54,19 @@
                     <p>Sign in to your account to continue</p>
                 </div>
 
-                <form method="POST" action="/login" class="elegant-form">
+                <form method="POST" action="{{ route('login') }}" class="elegant-form">
                     @csrf
+
+                    <!-- Debug Info -->
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <!-- Email Field -->
                     <div class="form-field">
@@ -602,6 +613,8 @@ function togglePassword() {
 
 // Form submission with loading state
 document.querySelector('.elegant-form').addEventListener('submit', function(e) {
+    console.log('Form submitted!');
+
     const submitBtn = document.querySelector('.submit-btn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoader = submitBtn.querySelector('.btn-loader');
@@ -611,6 +624,13 @@ document.querySelector('.elegant-form').addEventListener('submit', function(e) {
     btnLoader.style.display = 'flex';
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.8';
+
+    // Log form data
+    const formData = new FormData(this);
+    console.log('Email:', formData.get('email'));
+    console.log('Password:', formData.get('password'));
+    console.log('Remember:', formData.get('remember'));
+    console.log('CSRF Token:', formData.get('_token'));
 });
 
 // Add smooth focus effects to inputs
