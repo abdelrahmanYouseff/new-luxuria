@@ -9,7 +9,7 @@ use App\Models\User;
 class ExternalCustomerService
 {
     private $apiUrl = 'https://rlapp.rentluxuria.com/api/v1/test/customers';
-    private $apiKey = '[REDACTED_RLAPP_API_KEY]'; // Use the same API key as other services
+    private $apiKey = '28izx09iasdasd'; // Use the same API key as other services
 
     /**
      * Create a customer in the external API

@@ -27,7 +27,7 @@ class SyncVehiclesFromApi extends Command
      * API configuration
      */
     private $apiUrl = 'https://rlapp.rentluxuria.com/api/vehicles';
-    private $apiKey = '[REDACTED_RLAPP_API_KEY]';
+    private $apiKey = '28izx09iasdasd';
 
     /**
      * Execute the console command.

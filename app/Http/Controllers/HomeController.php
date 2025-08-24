@@ -10,7 +10,7 @@ use App\Models\Vehicle;
 class HomeController extends Controller
 {
     private $apiUrl = 'https://rlapp.rentluxuria.com/api/vehicles';
-    private $apiKey = '[REDACTED_RLAPP_API_KEY]';
+    private $apiKey = '28izx09iasdasd';
 
     public function index()
     {
