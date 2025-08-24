@@ -10,13 +10,8 @@ interface Props {
 }
 
 const handleLogout = () => {
-    // Clear all Inertia cache and ensure full page reload
+    // Clear all Inertia cache
     router.flushAll();
-
-    // As an additional safety measure, force a full page reload after logout
-    setTimeout(() => {
-        window.location.href = '/';
-    }, 100);
 };
 
 defineProps<Props>();

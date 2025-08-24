@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,7 +21,7 @@ class AuthenticatedSessionController extends Controller
     {
         // حفظ معامل redirect في الجلسة إذا كان موجوداً
         if ($request->has('redirect')) {
-            $request->session()->put('url.intended', $request->redirect);
+            Session::put('url.intended', $request->redirect);
         }
 
         return view('login');
@@ -33,12 +34,12 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        Session::regenerate();
 
         // التحقق من وجود معامل redirect محفوظ في الجلسة
-        $intendedUrl = $request->session()->get('url.intended');
+        $intendedUrl = Session::get('url.intended');
         if ($intendedUrl) {
-            $request->session()->forget('url.intended');
+            Session::forget('url.intended');
             return redirect($intendedUrl);
         }
 
@@ -53,15 +54,15 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        Session::invalidate();
+        Session::regenerateToken();
 
         // Check if the request is from Inertia.js
         if ($request->header('X-Inertia')) {
-            // For Inertia requests, use external redirect to force full page reload
-            return Inertia::location(route('home'));
+            // For Inertia requests, redirect to login page
+            return Inertia::location(route('login'));
         }
 
-        return redirect(route('home', absolute: false));
+        return redirect(route('login'));
     }
 }
