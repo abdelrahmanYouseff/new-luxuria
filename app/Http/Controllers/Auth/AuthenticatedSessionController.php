@@ -38,12 +38,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Log the attempt before authentication
+        Log::info('Login attempt started', [
+            'email' => $request->email,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'session_id' => Session::getId()
+        ]);
+
         $request->authenticate();
 
+        // Regenerate session for security
         Session::regenerate();
 
         // Log for debugging
-        Log::info('Login attempt', [
+        Log::info('Login successful', [
             'user_role' => Auth::user()->role,
             'user_id' => Auth::user()->id,
             'session_id' => Session::getId(),
