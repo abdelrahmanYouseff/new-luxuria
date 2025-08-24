@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class VehiclesApiController extends Controller
@@ -14,7 +15,31 @@ class VehiclesApiController extends Controller
 
     public function __construct()
     {
+        // Try multiple ways to get the API key
         $this->apiKey = config('services.rlapp.api_key');
+
+        if (!$this->apiKey || $this->apiKey === '[REDACTED_RLAPP_API_KEY]') {
+            $this->apiKey = env('RLAPP_API_KEY');
+        }
+
+        if (!$this->apiKey || $this->apiKey === '[REDACTED_RLAPP_API_KEY]') {
+            $this->apiKey = '28izx09iasdasd';
+        }
+
+        // Log for debugging
+        Log::info('VehiclesApiController API Key loaded', [
+            'api_key' => $this->apiKey,
+            'config_value' => config('services.rlapp.api_key'),
+            'env_value' => env('RLAPP_API_KEY')
+        ]);
+    }
+
+    /**
+     * Get API key for debugging
+     */
+    public function getApiKey()
+    {
+        return $this->apiKey;
     }
 
     public function index()
