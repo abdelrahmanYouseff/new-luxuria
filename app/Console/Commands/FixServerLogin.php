@@ -35,7 +35,6 @@ class FixServerLogin extends Command
         Artisan::call('cache:clear');
         Artisan::call('route:clear');
         Artisan::call('view:clear');
-        Artisan::call('session:clear');
         $this->info("✅ Caches cleared");
 
         // Step 2: Check database connection
@@ -48,7 +47,7 @@ class FixServerLogin extends Command
             return 1;
         }
 
-        // Step 3: Check sessions table
+                // Step 3: Check sessions table
         $this->info("📝 Step 3: Checking sessions table...");
         if (DB::getSchemaBuilder()->hasTable('sessions')) {
             $this->info("✅ Sessions table: EXISTS");
@@ -62,6 +61,21 @@ class FixServerLogin extends Command
             Artisan::call('session:table');
             Artisan::call('migrate');
             $this->info("✅ Sessions table created");
+        }
+
+        // Clear session files if using file driver
+        if (config('session.driver') === 'file') {
+            $this->info("📝 Clearing session files...");
+            $sessionPath = storage_path('framework/sessions');
+            if (is_dir($sessionPath)) {
+                $files = glob($sessionPath . '/*');
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
+                }
+                $this->info("✅ Session files cleared");
+            }
         }
 
         // Step 4: Check admin users

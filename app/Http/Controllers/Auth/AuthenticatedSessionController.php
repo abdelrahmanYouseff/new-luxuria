@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,10 +42,21 @@ class AuthenticatedSessionController extends Controller
 
         Session::regenerate();
 
+        // Log for debugging
+        Log::info('Login attempt', [
+            'email' => $request->email,
+            'user_role' => Auth::user()->role,
+            'user_id' => Auth::user()->id,
+            'session_id' => Session::getId(),
+            'request_url' => $request->fullUrl(),
+            'user_agent' => $request->header('User-Agent')
+        ]);
+
         // التحقق من وجود معامل redirect محفوظ في الجلسة
         $intendedUrl = Session::get('url.intended');
         if ($intendedUrl) {
             Session::forget('url.intended');
+            \Log::info('Redirecting to intended URL', ['url' => $intendedUrl]);
             return redirect($intendedUrl);
         }
 
@@ -52,16 +64,27 @@ class AuthenticatedSessionController extends Controller
         $adminRedirect = Session::get('admin_redirect');
         if ($adminRedirect) {
             Session::forget('admin_redirect');
+            \Log::info('Redirecting to admin redirect', ['url' => $adminRedirect]);
             return redirect($adminRedirect);
         }
 
         // توجيه المستخدمين برول admin إلى الـ dashboard
         if (Auth::user()->role === 'admin') {
-            return redirect()->route('dashboard');
+            $dashboardUrl = route('dashboard');
+            \Log::info('Admin user - redirecting to dashboard', [
+                'user_role' => Auth::user()->role,
+                'dashboard_url' => $dashboardUrl
+            ]);
+            return redirect($dashboardUrl);
         }
 
         // توجيه المستخدم إلى الصفحة الرئيسية إذا لم يكن هناك redirect محفوظ
-        return redirect()->route('home');
+        $homeUrl = route('home');
+        \Log::info('Regular user - redirecting to home', [
+            'user_role' => Auth::user()->role,
+            'home_url' => $homeUrl
+        ]);
+        return redirect($homeUrl);
     }
 
     /**
