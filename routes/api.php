@@ -637,50 +637,7 @@ Route::middleware('auth:sanctum')->post('/mobile/logout', function (Request $req
     }
 });
 
-// Helper function to find existing PointSys customer
-function findExistingPointSysCustomer(string $email): ?int
-{
-    try {
-        $pointSysService = new \App\Services\PointSysService();
-        // Search through customer IDs to find one with matching email
-        // Limited search to avoid timeout
-        $maxCustomerId = 30; // Reduced from 200 to 30
-        $startTime = microtime(true);
 
-        for ($i = 1; $i <= $maxCustomerId; $i++) {
-            // Check if we've been running for more than 8 seconds
-            if ((microtime(true) - $startTime) > 8) {
-                \Log::warning('PointSys customer search timeout after 8 seconds', [
-                    'email' => $email,
-                    'customers_checked' => $i
-                ]);
-                break;
-            }
-
-            try {
-                $balance = $pointSysService->getCustomerBalance($i);
-
-                if ($balance && isset($balance['data']['email']) && $balance['data']['email'] === $email) {
-                    return $i;
-                }
-
-                usleep(20000); // Reduced from 50ms to 20ms
-
-            } catch (\Exception $e) {
-                continue;
-            }
-        }
-
-        return null;
-
-    } catch (\Exception $e) {
-        \Log::error('Error while searching for existing PointSys customer', [
-            'email' => $email,
-            'error' => $e->getMessage()
-        ]);
-        return null;
-    }
-}
 
 // Mobile App Reservation API Routes
 Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function () {
