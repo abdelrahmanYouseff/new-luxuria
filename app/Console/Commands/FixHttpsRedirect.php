@@ -30,7 +30,7 @@ class FixHttpsRedirect extends Command
 
         // Check current environment
         $this->info("📝 Current environment: " . app()->environment());
-        
+
         // Check APP_URL in .env
         $appUrl = env('APP_URL');
         $this->info("📝 APP_URL: {$appUrl}");
@@ -43,7 +43,7 @@ class FixHttpsRedirect extends Command
         $this->info("📝 Testing routes...");
         $dashboardUrl = route('dashboard');
         $homeUrl = route('home');
-        
+
         $this->info("📍 Dashboard URL: {$dashboardUrl}");
         $this->info("📍 Home URL: {$homeUrl}");
 
