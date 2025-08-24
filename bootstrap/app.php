@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'pointsys.auth' => ValidatePointSysApiKey::class,
             'role' => CheckUserRole::class,
+            'check.session' => \App\Http\Middleware\CheckUserSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

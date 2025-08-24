@@ -74,7 +74,7 @@ Route::get('dashboard', function () {
         'couponsCount' => Coupon::count(),
         'vehicalsCount' => Vehicle::count(),
     ]);
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'check.session'])->name('dashboard');
 
 
 
@@ -727,6 +727,11 @@ Route::get('/invoice-coupons/{id}/pdf', [App\Http\Controllers\InvoiceController:
 
 // Invoice Routes (Smart route for both admin and users)
 Route::get('/view-invoices', [App\Http\Controllers\InvoiceController::class, 'viewInvoices'])->middleware(['auth'])->name('invoices.view');
+
+// Test login page
+Route::get('/test-login', function () {
+    return view('test-login');
+})->name('test.login');
 
 // صفحة about
 Route::get('/about', function () {

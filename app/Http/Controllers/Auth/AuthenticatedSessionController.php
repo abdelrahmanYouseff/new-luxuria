@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,7 +22,12 @@ class AuthenticatedSessionController extends Controller
     {
         // حفظ معامل redirect في الجلسة إذا كان موجوداً
         if ($request->has('redirect')) {
-            $request->session()->put('url.intended', $request->redirect);
+            Session::put('url.intended', $request->redirect);
+        }
+
+        // Check if request expects JSON (Inertia)
+        if ($request->header('X-Inertia')) {
+            return Inertia::render('Auth/Login');
         }
 
         return view('login');
@@ -33,17 +40,54 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        Session::regenerate();
+
+        // Log for debugging
+        Log::info('Login attempt', [
+            'user_role' => Auth::user()->role,
+            'user_id' => Auth::user()->id,
+            'session_id' => Session::getId(),
+        ]);
 
         // التحقق من وجود معامل redirect محفوظ في الجلسة
-        $intendedUrl = $request->session()->get('url.intended');
+        $intendedUrl = Session::get('url.intended');
         if ($intendedUrl) {
-            $request->session()->forget('url.intended');
+            Session::forget('url.intended');
+            Log::info('Redirecting to intended URL', ['url' => $intendedUrl]);
             return redirect($intendedUrl);
         }
 
+        // التحقق من وجود admin redirect من الـ event listener
+        $adminRedirect = Session::get('admin_redirect');
+        if ($adminRedirect) {
+            Session::forget('admin_redirect');
+            // Force HTTPS for all environments
+            $adminRedirect = str_replace('http://', 'https://', $adminRedirect);
+            Log::info('Redirecting to admin redirect', ['url' => $adminRedirect]);
+            return redirect($adminRedirect);
+        }
+
+        // توجيه المستخدمين برول admin إلى الـ dashboard
+        if (Auth::user()->role === 'admin') {
+            $dashboardUrl = route('dashboard');
+            // Force HTTPS for all environments
+            $dashboardUrl = str_replace('http://', 'https://', $dashboardUrl);
+            Log::info('Admin user - redirecting to dashboard', [
+                'user_role' => Auth::user()->role,
+                'dashboard_url' => $dashboardUrl
+            ]);
+            return redirect($dashboardUrl);
+        }
+
         // توجيه المستخدم إلى الصفحة الرئيسية إذا لم يكن هناك redirect محفوظ
-        return redirect()->route('home');
+        $homeUrl = route('home');
+        // Force HTTPS for all environments
+        $homeUrl = str_replace('http://', 'https://', $homeUrl);
+        Log::info('Regular user - redirecting to home', [
+            'user_role' => Auth::user()->role,
+            'home_url' => $homeUrl
+        ]);
+        return redirect($homeUrl);
     }
 
     /**
@@ -51,17 +95,31 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
+        // Logout from all guards
         Auth::guard('web')->logout();
+        Auth::guard('sanctum')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Clear all session data
+        Session::flush();
+        Session::invalidate();
+        Session::regenerateToken();
+
+        // Clear all cookies
+        $request->session()->forget('auth');
+        $request->session()->forget('user');
+        $request->session()->forget('_token');
 
         // Check if the request is from Inertia.js
         if ($request->header('X-Inertia')) {
-            // For Inertia requests, use external redirect to force full page reload
-            return Inertia::location(route('home'));
+            // For Inertia requests, force full page reload to login
+            return Inertia::location(route('login'));
         }
 
-        return redirect(route('home', absolute: false));
+        // Force redirect to login with cache busting
+        return redirect(route('login'))->withHeaders([
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
     }
 }

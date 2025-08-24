@@ -15,26 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin users
-        User::firstOrCreate(
-            ['email' => 'admin@luxuria.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => Hash::make('admin123'),
-                'role' => 'admin',
-                'email_verified_at' => now(),
-            ]
-        );
-
-        User::firstOrCreate(
-            ['email' => 'admin@rentluxuria.com'],
-            [
-                'name' => 'Rent Luxuria Admin',
-                'password' => Hash::make('password123'),
-                'role' => 'admin',
-                'email_verified_at' => now(),
-            ]
-        );
+        // استدعاء SimpleAdminUserSeeder لإنشاء المستخدمين Admin
+        $this->call([
+            SimpleAdminUserSeeder::class,
+        ]);
 
         // تم حذف كل عمليات إنشاء السيارات من السيدر بناءً على طلبك.
     }

@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Auth\Events\Login;
+use App\Listeners\RedirectAdminAfterLogin;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register event listener for admin redirect
+        $this->app['events']->listen(Login::class, RedirectAdminAfterLogin::class);
     }
 }

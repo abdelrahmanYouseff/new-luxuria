@@ -10,12 +10,16 @@ interface Props {
 }
 
 const handleLogout = () => {
-    // Clear all Inertia cache and ensure full page reload
+    // Clear all Inertia cache and data
     router.flushAll();
 
-    // As an additional safety measure, force a full page reload after logout
+    // Clear localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Force full page reload after logout
     setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = route('login');
     }, 100);
 };
 
