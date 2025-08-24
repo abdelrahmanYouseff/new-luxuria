@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Services\ExternalBookingService;
+use App\Services\BookingPointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -14,10 +15,14 @@ use Carbon\Carbon;
 class BookingController extends Controller
 {
     protected $externalBookingService;
+    protected $bookingPointsService;
 
-    public function __construct(ExternalBookingService $externalBookingService)
-    {
+    public function __construct(
+        ExternalBookingService $externalBookingService,
+        BookingPointsService $bookingPointsService
+    ) {
         $this->externalBookingService = $externalBookingService;
+        $this->bookingPointsService = $bookingPointsService;
     }
 
     /**
@@ -309,6 +314,9 @@ class BookingController extends Controller
 
                 Log::info('Creating local booking');
 
+                // Calculate points for this booking
+                $pointsToEarn = $bookingData['total_days'] * 5; // 5 points per day
+
                 // Create local booking
                 $booking = Booking::create([
                     'user_id' => $userId,
@@ -321,6 +329,7 @@ class BookingController extends Controller
                     'applied_rate' => $bookingData['applied_rate'],
                     'total_days' => $bookingData['total_days'],
                     'total_amount' => $bookingData['total_amount'],
+                    'points_earned' => $pointsToEarn,
                     'notes' => $bookingData['notes'] ?? null,
                     'status' => 'pending',
                     'external_reservation_id' => $externalBookingResult['external_booking_id'] ?? null,

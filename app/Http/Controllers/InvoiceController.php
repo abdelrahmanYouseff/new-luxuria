@@ -5,17 +5,23 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CouponInvoiceService;
+use App\Services\BookingInvoiceService;
 use Inertia\Inertia;
 use App\Models\CouponInvoice;
+use App\Models\BookingInvoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
     private CouponInvoiceService $couponInvoiceService;
+    private BookingInvoiceService $bookingInvoiceService;
 
-    public function __construct(CouponInvoiceService $couponInvoiceService)
-    {
+    public function __construct(
+        CouponInvoiceService $couponInvoiceService,
+        BookingInvoiceService $bookingInvoiceService
+    ) {
         $this->couponInvoiceService = $couponInvoiceService;
+        $this->bookingInvoiceService = $bookingInvoiceService;
     }
 
     /**
@@ -27,7 +33,7 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Get user's invoices via API
+     * Get user's invoices via API (combined coupon and booking invoices)
      */
     public function getUserInvoices(Request $request)
     {
@@ -42,12 +48,14 @@ class InvoiceController extends Controller
                     'total_amount' => 0,
                     'completed_invoices' => 0,
                     'failed_invoices' => 0,
+                    'booking_invoices' => 0,
+                    'coupon_invoices' => 0,
                 ],
             ]);
         }
 
-        $invoices = $this->couponInvoiceService->getUserInvoices($user, 50);
-        $stats = $this->couponInvoiceService->getInvoiceStats($user);
+        $invoices = $this->bookingInvoiceService->getCombinedUserInvoices($user, 50);
+        $stats = $this->bookingInvoiceService->getCombinedInvoiceStats($user);
 
         return response()->json([
             'success' => true,
@@ -172,21 +180,39 @@ class InvoiceController extends Controller
                 'stats' => $stats
             ]);
         } else {
-            // Regular user sees only their invoices
-            $invoices = CouponInvoice::where('user_id', $user->id)
+            // Regular user sees only their invoices (combined)
+            $combinedStats = $this->bookingInvoiceService->getCombinedInvoiceStats($user);
+            
+            // Get combined invoices with pagination
+            $couponInvoices = CouponInvoice::where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
-                ->paginate(15);
-
+                ->get();
+            
+            $bookingInvoices = BookingInvoice::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Combine and sort
+            $allInvoices = $couponInvoices->concat($bookingInvoices)->sortByDesc('created_at');
+            
+            // Manual pagination
+            $page = request()->get('page', 1);
+            $perPage = 15;
+            $offset = ($page - 1) * $perPage;
+            $paginatedInvoices = $allInvoices->slice($offset, $perPage);
+            
             $stats = [
-                'total_invoices' => CouponInvoice::where('user_id', $user->id)->count(),
-                'total_amount' => CouponInvoice::where('user_id', $user->id)->sum('amount'),
-                'completed_invoices' => CouponInvoice::where('user_id', $user->id)->where('payment_status', 'completed')->count(),
-                'pending_invoices' => CouponInvoice::where('user_id', $user->id)->where('payment_status', 'pending')->count(),
-                'failed_invoices' => CouponInvoice::where('user_id', $user->id)->where('payment_status', 'failed')->count(),
+                'total_invoices' => $combinedStats['total_invoices'],
+                'total_amount' => $combinedStats['total_amount'],
+                'completed_invoices' => $combinedStats['completed_invoices'],
+                'pending_invoices' => $combinedStats['pending_invoices'],
+                'failed_invoices' => $combinedStats['failed_invoices'],
+                'booking_invoices' => $combinedStats['booking_invoices'],
+                'coupon_invoices' => $combinedStats['coupon_invoices'],
             ];
 
             return Inertia::render('user/ViewInvoices', [
-                'invoices' => $invoices,
+                'invoices' => $paginatedInvoices,
                 'stats' => $stats,
                 'user' => $user
             ]);

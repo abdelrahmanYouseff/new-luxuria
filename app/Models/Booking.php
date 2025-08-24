@@ -19,6 +19,8 @@ class Booking extends Model
         'applied_rate',
         'total_days',
         'total_amount',
+        'points_earned',
+        'points_added_to_customer',
         'notes',
         'stripe_session_id',
         'external_reservation_id',
@@ -47,6 +49,14 @@ class Booking extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    /**
+     * Get the booking invoices for this booking.
+     */
+    public function bookingInvoices()
+    {
+        return $this->hasMany(BookingInvoice::class);
     }
 
     /**

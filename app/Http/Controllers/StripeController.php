@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 use App\Services\CouponInvoiceService;
 use App\Services\PointSysService;
 use App\Services\ExternalBookingService;
+use App\Services\BookingPointsService;
+use App\Services\BookingInvoiceService;
 use App\Mail\PaymentConfirmationMail;
 use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
@@ -24,15 +26,21 @@ class StripeController extends Controller
     private CouponInvoiceService $couponInvoiceService;
     private PointSysService $pointSysService;
     private ExternalBookingService $externalBookingService;
+    private BookingPointsService $bookingPointsService;
+    private BookingInvoiceService $bookingInvoiceService;
 
     public function __construct(
         CouponInvoiceService $couponInvoiceService,
         PointSysService $pointSysService,
-        ExternalBookingService $externalBookingService
+        ExternalBookingService $externalBookingService,
+        BookingPointsService $bookingPointsService,
+        BookingInvoiceService $bookingInvoiceService
     ) {
         $this->couponInvoiceService = $couponInvoiceService;
         $this->pointSysService = $pointSysService;
         $this->externalBookingService = $externalBookingService;
+        $this->bookingPointsService = $bookingPointsService;
+        $this->bookingInvoiceService = $bookingInvoiceService;
 
         // Only set Stripe API key if it's a real key (not placeholder)
         $stripeKey = config('services.stripe.secret_key');
@@ -906,9 +914,16 @@ class StripeController extends Controller
                 // Mark booking as confirmed
                 $booking->update(['status' => 'confirmed']);
 
+                // Create booking invoice
+                $bookingInvoice = $this->bookingInvoiceService->createInvoice($booking);
+
+                // Add points to customer
+                $pointsResult = $this->bookingPointsService->addPointsToCustomer($booking);
+
                 Log::info('Mock booking payment completed', [
                     'booking_id' => $booking->id,
                     'session_id' => $sessionId,
+                    'points_result' => $pointsResult,
                 ]);
 
                 // Send confirmation email to user (for mock payments too)
@@ -1019,10 +1034,18 @@ class StripeController extends Controller
                     }
                 }
 
+                // Create booking invoice
+                $bookingInvoice = $this->bookingInvoiceService->createInvoice($booking);
+
+                // Add points to customer
+                $pointsResult = $this->bookingPointsService->addPointsToCustomer($booking);
+
                 Log::info('Booking payment completed successfully', [
                     'booking_id' => $booking->id,
                     'session_id' => $sessionId,
                     'amount' => $booking->total_amount,
+                    'points_result' => $pointsResult,
+                    'invoice_id' => $bookingInvoice->id,
                 ]);
 
                 // Send confirmation email to user

@@ -526,7 +526,12 @@ Route::middleware(['auth'])->group(function () {
 // User Points API routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/user-points', [App\Http\Controllers\UserPointsController::class, 'getCurrentUserPoints'])->name('user.points');
-    Route::post('/user-points/add', [App\Http\Controllers\UserPointsController::class, 'addPoints'])->name('user.points.add');
+Route::post('/user-points/add', [App\Http\Controllers\UserPointsController::class, 'addPoints'])->name('user.points.add');
+Route::get('/user-points/booking-stats', [App\Http\Controllers\UserPointsController::class, 'getBookingPointsStats'])->name('user.points.booking-stats');
+Route::get('/user-points/booking-history', [App\Http\Controllers\UserPointsController::class, 'getBookingHistory'])->name('user.points.booking-history');
+Route::get('/booking-points', function () {
+    return Inertia::render('BookingPoints');
+})->middleware(['auth'])->name('booking.points');
 
     // PointSys API routes for frontend
     Route::get('/api/pointsys/rewards', [App\Http\Controllers\PointSysController::class, 'getRewards'])->name('pointsys.rewards');

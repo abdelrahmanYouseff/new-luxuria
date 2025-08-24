@@ -61,6 +61,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the booking invoices for the user.
+     */
+    public function bookingInvoices()
+    {
+        return $this->hasMany(BookingInvoice::class);
+    }
+
+    /**
      * Get the bookings for the user.
      */
     public function bookings()

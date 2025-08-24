@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\PointSysService;
+use App\Services\BookingPointsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -11,10 +12,14 @@ use Illuminate\Support\Facades\Log;
 class UserPointsController extends Controller
 {
     private PointSysService $pointSysService;
+    private BookingPointsService $bookingPointsService;
 
-    public function __construct(PointSysService $pointSysService)
-    {
+    public function __construct(
+        PointSysService $pointSysService,
+        BookingPointsService $bookingPointsService
+    ) {
         $this->pointSysService = $pointSysService;
+        $this->bookingPointsService = $bookingPointsService;
     }
 
     /**
@@ -320,6 +325,85 @@ class UserPointsController extends Controller
         } catch (\Exception $e) {
             Log::error('Error redeeming reward: ' . $e->getMessage());
             return response()->json(['error' => 'Internal server error'], 500);
+        }
+    }
+
+    /**
+     * Get user's booking points statistics
+     */
+    public function getBookingPointsStats(): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+
+        try {
+            $stats = $this->bookingPointsService->getCustomerPointsStats($user);
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting booking points stats', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get booking points statistics'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get user's booking history with points
+     */
+    public function getBookingHistory(): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+
+        try {
+            $bookings = $user->bookings()
+                ->with('vehicle')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($booking) {
+                    return [
+                        'id' => $booking->id,
+                        'vehicle' => $booking->vehicle->make . ' ' . $booking->vehicle->model,
+                        'start_date' => $booking->start_date->format('d/m/Y'),
+                        'end_date' => $booking->end_date->format('d/m/Y'),
+                        'total_days' => $booking->total_days,
+                        'total_amount' => $booking->total_amount,
+                        'status' => $booking->status,
+                        'points_earned' => $booking->points_earned,
+                        'points_added_to_customer' => $booking->points_added_to_customer,
+                        'created_at' => $booking->created_at->format('d/m/Y H:i')
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $bookings
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting booking history', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get booking history'
+            ], 500);
         }
     }
 }
