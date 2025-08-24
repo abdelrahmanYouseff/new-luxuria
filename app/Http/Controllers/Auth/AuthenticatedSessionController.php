@@ -52,17 +52,31 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Logout from all guards
         Auth::guard('web')->logout();
+        Auth::guard('sanctum')->logout();
 
+        // Clear all session data
+        Session::flush();
         Session::invalidate();
         Session::regenerateToken();
 
+        // Clear all cookies
+        $request->session()->forget('auth');
+        $request->session()->forget('user');
+        $request->session()->forget('_token');
+
         // Check if the request is from Inertia.js
         if ($request->header('X-Inertia')) {
-            // For Inertia requests, redirect to login page
+            // For Inertia requests, force full page reload to login
             return Inertia::location(route('login'));
         }
 
-        return redirect(route('login'));
+        // Force redirect to login with cache busting
+        return redirect(route('login'))->withHeaders([
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
     }
 }

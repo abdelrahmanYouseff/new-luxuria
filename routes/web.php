@@ -74,7 +74,7 @@ Route::get('dashboard', function () {
         'couponsCount' => Coupon::count(),
         'vehicalsCount' => Vehicle::count(),
     ]);
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'check.session'])->name('dashboard');
 
 
 
