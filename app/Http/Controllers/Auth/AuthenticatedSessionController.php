@@ -43,6 +43,18 @@ class AuthenticatedSessionController extends Controller
             return redirect($intendedUrl);
         }
 
+        // التحقق من وجود admin redirect من الـ event listener
+        $adminRedirect = Session::get('admin_redirect');
+        if ($adminRedirect) {
+            Session::forget('admin_redirect');
+            return redirect($adminRedirect);
+        }
+
+        // توجيه المستخدمين برول admin إلى الـ dashboard
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('dashboard');
+        }
+
         // توجيه المستخدم إلى الصفحة الرئيسية إذا لم يكن هناك redirect محفوظ
         return redirect()->route('home');
     }
