@@ -24,6 +24,11 @@ class AuthenticatedSessionController extends Controller
             Session::put('url.intended', $request->redirect);
         }
 
+        // Check if request expects JSON (Inertia)
+        if ($request->header('X-Inertia')) {
+            return Inertia::render('Auth/Login');
+        }
+
         return view('login');
     }
 
