@@ -6,21 +6,20 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class AdminUserSeeder extends Seeder
+class SimpleAdminUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // قائمة المستخدمين Admin
+        // قائمة المستخدمين Admin (بدون phone)
         $adminUsers = [
             [
                 'name' => 'Super Admin',
                 'email' => 'admin@luxuria.com',
                 'password' => 'admin123',
                 'role' => 'admin',
-                'phone' => '+971501234567',
                 'emirate' => 'Dubai',
                 'address' => 'Dubai, UAE',
             ],
@@ -29,7 +28,6 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@rentluxuria.com',
                 'password' => 'password123',
                 'role' => 'admin',
-                'phone' => '+971502345678',
                 'emirate' => 'Abu Dhabi',
                 'address' => 'Abu Dhabi, UAE',
             ],
@@ -38,7 +36,6 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@luxuria-uae.com',
                 'password' => 'admin123456',
                 'role' => 'admin',
-                'phone' => '+971503456789',
                 'emirate' => 'Sharjah',
                 'address' => 'Sharjah, UAE',
             ],
@@ -47,7 +44,6 @@ class AdminUserSeeder extends Seeder
                 'email' => 'test@admin.com',
                 'password' => 'test123',
                 'role' => 'admin',
-                'phone' => '+971504567890',
                 'emirate' => 'Ajman',
                 'address' => 'Ajman, UAE',
             ],
@@ -56,7 +52,6 @@ class AdminUserSeeder extends Seeder
                 'email' => 'system@luxuria.com',
                 'password' => 'system123',
                 'role' => 'admin',
-                'phone' => '+971505678901',
                 'emirate' => 'Ras Al Khaimah',
                 'address' => 'Ras Al Khaimah, UAE',
             ],
@@ -72,15 +67,13 @@ class AdminUserSeeder extends Seeder
                     'emirate' => $adminData['emirate'],
                     'address' => $adminData['address'],
                     'email_verified_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]
             );
         }
 
-        $this->command->info('Admin users seeded successfully!');
-        $this->command->info('Available admin accounts:');
-
+        $this->command->info('✅ Admin users seeded successfully!');
+        $this->command->info('📋 Available admin accounts:');
+        
         foreach ($adminUsers as $admin) {
             $this->command->info("- {$admin['email']} / {$admin['password']}");
         }

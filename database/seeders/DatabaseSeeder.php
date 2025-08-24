@@ -15,9 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // استدعاء AdminUserSeeder لإنشاء المستخدمين Admin
+        // استدعاء SimpleAdminUserSeeder لإنشاء المستخدمين Admin
         $this->call([
-            AdminUserSeeder::class,
+            SimpleAdminUserSeeder::class,
         ]);
 
         // تم حذف كل عمليات إنشاء السيارات من السيدر بناءً على طلبك.
