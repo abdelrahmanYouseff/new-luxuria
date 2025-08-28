@@ -563,6 +563,61 @@ class StripeController extends Controller
                             }
                         }
 
+                        // Add points to customer after successful payment
+                        if ($booking->user && $booking->user->pointsys_customer_id) {
+                            try {
+                                $pointsResult = $this->bookingPointsService->addPointsToCustomer($booking);
+
+                                if ($pointsResult['success']) {
+                                    Log::info('Points added successfully after booking payment via webhook', [
+                                        'booking_id' => $booking->id,
+                                        'user_id' => $booking->user->id,
+                                        'points_added' => $pointsResult['points_added'],
+                                        'session_id' => $session->id
+                                    ]);
+                                } else {
+                                    Log::warning('Failed to add points after booking payment via webhook', [
+                                        'booking_id' => $booking->id,
+                                        'user_id' => $booking->user->id,
+                                        'error' => $pointsResult['message'],
+                                        'session_id' => $session->id
+                                    ]);
+                                }
+                            } catch (\Exception $e) {
+                                Log::error('Exception while adding points after booking payment via webhook', [
+                                    'booking_id' => $booking->id,
+                                    'user_id' => $booking->user->id,
+                                    'error' => $e->getMessage(),
+                                    'session_id' => $session->id
+                                ]);
+                            }
+                        }
+
+                        // Create booking invoice
+                        try {
+                            $invoiceResult = $this->bookingInvoiceService->createInvoice($booking);
+
+                            if ($invoiceResult['success']) {
+                                Log::info('Booking invoice created successfully via webhook', [
+                                    'booking_id' => $booking->id,
+                                    'invoice_number' => $invoiceResult['invoice_number'],
+                                    'session_id' => $session->id
+                                ]);
+                            } else {
+                                Log::warning('Failed to create booking invoice via webhook', [
+                                    'booking_id' => $booking->id,
+                                    'error' => $invoiceResult['message'],
+                                    'session_id' => $session->id
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Exception while creating booking invoice via webhook', [
+                                'booking_id' => $booking->id,
+                                'error' => $e->getMessage(),
+                                'session_id' => $session->id
+                            ]);
+                        }
+
                         Log::info('Booking confirmed via webhook', [
                             'booking_id' => $booking->id,
                             'session_id' => $session->id,

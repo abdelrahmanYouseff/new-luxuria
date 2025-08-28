@@ -737,6 +737,7 @@ class MobileReservationController extends Controller
                 'customer_email' => $user->email,
                 'client_reference_id' => $reservation->id,
                 'metadata' => [
+                    'booking_id' => $reservation->id,
                     'reservation_id' => $reservation->id,
                     'user_id' => $user->id,
                     'vehicle_id' => $reservation->vehicle_id,
