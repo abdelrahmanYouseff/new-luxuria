@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use App\Services\CouponInvoiceService;
 use App\Services\PointSysService;
 use App\Services\ExternalBookingService;
@@ -623,6 +624,48 @@ class StripeController extends Controller
                             'session_id' => $session->id,
                             'amount' => $booking->total_amount,
                         ]);
+
+                        // Call mobile booking API after successful payment via webhook
+                        try {
+                            $mobileApiResponse = Http::post(config('app.url') . '/api/mobile/bookings/create', [
+                                'vehicle_id' => $booking->vehicle_id,
+                                'email' => $booking->user->email,
+                                'start_date' => $booking->start_date->format('Y-m-d'),
+                                'end_date' => $booking->end_date->format('Y-m-d'),
+                                'total_days' => $booking->total_days,
+                                'total_amount' => $booking->total_amount,
+                                'daily_rate' => $booking->daily_rate,
+                                'applied_rate' => $booking->applied_rate,
+                                'emirate' => $booking->emirate,
+                                'pickup_location' => $booking->pickup_location ?? $booking->emirate,
+                                'dropoff_location' => $booking->dropoff_location ?? $booking->emirate,
+                                'notes' => 'Booking created via Stripe webhook - ' . $booking->id
+                            ]);
+
+                            if ($mobileApiResponse->successful()) {
+                                $mobileApiData = $mobileApiResponse->json();
+                                Log::info('Mobile booking API called successfully via webhook', [
+                                    'booking_id' => $booking->id,
+                                    'mobile_api_response' => $mobileApiData,
+                                    'external_booking_id' => $mobileApiData['external_booking_id'] ?? null,
+                                    'external_booking_uid' => $mobileApiData['external_booking_uid'] ?? null,
+                                    'session_id' => $session->id
+                                ]);
+                            } else {
+                                Log::warning('Mobile booking API call failed via webhook', [
+                                    'booking_id' => $booking->id,
+                                    'mobile_api_status' => $mobileApiResponse->status(),
+                                    'mobile_api_response' => $mobileApiResponse->body(),
+                                    'session_id' => $session->id
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Exception while calling mobile booking API via webhook', [
+                                'booking_id' => $booking->id,
+                                'error' => $e->getMessage(),
+                                'session_id' => $session->id
+                            ]);
+                        }
                     }
                 }
 
@@ -1114,6 +1157,45 @@ class StripeController extends Controller
                     Log::error('Failed to send booking confirmation email', [
                         'booking_id' => $booking->id,
                         'user_email' => $booking->user->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                // Call mobile booking API after successful payment
+                try {
+                    $mobileApiResponse = Http::post(config('app.url') . '/api/mobile/bookings/create', [
+                        'vehicle_id' => $booking->vehicle_id,
+                        'email' => $booking->user->email,
+                        'start_date' => $booking->start_date->format('Y-m-d'),
+                        'end_date' => $booking->end_date->format('Y-m-d'),
+                        'total_days' => $booking->total_days,
+                        'total_amount' => $booking->total_amount,
+                        'daily_rate' => $booking->daily_rate,
+                        'applied_rate' => $booking->applied_rate,
+                        'emirate' => $booking->emirate,
+                        'pickup_location' => $booking->pickup_location ?? $booking->emirate,
+                        'dropoff_location' => $booking->dropoff_location ?? $booking->emirate,
+                        'notes' => 'Booking created via Stripe payment - ' . $booking->id
+                    ]);
+
+                    if ($mobileApiResponse->successful()) {
+                        $mobileApiData = $mobileApiResponse->json();
+                        Log::info('Mobile booking API called successfully after Stripe payment', [
+                            'booking_id' => $booking->id,
+                            'mobile_api_response' => $mobileApiData,
+                            'external_booking_id' => $mobileApiData['external_booking_id'] ?? null,
+                            'external_booking_uid' => $mobileApiData['external_booking_uid'] ?? null,
+                        ]);
+                    } else {
+                        Log::warning('Mobile booking API call failed after Stripe payment', [
+                            'booking_id' => $booking->id,
+                            'mobile_api_status' => $mobileApiResponse->status(),
+                            'mobile_api_response' => $mobileApiResponse->body(),
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Exception while calling mobile booking API after Stripe payment', [
+                        'booking_id' => $booking->id,
                         'error' => $e->getMessage(),
                     ]);
                 }
