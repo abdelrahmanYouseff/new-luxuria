@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Reservation;
 use App\Services\ExternalBookingService;
 use App\Services\PointSysService;
+use App\Services\BookingPointsService;
+use App\Services\BookingInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -19,10 +21,17 @@ use Stripe\Checkout\Session as StripeSession;
 class MobileReservationController extends Controller
 {
     protected $externalBookingService;
+    protected $bookingPointsService;
+    protected $bookingInvoiceService;
 
-    public function __construct(ExternalBookingService $externalBookingService)
-    {
+    public function __construct(
+        ExternalBookingService $externalBookingService,
+        BookingPointsService $bookingPointsService,
+        BookingInvoiceService $bookingInvoiceService
+    ) {
         $this->externalBookingService = $externalBookingService;
+        $this->bookingPointsService = $bookingPointsService;
+        $this->bookingInvoiceService = $bookingInvoiceService;
     }
 
     /**
@@ -251,6 +260,9 @@ class MobileReservationController extends Controller
                 'uid_found' => !empty($rlappBookingUid)
             ]);
 
+            // Calculate points to earn (5 points per day)
+            $pointsToEarn = $totalDays * 5;
+
             // Create local booking record
             $localBooking = Booking::create([
                 'user_id' => $user->id,
@@ -263,6 +275,8 @@ class MobileReservationController extends Controller
                 'applied_rate' => $appliedRate,
                 'total_days' => $totalDays,
                 'total_amount' => $totalAmount,
+                'points_earned' => $pointsToEarn,
+                'points_added_to_customer' => false, // Will be set to true after payment
                 'notes' => $request->notes ?? '',
                 'status' => 'pending',
                 'external_reservation_id' => $rlappBookingId,
@@ -318,6 +332,11 @@ class MobileReservationController extends Controller
                             'pricing_type' => $localBooking->pricing_type,
                             'applied_rate' => $localBooking->applied_rate,
                             'total_amount' => $localBooking->total_amount
+                        ],
+                        'points' => [
+                            'points_earned' => $localBooking->points_earned,
+                            'points_added_to_customer' => $localBooking->points_added_to_customer,
+                            'points_message' => 'سيتم إضافة ' . $localBooking->points_earned . ' نقطة بعد إتمام عملية الدفع'
                         ],
                         'location' => [
                             'emirate' => $localBooking->emirate,
@@ -430,6 +449,11 @@ class MobileReservationController extends Controller
                             'pricing_type' => $booking->pricing_type,
                             'applied_rate' => $booking->applied_rate,
                             'total_amount' => $booking->total_amount
+                        ],
+                        'points' => [
+                            'points_earned' => $booking->points_earned,
+                            'points_added_to_customer' => $booking->points_added_to_customer,
+                            'points_status' => $booking->points_added_to_customer ? 'تم إضافة النقاط' : 'في انتظار الدفع'
                         ],
                         'location' => [
                             'emirate' => $booking->emirate
@@ -713,6 +737,7 @@ class MobileReservationController extends Controller
                 'customer_email' => $user->email,
                 'client_reference_id' => $reservation->id,
                 'metadata' => [
+                    'booking_id' => $reservation->id,
                     'reservation_id' => $reservation->id,
                     'user_id' => $user->id,
                     'vehicle_id' => $reservation->vehicle_id,
@@ -939,6 +964,42 @@ class MobileReservationController extends Controller
                 'payment_status' => 'paid'
             ]);
 
+            // Add points to customer after successful payment
+            $pointsResult = null;
+            try {
+                $pointsResult = $this->bookingPointsService->addPointsToCustomer($booking);
+                Log::info('Points added to customer after mobile payment', [
+                    'booking_id' => $booking->id,
+                    'user_id' => $user->id,
+                    'points_result' => $pointsResult
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to add points to customer after mobile payment', [
+                    'booking_id' => $booking->id,
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+                $pointsResult = ['success' => false, 'message' => $e->getMessage()];
+            }
+
+            // Create booking invoice
+            $invoiceResult = null;
+            try {
+                $invoiceResult = $this->bookingInvoiceService->createInvoice($booking);
+                Log::info('Booking invoice created after mobile payment', [
+                    'booking_id' => $booking->id,
+                    'user_id' => $user->id,
+                    'invoice_result' => $invoiceResult
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create booking invoice after mobile payment', [
+                    'booking_id' => $booking->id,
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+                $invoiceResult = ['success' => false, 'message' => $e->getMessage()];
+            }
+
             // Update corresponding reservation if exists
             $reservation = null;
             if ($booking->id) {
@@ -1073,6 +1134,19 @@ class MobileReservationController extends Controller
                         'payment_status' => $reservation->payment_status,
                         'updated_at' => $reservation->updated_at->toISOString()
                     ] : null,
+                    'points_added' => [
+                        'success' => $pointsResult['success'] ?? false,
+                        'message' => $pointsResult['message'] ?? 'Points not added',
+                        'points_earned' => $booking->points_earned ?? 0,
+                        'points_added_to_customer' => $booking->points_added_to_customer ?? false,
+                        'total_points' => $pointsResult['total_points'] ?? 0
+                    ],
+                    'invoice_created' => [
+                        'success' => $invoiceResult['success'] ?? false,
+                        'message' => $invoiceResult['message'] ?? 'Invoice not created',
+                        'invoice_number' => $invoiceResult['invoice_number'] ?? null,
+                        'invoice_id' => $invoiceResult['invoice_id'] ?? null
+                    ],
                     'rlapp_update' => [
                         'success' => $rlappUpdateResult['success'] ?? false,
                         'message' => $rlappUpdateResult['message'] ?? 'Unknown RLAPP update status',
@@ -1090,6 +1164,8 @@ class MobileReservationController extends Controller
                         'local_booking_confirmed' => true,
                         'local_reservation_confirmed' => $reservation ? true : false,
                         'rlapp_system_confirmed' => $rlappUpdateResult['success'] ?? false,
+                        'points_added' => $pointsResult['success'] ?? false,
+                        'invoice_created' => $invoiceResult['success'] ?? false,
                         'confirmation_timestamp' => now()->toISOString()
                     ]
                 ]
@@ -1649,6 +1725,78 @@ class MobileReservationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في إنشاء رابط الدفع'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get booking points statistics for mobile app
+     */
+    public function getBookingPointsStats(Request $request)
+    {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يجب تسجيل الدخول أولاً'
+                ], 401);
+            }
+
+            $stats = $this->bookingPointsService->getCustomerPointsStats($user);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم جلب إحصائيات النقاط بنجاح',
+                'data' => $stats
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get booking points stats', [
+                'user_id' => $request->user()->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل في جلب إحصائيات النقاط',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get booking points history for mobile app
+     */
+    public function getBookingPointsHistory(Request $request)
+    {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يجب تسجيل الدخول أولاً'
+                ], 401);
+            }
+
+            $history = $this->bookingPointsService->getBookingHistory($user);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم جلب تاريخ النقاط بنجاح',
+                'data' => $history
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get booking points history', [
+                'user_id' => $request->user()->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل في جلب تاريخ النقاط',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

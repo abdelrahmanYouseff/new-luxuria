@@ -170,4 +170,43 @@ class BookingPointsService
             'points_per_day' => self::POINTS_PER_DAY
         ];
     }
+
+    /**
+     * الحصول على تاريخ النقاط من الحجوزات
+     */
+    public function getBookingHistory(User $user): array
+    {
+        $bookings = $user->bookings()
+            ->with('vehicle')
+            ->where('points_added_to_customer', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($booking) {
+                return [
+                    'booking_id' => $booking->id,
+                    'vehicle' => [
+                        'make' => $booking->vehicle->make,
+                        'model' => $booking->vehicle->model,
+                        'year' => $booking->vehicle->year,
+                        'plate_number' => $booking->vehicle->plate_number
+                    ],
+                    'dates' => [
+                        'start_date' => $booking->start_date,
+                        'end_date' => $booking->end_date,
+                        'total_days' => $booking->total_days
+                    ],
+                    'points' => [
+                        'points_earned' => $booking->points_earned,
+                        'points_per_day' => self::POINTS_PER_DAY
+                    ],
+                    'total_amount' => $booking->total_amount,
+                    'created_at' => $booking->created_at->toISOString()
+                ];
+            });
+
+        return [
+            'bookings' => $bookings,
+            'total_count' => $bookings->count()
+        ];
+    }
 }

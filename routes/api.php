@@ -653,6 +653,8 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
 
 // Mobile App User Points API
 Route::middleware('auth:sanctum')->get('/mobile/points', [App\Http\Controllers\MobileReservationController::class, 'getUserPoints']);
+Route::middleware('auth:sanctum')->get('/mobile/points/booking-stats', [App\Http\Controllers\MobileReservationController::class, 'getBookingPointsStats']);
+Route::middleware('auth:sanctum')->get('/mobile/points/booking-history', [App\Http\Controllers\MobileReservationController::class, 'getBookingPointsHistory']);
 
 // Mobile App Coupons API
 Route::middleware('auth:sanctum')->get('/mobile/coupons', [App\Http\Controllers\MobileReservationController::class, 'getMobileCoupons']);
