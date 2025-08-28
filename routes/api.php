@@ -651,6 +651,11 @@ Route::middleware('auth:sanctum')->prefix('mobile/reservations')->group(function
     Route::post('/quick-checkout', [App\Http\Controllers\MobileReservationController::class, 'createQuickCheckout']);
 });
 
+// Mobile App Booking API Routes
+Route::prefix('mobile/bookings')->group(function () {
+    Route::post('/create', [App\Http\Controllers\MobileController::class, 'createBooking']);
+});
+
 // Mobile App User Points API
 Route::middleware('auth:sanctum')->get('/mobile/points', [App\Http\Controllers\MobileReservationController::class, 'getUserPoints']);
 Route::middleware('auth:sanctum')->get('/mobile/points/booking-stats', [App\Http\Controllers\MobileReservationController::class, 'getBookingPointsStats']);
