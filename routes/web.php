@@ -60,8 +60,24 @@ Route::get('/test-dashboard', function () {
         'invoicesCount' => 0,
         'couponsCount' => 0,
         'vehicalsCount' => 0,
+        'userRole' => Auth::user()->role ?? null,
     ]);
 })->middleware(['auth'])->name('test.dashboard');
+
+// Simple dashboard test without middleware
+Route::get('/simple-dashboard', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return Inertia::render('Dashboard', [
+        'reservationsCount' => Reservation::count(),
+        'invoicesCount' => Transaction::count(),
+        'couponsCount' => Coupon::count(),
+        'vehicalsCount' => Vehicle::count(),
+        'userRole' => Auth::user()->role,
+    ]);
+})->name('simple.dashboard');
 
 // Public vehicles route for testing
 Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
@@ -73,6 +89,7 @@ Route::get('dashboard', function () {
         'invoicesCount' => Transaction::count(),
         'couponsCount' => Coupon::count(),
         'vehicalsCount' => Vehicle::count(),
+        'userRole' => Auth::user()->role ?? null,
     ]);
 })->middleware(['auth', 'check.session'])->name('dashboard');
 

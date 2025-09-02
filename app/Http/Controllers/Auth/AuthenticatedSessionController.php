@@ -49,13 +49,17 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         // Regenerate session for security
-        Session::regenerate();
+        $request->session()->regenerate();
+
+        // Set the auth session key required by CheckUserSession middleware
+        Session::put('auth', true);
 
         // Log for debugging
         Log::info('Login successful', [
             'user_role' => Auth::user()->role,
             'user_id' => Auth::user()->id,
             'session_id' => Session::getId(),
+            'auth_session_set' => Session::has('auth'),
         ]);
 
         // التحقق من وجود معامل redirect محفوظ في الجلسة
@@ -70,8 +74,10 @@ class AuthenticatedSessionController extends Controller
         $adminRedirect = Session::get('admin_redirect');
         if ($adminRedirect) {
             Session::forget('admin_redirect');
-            // Force HTTPS for all environments
-            $adminRedirect = str_replace('http://', 'https://', $adminRedirect);
+            // Only force HTTPS in production
+            if (config('app.env') === 'production') {
+                $adminRedirect = str_replace('http://', 'https://', $adminRedirect);
+            }
             Log::info('Redirecting to admin redirect', ['url' => $adminRedirect]);
             return redirect($adminRedirect);
         }
@@ -79,8 +85,10 @@ class AuthenticatedSessionController extends Controller
         // توجيه المستخدمين برول admin إلى الـ dashboard
         if (Auth::user()->role === 'admin') {
             $dashboardUrl = route('dashboard');
-            // Force HTTPS for all environments
-            $dashboardUrl = str_replace('http://', 'https://', $dashboardUrl);
+            // Only force HTTPS in production
+            if (config('app.env') === 'production') {
+                $dashboardUrl = str_replace('http://', 'https://', $dashboardUrl);
+            }
             Log::info('Admin user - redirecting to dashboard', [
                 'user_role' => Auth::user()->role,
                 'dashboard_url' => $dashboardUrl
@@ -90,8 +98,10 @@ class AuthenticatedSessionController extends Controller
 
         // توجيه المستخدم إلى الصفحة الرئيسية إذا لم يكن هناك redirect محفوظ
         $homeUrl = route('home');
-        // Force HTTPS for all environments
-        $homeUrl = str_replace('http://', 'https://', $homeUrl);
+        // Only force HTTPS in production
+        if (config('app.env') === 'production') {
+            $homeUrl = str_replace('http://', 'https://', $homeUrl);
+        }
         Log::info('Regular user - redirecting to home', [
             'user_role' => Auth::user()->role,
             'home_url' => $homeUrl

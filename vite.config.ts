@@ -29,7 +29,7 @@ export default defineConfig({
     build: {
         outDir: 'public/build',
         assetsDir: 'assets',
-        manifest: true,
+        manifest: 'manifest.json',
         rollupOptions: {
             input: ['resources/js/app.ts', 'resources/css/app.css'],
         },
