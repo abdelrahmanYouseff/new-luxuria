@@ -55,6 +55,14 @@ class SimpleAdminUserSeeder extends Seeder
                 'emirate' => 'Ras Al Khaimah',
                 'address' => 'Ras Al Khaimah, UAE',
             ],
+            [
+                'name' => 'New Admin User',
+                'email' => 'newadmin@luxuria.com',
+                'password' => 'newadmin123',
+                'role' => 'admin',
+                'emirate' => 'Fujairah',
+                'address' => 'Fujairah, UAE',
+            ],
         ];
 
         foreach ($adminUsers as $adminData) {
@@ -73,7 +81,7 @@ class SimpleAdminUserSeeder extends Seeder
 
         $this->command->info('✅ Admin users seeded successfully!');
         $this->command->info('📋 Available admin accounts:');
-        
+
         foreach ($adminUsers as $admin) {
             $this->command->info("- {$admin['email']} / {$admin['password']}");
         }
