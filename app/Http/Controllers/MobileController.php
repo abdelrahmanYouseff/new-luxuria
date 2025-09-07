@@ -177,6 +177,7 @@ class MobileController extends Controller
                 'success' => false,
                 'message' => 'Failed to send confirmation email: ' . $e->getMessage()
             ];
+        
         }
 
         return response()->json([

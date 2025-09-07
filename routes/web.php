@@ -709,6 +709,9 @@ Route::get('/single-image-test', function () {
     return view('single_image_test', compact('vehicles'));
 });
 
+// Debug Storage Routes
+require __DIR__.'/debug-storage.php';
+
 // Quick Image Upload
 Route::get('/quick-image-upload', function () {
     $vehicles = App\Models\Vehicle::orderBy('make')->orderBy('model')->get();

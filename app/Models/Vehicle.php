@@ -48,7 +48,8 @@ class Vehicle extends Model
             if (filter_var($this->image, FILTER_VALIDATE_URL)) {
                 return $this->image;
             }
-            return asset('storage/' . $this->image);
+            // استخدام Storage::url بدلاً من asset لضمان العمل على السيرفر
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->image);
         }
         return asset('asset/image.png'); // Default image
     }
