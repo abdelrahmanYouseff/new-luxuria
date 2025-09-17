@@ -63,7 +63,7 @@
             <div class="privacy-section mb-5" id="section-1">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">1. Information We Collect</h3>
-                    
+
                     <h5 class="mb-3">1.1 Personal Information</h5>
                     <p>We collect personal information that you voluntarily provide to us when you:</p>
                     <ul class="privacy-list">
@@ -90,7 +90,7 @@
             <div class="privacy-section mb-5" id="section-2">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">2. How We Use Your Information</h3>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="privacy-use-box p-3 rounded h-100">
@@ -144,7 +144,7 @@
             <div class="privacy-section mb-5" id="section-3">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">3. How We Share Your Information</h3>
-                    
+
                     <div class="privacy-important-notice mb-4">
                         <i class="bi bi-shield-check text-gold me-2"></i>
                         <strong>We do not sell, rent, or trade your personal information to third parties for marketing purposes.</strong>
@@ -165,9 +165,9 @@
             <div class="privacy-section mb-5" id="section-4">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">4. Data Security</h3>
-                    
+
                     <p class="mb-4">We implement comprehensive security measures to protect your personal information:</p>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="privacy-security-item d-flex align-items-start">
@@ -213,9 +213,9 @@
             <div class="privacy-section mb-5" id="section-5">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">5. Cookies and Tracking Technologies</h3>
-                    
+
                     <p class="mb-4">We use cookies and similar technologies to enhance your experience:</p>
-                    
+
                     <div class="table-responsive">
                         <table class="table table-bordered privacy-cookies-table">
                             <thead class="table-dark">
@@ -249,7 +249,7 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <p class="mt-3">You can manage cookie preferences through your browser settings. Note that disabling essential cookies may affect website functionality.</p>
                 </div>
             </div>
@@ -258,9 +258,9 @@
             <div class="privacy-section mb-5" id="section-6">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">6. Your Privacy Rights</h3>
-                    
+
                     <p class="mb-4">Under applicable privacy laws, you have the following rights:</p>
-                    
+
                     <div class="row">
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
@@ -299,7 +299,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="privacy-contact-rights mt-4 p-3 rounded">
                         <h6 class="text-gold mb-2">How to Exercise Your Rights</h6>
                         <p class="mb-1">To exercise any of these rights, please contact us at:</p>
@@ -312,9 +312,9 @@
             <div class="privacy-section mb-5" id="section-7">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">7. Third-Party Services</h3>
-                    
+
                     <p class="mb-4">We work with trusted third-party service providers who help us deliver our services:</p>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="privacy-third-party-card p-3 rounded">
@@ -352,9 +352,9 @@
             <div class="privacy-section mb-5" id="section-8">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">8. Data Retention</h3>
-                    
+
                     <p class="mb-4">We retain your personal information for as long as necessary to provide our services and comply with legal obligations:</p>
-                    
+
                     <ul class="privacy-list">
                         <li><strong>Account Information:</strong> Retained while your account is active and for 3 years after closure</li>
                         <li><strong>Booking Records:</strong> Kept for 7 years for legal and tax compliance</li>
@@ -362,7 +362,7 @@
                         <li><strong>Marketing Data:</strong> Until you unsubscribe or withdraw consent</li>
                         <li><strong>Legal Claims:</strong> Retained as long as legally required</li>
                     </ul>
-                    
+
                     <div class="privacy-retention-notice mt-4 p-3 rounded">
                         <i class="bi bi-info-circle text-gold me-2"></i>
                         <strong>Automatic Deletion:</strong> We automatically delete data that is no longer needed, unless legal obligations require longer retention.
@@ -374,9 +374,9 @@
             <div class="privacy-section mb-5" id="section-9">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">9. International Data Transfers</h3>
-                    
+
                     <p class="mb-4">Your information may be transferred to and processed in countries other than the UAE:</p>
-                    
+
                     <div class="privacy-transfer-info">
                         <div class="row align-items-center">
                             <div class="col-md-8">
@@ -403,7 +403,7 @@
             <div class="privacy-section mb-5" id="section-10">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">10. Children's Privacy</h3>
-                    
+
                     <div class="privacy-children-notice p-4 rounded text-center">
                         <i class="bi bi-shield-check text-gold mb-3" style="font-size: 3rem;"></i>
                         <h5 class="text-gold mb-3">Age Restriction</h5>
@@ -417,9 +417,9 @@
             <div class="privacy-section mb-5" id="section-11">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">11. Contact Information</h3>
-                    
+
                     <p class="mb-4">For any privacy-related questions, concerns, or requests, please contact us:</p>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="privacy-contact-method mb-4">
@@ -451,7 +451,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="privacy-final-notice mt-4 p-4 rounded text-center">
                         <h6 class="text-gold mb-3">Policy Updates</h6>
                         <p class="mb-2">We may update this Privacy Policy from time to time. We will notify you of any material changes by:</p>
