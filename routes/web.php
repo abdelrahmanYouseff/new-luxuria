@@ -763,4 +763,9 @@ Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
 
+// صفحة privacy policy
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
+
 

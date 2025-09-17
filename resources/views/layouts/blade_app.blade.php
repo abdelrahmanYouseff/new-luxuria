@@ -86,6 +86,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/contact">Contact us</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/privacy">Privacy</a>
+                    </li>
                     @guest
                         <li class="nav-item">
                             <a class="nav-link lux-btn-login" href="/login">Login</a>
@@ -175,9 +178,9 @@
                     <div class="lux-footer-links-title mb-2">Quick Links</div>
                     <ul class="lux-footer-links list-unstyled mb-0">
                         <li><a href="/" class="lux-footer-link">Home</a></li>
-                        <li><a href="#" class="lux-footer-link">About</a></li>
-                        <li><a href="#contact" class="lux-footer-link">Contact</a></li>
-                        <li><a href="#" class="lux-footer-link">Privacy Policy</a></li>
+                        <li><a href="/about" class="lux-footer-link">About</a></li>
+                        <li><a href="/contact" class="lux-footer-link">Contact</a></li>
+                        <li><a href="/privacy" class="lux-footer-link">Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div class="col-12 col-lg-4 text-center text-lg-start">
