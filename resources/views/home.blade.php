@@ -104,7 +104,7 @@
 <!-- LUXURY Cars Section -->
 @if(isset($categories['Luxury']) && count($categories['Luxury']) > 0)
 <div id="luxury" class="my-5">
-    <h2 class="luxury-section-title text-center">LUXURY</h2>
+    <h1 class="luxury-section-title text-center">LUXURY</h1>
     <div class="row justify-content-center">
         @foreach($categories['Luxury'] as $vehicle)
             <div class="col-12 col-sm-6 col-md-3 mb-4">
