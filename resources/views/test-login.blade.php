@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Test login page for Luxuria UAE luxury car rental service." />
+    <link rel="canonical" href="{{ url()->current() }}" />
     <title>Test Login</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 50px; }
