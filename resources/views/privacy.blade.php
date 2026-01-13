@@ -29,7 +29,7 @@
     <div class="row mb-5">
         <div class="col-lg-3">
             <div class="privacy-toc-card p-3 rounded shadow-sm position-sticky" style="top: 120px;">
-                <h5 class="text-gold mb-3">Table of Contents</h5>
+                <h2 class="text-gold mb-3">Table of Contents</h2>
                 <ul class="list-unstyled privacy-toc-list">
                     <li><a href="#section-1" class="privacy-toc-link">1. Information We Collect</a></li>
                     <li><a href="#section-2" class="privacy-toc-link">2. How We Use Information</a></li>
@@ -54,7 +54,7 @@
                         At Luxuria Cars Rental ("we," "our," or "us"), we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website <strong>https://rentluxuria.com</strong>, use our mobile application, or engage with our luxury car rental services in the United Arab Emirates.
                     </p>
                     <div class="privacy-highlight-box p-3 rounded mb-3">
-                        <h6 class="text-gold mb-2">Our Commitment</h6>
+                        <h3 class="text-gold mb-2">Our Commitment</h3>
                         <p class="mb-0">We respect your privacy and are committed to protecting your personal data. This policy will help you understand what information we collect, how we use it, and what choices you have.</p>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                 <div class="privacy-content-card p-4 rounded shadow-sm">
                     <h3 class="text-gold mb-3">1. Information We Collect</h3>
 
-                    <h5 class="mb-3">1.1 Personal Information</h5>
+                    <h4 class="mb-3">1.1 Personal Information</h4>
                     <p>We collect personal information that you voluntarily provide to us when you:</p>
                     <ul class="privacy-list">
                         <li><strong>Register an account:</strong> Name, email address, phone number, date of birth</li>
@@ -74,7 +74,7 @@
                         <li><strong>Subscribe to newsletters:</strong> Email address and preferences</li>
                     </ul>
 
-                    <h5 class="mb-3 mt-4">1.2 Automatically Collected Information</h5>
+                    <h4 class="mb-3 mt-4">1.2 Automatically Collected Information</h4>
                     <ul class="privacy-list">
                         <li><strong>Device Information:</strong> IP address, browser type, operating system, device identifiers</li>
                         <li><strong>Usage Data:</strong> Pages visited, time spent, click patterns, referral sources</li>
@@ -82,7 +82,7 @@
                         <li><strong>Cookies and Tracking:</strong> Session data, preferences, authentication tokens</li>
                     </ul>
 
-                    <h5 class="mb-3 mt-4">1.3 Payment Information</h5>
+                    <h4 class="mb-3 mt-4">1.3 Payment Information</h4>
                     <p>Payment processing is handled by secure third-party providers (Stripe). We do not store complete credit card numbers or sensitive payment data on our servers.</p>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="privacy-use-box p-3 rounded h-100">
-                                <h6 class="text-gold mb-2">Service Delivery</h6>
+                                <h4 class="text-gold mb-2">Service Delivery</h4>
                                 <ul class="privacy-list-small">
                                     <li>Process car rental bookings</li>
                                     <li>Manage your account</li>
@@ -106,7 +106,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-use-box p-3 rounded h-100">
-                                <h6 class="text-gold mb-2">Communication</h6>
+                                <h4 class="text-gold mb-2">Communication</h4>
                                 <ul class="privacy-list-small">
                                     <li>Send important service updates</li>
                                     <li>Respond to inquiries</li>
@@ -117,7 +117,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-use-box p-3 rounded h-100">
-                                <h6 class="text-gold mb-2">Security & Legal</h6>
+                                <h4 class="text-gold mb-2">Security & Legal</h4>
                                 <ul class="privacy-list-small">
                                     <li>Prevent fraud and abuse</li>
                                     <li>Comply with legal obligations</li>
@@ -128,7 +128,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-use-box p-3 rounded h-100">
-                                <h6 class="text-gold mb-2">Improvement</h6>
+                                <h4 class="text-gold mb-2">Improvement</h4>
                                 <ul class="privacy-list-small">
                                     <li>Analyze usage patterns</li>
                                     <li>Improve our services</li>
@@ -151,7 +151,7 @@
                         <strong>We do not sell, rent, or trade your personal information to third parties for marketing purposes.</strong>
                     </div>
 
-                    <h5 class="mb-3">We may share your information in the following circumstances:</h5>
+                    <h4 class="mb-3">We may share your information in the following circumstances:</h4>
                     <ul class="privacy-list">
                         <li><strong>Service Providers:</strong> Payment processors (Stripe), SMS providers, email services, analytics tools</li>
                         <li><strong>Legal Requirements:</strong> When required by law, court order, or regulatory authority</li>
@@ -174,7 +174,7 @@
                             <div class="privacy-security-item d-flex align-items-start">
                                 <i class="bi bi-shield-lock text-gold me-3 fs-4"></i>
                                 <div>
-                                    <h6>Encryption</h6>
+                                    <h4>Encryption</h4>
                                     <p class="mb-0">All data transmission uses SSL/TLS encryption</p>
                                 </div>
                             </div>
@@ -183,7 +183,7 @@
                             <div class="privacy-security-item d-flex align-items-start">
                                 <i class="bi bi-server text-gold me-3 fs-4"></i>
                                 <div>
-                                    <h6>Secure Storage</h6>
+                                    <h4>Secure Storage</h4>
                                     <p class="mb-0">Data stored on secure, encrypted servers</p>
                                 </div>
                             </div>
@@ -192,7 +192,7 @@
                             <div class="privacy-security-item d-flex align-items-start">
                                 <i class="bi bi-person-check text-gold me-3 fs-4"></i>
                                 <div>
-                                    <h6>Access Control</h6>
+                                    <h4>Access Control</h4>
                                     <p class="mb-0">Limited access on need-to-know basis</p>
                                 </div>
                             </div>
@@ -201,7 +201,7 @@
                             <div class="privacy-security-item d-flex align-items-start">
                                 <i class="bi bi-arrow-clockwise text-gold me-3 fs-4"></i>
                                 <div>
-                                    <h6>Regular Updates</h6>
+                                    <h4>Regular Updates</h4>
                                     <p class="mb-0">Continuous security monitoring and updates</p>
                                 </div>
                             </div>
@@ -265,44 +265,44 @@
                     <div class="row">
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-eye me-2"></i>Right to Access</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-eye me-2"></i>Right to Access</h4>
                                 <p class="mb-0">Request a copy of the personal data we hold about you</p>
                             </div>
                         </div>
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-pencil me-2"></i>Right to Rectification</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-pencil me-2"></i>Right to Rectification</h4>
                                 <p class="mb-0">Request correction of inaccurate or incomplete data</p>
                             </div>
                         </div>
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-trash me-2"></i>Right to Erasure</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-trash me-2"></i>Right to Erasure</h4>
                                 <p class="mb-0">Request deletion of your personal data (subject to legal obligations)</p>
                             </div>
                         </div>
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-pause me-2"></i>Right to Restrict Processing</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-pause me-2"></i>Right to Restrict Processing</h4>
                                 <p class="mb-0">Request limitation of how we process your data</p>
                             </div>
                         </div>
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-download me-2"></i>Right to Data Portability</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-download me-2"></i>Right to Data Portability</h4>
                                 <p class="mb-0">Receive your data in a structured, machine-readable format</p>
                             </div>
                         </div>
                         <div class="col-lg-6 mb-3">
                             <div class="privacy-right-card p-3 rounded h-100">
-                                <h6 class="text-gold mb-2"><i class="bi bi-x-circle me-2"></i>Right to Object</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-x-circle me-2"></i>Right to Object</h4>
                                 <p class="mb-0">Object to processing for marketing or legitimate interests</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="privacy-contact-rights mt-4 p-3 rounded">
-                        <h6 class="text-gold mb-2">How to Exercise Your Rights</h6>
+                        <h4 class="text-gold mb-2">How to Exercise Your Rights</h4>
                         <p class="mb-1">To exercise any of these rights, please contact us at:</p>
                         <p class="mb-0"><strong>Email:</strong> privacy@rentluxuria.com | <strong>Phone:</strong> +971 50 271 1549</p>
                     </div>
@@ -319,28 +319,28 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="privacy-third-party-card p-3 rounded">
-                                <h6 class="text-gold mb-2">Payment Processing</h6>
+                                <h4 class="text-gold mb-2">Payment Processing</h4>
                                 <p class="mb-1"><strong>Stripe:</strong> Secure payment processing</p>
                                 <small class="text-muted">Subject to Stripe's privacy policy</small>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-third-party-card p-3 rounded">
-                                <h6 class="text-gold mb-2">Analytics</h6>
+                                <h4 class="text-gold mb-2">Analytics</h4>
                                 <p class="mb-1"><strong>Google Analytics:</strong> Website usage analytics</p>
                                 <small class="text-muted">Anonymized data collection</small>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-third-party-card p-3 rounded">
-                                <h6 class="text-gold mb-2">Communication</h6>
+                                <h4 class="text-gold mb-2">Communication</h4>
                                 <p class="mb-1"><strong>Email/SMS Services:</strong> Notifications and updates</p>
                                 <small class="text-muted">Secure, encrypted transmission</small>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="privacy-third-party-card p-3 rounded">
-                                <h6 class="text-gold mb-2">Maps & Location</h6>
+                                <h4 class="text-gold mb-2">Maps & Location</h4>
                                 <p class="mb-1"><strong>Google Maps:</strong> Location services</p>
                                 <small class="text-muted">For pickup/delivery coordination</small>
                             </div>
@@ -381,7 +381,7 @@
                     <div class="privacy-transfer-info">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h6 class="text-gold mb-2">Data Processing Locations</h6>
+                                <h4 class="text-gold mb-2">Data Processing Locations</h4>
                                 <ul class="privacy-list">
                                     <li><strong>Primary:</strong> United Arab Emirates (UAE)</li>
                                     <li><strong>Cloud Services:</strong> European Union, United States (with adequate protections)</li>
@@ -393,7 +393,7 @@
                             </div>
                         </div>
                         <div class="privacy-transfer-safeguards mt-3 p-3 rounded">
-                            <h6 class="text-gold mb-2">Transfer Safeguards</h6>
+                            <h4 class="text-gold mb-2">Transfer Safeguards</h4>
                             <p class="mb-0">All international transfers are protected by appropriate safeguards, including standard contractual clauses and adequacy decisions.</p>
                         </div>
                     </div>
@@ -407,7 +407,7 @@
 
                     <div class="privacy-children-notice p-4 rounded text-center">
                         <i class="bi bi-shield-check text-gold mb-3" style="font-size: 3rem;"></i>
-                        <h5 class="text-gold mb-3">Age Restriction</h5>
+                        <h4 class="text-gold mb-3">Age Restriction</h4>
                         <p class="fs-5 mb-3">Our services are intended for individuals aged 18 and above. We do not knowingly collect personal information from children under 18.</p>
                         <p class="mb-0">If we become aware that we have collected personal information from a child under 18, we will take steps to delete such information promptly.</p>
                     </div>
@@ -424,7 +424,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="privacy-contact-method mb-4">
-                                <h6 class="text-gold mb-2"><i class="bi bi-building me-2"></i>Luxuria Cars Rental</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-building me-2"></i>Luxuria Cars Rental</h4>
                                 <p class="mb-1">Shop No 9 - Dr Murad Building</p>
                                 <p class="mb-1">Hor Al Anz East - Abu Hail</p>
                                 <p class="mb-3">Dubai - United Arab Emirates</p>
@@ -432,7 +432,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="privacy-contact-method mb-4">
-                                <h6 class="text-gold mb-2"><i class="bi bi-envelope me-2"></i>Email</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-envelope me-2"></i>Email</h4>
                                 <p class="mb-1"><strong>Privacy Inquiries:</strong> privacy@rentluxuria.com</p>
                                 <p class="mb-1"><strong>General:</strong> info@rentluxuria.com</p>
                                 <p class="mb-3"><strong>Bookings:</strong> bookings@rentluxuria.com</p>
@@ -440,21 +440,21 @@
                         </div>
                         <div class="col-md-6">
                             <div class="privacy-contact-method mb-4">
-                                <h6 class="text-gold mb-2"><i class="bi bi-telephone me-2"></i>Phone</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-telephone me-2"></i>Phone</h4>
                                 <p class="mb-1">+971 50 271 1549</p>
                                 <p class="mb-3">+971 54 270 0030</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="privacy-contact-method mb-4">
-                                <h6 class="text-gold mb-2"><i class="bi bi-clock me-2"></i>Response Time</h6>
+                                <h4 class="text-gold mb-2"><i class="bi bi-clock me-2"></i>Response Time</h4>
                                 <p class="mb-3">We aim to respond to all privacy inquiries within 30 days.</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="privacy-final-notice mt-4 p-4 rounded text-center">
-                        <h6 class="text-gold mb-3">Policy Updates</h6>
+                        <h4 class="text-gold mb-3">Policy Updates</h4>
                         <p class="mb-2">We may update this Privacy Policy from time to time. We will notify you of any material changes by:</p>
                         <ul class="list-inline mb-0">
                             <li class="list-inline-item me-3">• Email notification</li>

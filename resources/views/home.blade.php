@@ -191,21 +191,21 @@
                     <div class="col-md-4">
                         <div class="text-center mb-4">
                             <i class="bi bi-award" style="font-size: 3rem; color: #bfa133;"></i>
-                            <h4 class="mt-3">Premium Quality</h4>
+                            <h3 class="mt-3">Premium Quality</h3>
                             <p style="color: #666;">Only the finest vehicles in our fleet</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center mb-4">
                             <i class="bi bi-shield-check" style="font-size: 3rem; color: #bfa133;"></i>
-                            <h4 class="mt-3">Safe & Reliable</h4>
+                            <h3 class="mt-3">Safe & Reliable</h3>
                             <p style="color: #666;">All vehicles are regularly maintained</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center mb-4">
                             <i class="bi bi-headset" style="font-size: 3rem; color: #bfa133;"></i>
-                            <h4 class="mt-3">24/7 Support</h4>
+                            <h3 class="mt-3">24/7 Support</h3>
                             <p style="color: #666;">Round-the-clock customer service</p>
                         </div>
                     </div>
@@ -226,7 +226,7 @@
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-4">
                                 <i class="bi bi-telephone" style="font-size: 2.5rem; color: #bfa133;"></i>
-                                <h5 class="mt-3">Call Us</h5>
+                                <h3 class="mt-3">Call Us</h3>
                                 <p class="mb-2">+971502711549</p>
                                 <p class="mb-0">+971542700030</p>
                             </div>
@@ -236,7 +236,7 @@
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-4">
                                 <i class="bi bi-envelope" style="font-size: 2.5rem; color: #bfa133;"></i>
-                                <h5 class="mt-3">Email Us</h5>
+                                <h3 class="mt-3">Email Us</h3>
                                 <p class="mb-0">info@rentalluxuria.com</p>
                             </div>
                         </div>
@@ -245,7 +245,7 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body text-center p-4">
                                 <i class="bi bi-geo-alt" style="font-size: 2.5rem; color: #bfa133;"></i>
-                                <h5 class="mt-3">Visit Us</h5>
+                                <h3 class="mt-3">Visit Us</h3>
                                 <p class="mb-0">Shop No 9 - Dr Murad Building - Hor Al Anz East - Abu Hail - Dubai - UAE</p>
                             </div>
                         </div>
@@ -269,7 +269,7 @@
                     <div class="col-md-6">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body text-center p-4">
-                                <h5 class="text-success mb-3">Weekend Special</h5>
+                                <h3 class="text-success mb-3">Weekend Special</h3>
                                 <p class="mb-3">Get 15% off on weekend rentals</p>
                                 <span class="badge bg-success fs-6">WEEKEND15</span>
                             </div>
@@ -278,7 +278,7 @@
                     <div class="col-md-6">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body text-center p-4">
-                                <h5 class="text-primary mb-3">Monthly Discount</h5>
+                                <h3 class="text-primary mb-3">Monthly Discount</h3>
                                 <p class="mb-3">Save 20% on monthly rentals</p>
                                 <span class="badge bg-primary fs-6">MONTHLY20</span>
                             </div>
@@ -449,16 +449,16 @@
                     <div class="mb-3">
                         <i class="bi bi-check-circle-fill" style="font-size: 4rem; color: white;"></i>
                     </div>
-                    <h4 class="modal-title mb-0" id="bookingSuccessModalLabel">Booking Confirmed Successfully!</h4>
+                    <h2 class="modal-title mb-0" id="bookingSuccessModalLabel">Booking Confirmed Successfully!</h2>
                     <p class="mb-0 mt-2" style="opacity: 0.9;">Your luxury vehicle has been reserved</p>
                 </div>
             </div>
             <div class="modal-body" style="padding: 2rem;">
                 <div class="booking-success-details" style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <h6 class="mb-3" style="color: #333;">
+                    <h3 class="mb-3" style="color: #333;">
                         <i class="bi bi-car-front me-2 text-success"></i>
                         Booking Details
-                    </h6>
+                    </h3>
 
                     <div class="row g-2">
                         <div class="col-6">

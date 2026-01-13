@@ -17,7 +17,7 @@
                 <div class="contact-icon mb-3">
                     <i class="bi bi-telephone-fill"></i>
                 </div>
-                <h4 class="text-gold mb-3">Call Us</h4>
+                <h2 class="text-gold mb-3">Call Us</h2>
                 <p class="fs-5 mb-2">+971 50 271 1549</p>
                 <p class="fs-5 mb-0">+971 54 270 0030</p>
                 <small class="text-muted">Available 24/7</small>
@@ -28,7 +28,7 @@
                 <div class="contact-icon mb-3">
                     <i class="bi bi-envelope-fill"></i>
                 </div>
-                <h4 class="text-gold mb-3">Email Us</h4>
+                <h2 class="text-gold mb-3">Email Us</h2>
                 <p class="fs-5 mb-2">info@rentalluxuria.com</p>
                 <p class="fs-5 mb-0">bookings@rentalluxuria.com</p>
                 <small class="text-muted">We reply within 2 hours</small>
@@ -39,7 +39,7 @@
                 <div class="contact-icon mb-3">
                     <i class="bi bi-geo-alt-fill"></i>
                 </div>
-                <h4 class="text-gold mb-3">Visit Us</h4>
+                <h2 class="text-gold mb-3">Visit Us</h2>
                 <p class="fs-6 mb-0">Shop No 9 - Dr Murad Building<br>Hor Al Anz East - Abu Hail<br>Dubai - UAE</p>
                 <small class="text-muted">Open daily 8 AM - 10 PM</small>
             </div>
@@ -93,7 +93,7 @@
         <div class="col-lg-4">
             <!-- ساعات العمل -->
             <div class="contact-hours-card p-4 shadow rounded mb-4">
-                <h4 class="text-gold mb-3">Business Hours</h4>
+                <h3 class="text-gold mb-3">Business Hours</h3>
                 <ul class="list-unstyled">
                     <li class="mb-2"><strong>Monday - Friday:</strong> 8:00 AM - 10:00 PM</li>
                     <li class="mb-2"><strong>Saturday:</strong> 8:00 AM - 11:00 PM</li>
@@ -103,7 +103,7 @@
             </div>
             <!-- خدمات إضافية -->
             <div class="contact-services-card p-4 shadow rounded">
-                <h4 class="text-gold mb-3">Our Services</h4>
+                <h3 class="text-gold mb-3">Our Services</h3>
                 <ul class="list-unstyled">
                     <li class="mb-2"><i class="bi bi-check-circle text-gold me-2"></i> Luxury & Exotic Car Rentals</li>
                     <li class="mb-2"><i class="bi bi-check-circle text-gold me-2"></i> Chauffeur Services</li>
