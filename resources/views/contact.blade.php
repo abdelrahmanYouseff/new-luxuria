@@ -1,6 +1,7 @@
 @extends('layouts.blade_app')
 
 @section('title', 'Contact Us - LUXURIA CARS RENTAL')
+@section('meta_description', 'Contact Luxuria UAE for luxury car rentals. Reach us via phone, email, or visit our Dubai location. Available 24/7 for bookings and support.')
 
 @section('content')
 <div class="contact-hero-section text-center text-white d-flex align-items-center justify-content-center flex-column">

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage vehicle images for {{ $vehicle->make }} {{ $vehicle->model }} in the Luxuria UAE fleet." />
     <title>Vehicle Image Management - {{ $vehicle->make }} {{ $vehicle->model }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">

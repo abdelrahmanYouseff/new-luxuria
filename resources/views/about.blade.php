@@ -1,6 +1,7 @@
 @extends('layouts.blade_app')
 
 @section('title', 'About Us - LUXURIA CARS RENTAL')
+@section('meta_description', 'Learn about Luxuria Cars Rental - UAE premier destination for luxury and classic car rentals. Discover our legacy of excellence and commitment to bespoke experiences.')
 
 @section('content')
 <div class="about-hero-section text-center text-white d-flex align-items-center justify-content-center flex-column">

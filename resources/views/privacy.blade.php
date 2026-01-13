@@ -1,6 +1,7 @@
 @extends('layouts.blade_app')
 
 @section('title', 'Privacy Policy - LUXURIA CARS RENTAL')
+@section('meta_description', 'Read Luxuria UAE privacy policy to understand how we protect your personal information and ensure transparency in our luxury car rental services.')
 
 @section('content')
 <div class="privacy-hero-section text-center text-white d-flex align-items-center justify-content-center flex-column">
