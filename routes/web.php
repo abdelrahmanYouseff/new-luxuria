@@ -23,6 +23,9 @@ Route::get('/api/coupons', [App\Http\Controllers\CouponController::class, 'getCo
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Sitemap route for search engines
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+
 // Public vehicles route (no authentication required)
 Route::get('/vehicles-public', [App\Http\Controllers\VehicleController::class, 'index'])->name('vehicles.public');
 

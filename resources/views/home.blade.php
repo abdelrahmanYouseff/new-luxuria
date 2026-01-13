@@ -1,7 +1,7 @@
 @extends('layouts.blade_app')
 
 @section('title', 'Welcome to Luxuria UAE')
-@section('meta_description', 'Welcome to Luxuria UAE - Premium luxury car rental service in Dubai. Rent luxury, sports, classic, and economy vehicles with exceptional service and competitive pricing.')
+@section('meta_description', 'Luxuria UAE - Premium luxury car rental in Dubai. Rent luxury, sports, classic, and economy vehicles with exceptional service.')
 
 @section('content')
 <!-- Hero Section with Video Background -->
