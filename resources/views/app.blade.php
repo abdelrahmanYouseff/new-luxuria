@@ -6,6 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <meta name="description" content="Luxuria UAE - Premium luxury car rental service in the United Arab Emirates. Rent luxury, sports, and classic vehicles with exceptional service." />
         <link rel="canonical" href="{{ url()->current() }}" />
+        <link rel="icon" type="image/png" href="/images_car/new-logo3.png" />
+        <link rel="shortcut icon" type="image/png" href="/images_car/new-logo3.png" />
         @routes
         @vite(['resources/js/app.ts'])
         @inertiaHead

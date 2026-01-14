@@ -275,6 +275,179 @@ class VehicleController extends Controller
     }
 
     /**
+     * Get all unique makes from database
+     */
+    public function getMakes()
+    {
+        try {
+            $makes = Vehicle::whereNotNull('make')
+                ->where('make', '!=', '')
+                ->where(function($query) {
+                    $query->where('is_visible', true)
+                          ->orWhereNull('is_visible');
+                })
+                ->distinct()
+                ->orderBy('make')
+                ->pluck('make')
+                ->filter()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'makes' => $makes
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get models for a specific make
+     */
+    public function getModels(Request $request)
+    {
+        try {
+            $make = $request->get('make');
+            
+            if (!$make) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Make parameter is required'
+                ], 400);
+            }
+
+            $models = Vehicle::where('make', $make)
+                ->whereNotNull('model')
+                ->where('model', '!=', '')
+                ->where(function($query) {
+                    $query->where('is_visible', true)
+                          ->orWhereNull('is_visible');
+                })
+                ->distinct()
+                ->orderBy('model')
+                ->pluck('model')
+                ->filter()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'models' => $models
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get years for a specific make and model
+     */
+    public function getYears(Request $request)
+    {
+        try {
+            $make = $request->get('make');
+            $model = $request->get('model');
+            
+            if (!$make || !$model) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Make and model parameters are required'
+                ], 400);
+            }
+
+            $years = Vehicle::where('make', $make)
+                ->where('model', $model)
+                ->whereNotNull('year')
+                ->where('year', '!=', '')
+                ->where(function($query) {
+                    $query->where('is_visible', true)
+                          ->orWhereNull('is_visible');
+                })
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year')
+                ->filter()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'years' => $years
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Search vehicles by make, model, and year
+     */
+    public function searchVehicles(Request $request)
+    {
+        try {
+            $make = $request->get('make');
+            $model = $request->get('model');
+            $year = $request->get('year');
+
+            $query = Vehicle::where(function($q) {
+                $q->where('is_visible', true)
+                  ->orWhereNull('is_visible');
+            });
+
+            if ($make) {
+                $query->where('make', $make);
+            }
+
+            if ($model) {
+                $query->where('model', $model);
+            }
+
+            if ($year) {
+                $query->where('year', $year);
+            }
+
+            $vehicles = $query->orderBy('daily_rate', 'desc')->get();
+
+            // Transform vehicles
+            $transformedVehicles = $vehicles->map(function ($vehicle) {
+                return [
+                    'id' => $vehicle->id,
+                    'make' => $vehicle->make,
+                    'model' => $vehicle->model,
+                    'year' => $vehicle->year,
+                    'daily_rate' => (float) $vehicle->daily_rate,
+                    'weekly_rate' => (float) $vehicle->weekly_rate,
+                    'monthly_rate' => (float) $vehicle->monthly_rate,
+                    'image_url' => $vehicle->image_url,
+                    'status' => $vehicle->status,
+                    'category' => $vehicle->category,
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'vehicles' => $transformedVehicles,
+                'count' => count($transformedVehicles)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Toggle vehicle visibility
      */
     public function toggleVisibility(Vehicle $vehicle)

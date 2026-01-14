@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Create your Luxuria UAE account to start renting premium luxury cars in the United Arab Emirates. Join our exclusive community today." />
     <link rel="canonical" href="{{ url()->current() }}" />
+    <link rel="icon" type="image/png" href="/images_car/new-logo3.png" />
+    <link rel="shortcut icon" type="image/png" href="/images_car/new-logo3.png" />
     <title>Register - Luxuria UAE</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">

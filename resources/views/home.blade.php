@@ -4,16 +4,43 @@
 @section('meta_description', 'Luxuria UAE - Premium luxury car rental in Dubai. Rent luxury, sports, classic, and economy vehicles with exceptional service.')
 
 @section('content')
-<!-- Hero Section with Video Background -->
-<div class="hero-video-section position-relative overflow-hidden">
-    <video class="hero-bg-video" autoplay loop muted playsinline>
-        <source src="https://duruthemes.com/demo/html/renax/video.mp4" type="video/mp4">
-    </video>
-    <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+<!-- Hero Section -->
+<div class="hero-section position-relative overflow-hidden">
+    <div class="hero-background"></div>
+    <div class="hero-pattern"></div>
     <div class="container h-100 position-relative z-2">
-        <div class="row align-items-center justify-content-center h-100" style="min-height: 420px;">
-
-
+        <div class="row align-items-center justify-content-center h-100" style="min-height: 600px;">
+            <div class="col-12 col-lg-10 col-xl-9">
+                <h1 class="hero-main-title mb-4 text-center">Premium Luxury Car Rental</h1>
+                <p class="hero-description mb-5 text-center">Experience the epitome of elegance and sophistication.<br>Drive the world's most prestigious vehicles in the heart of the United Arab Emirates.</p>
+                <div class="vehicle-filter-wrapper">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="filter-label">Make</label>
+                            <select id="filter-make" class="form-select filter-select">
+                                <option value="">Select Make</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="filter-label">Model</label>
+                            <select id="filter-model" class="form-select filter-select" disabled>
+                                <option value="">Select Model</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="filter-label">Year</label>
+                            <select id="filter-year" class="form-select filter-select" disabled>
+                                <option value="">Select Year</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button id="filter-search-btn" class="btn btn-hero-primary w-100 py-3" disabled>
+                                <i class="bi bi-search me-2"></i>Search Vehicles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -107,7 +134,11 @@
     <h1 class="luxury-section-title text-center">LUXURY</h1>
     <div class="row justify-content-center">
         @foreach($categories['Luxury'] as $vehicle)
-            <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3 mb-4 vehicle-card" 
+                 data-make="{{ strtolower($vehicle['name'] ?? '') }}" 
+                 data-model="{{ strtolower($vehicle['model'] ?? '') }}" 
+                 data-year="{{ $vehicle['year'] ?? '' }}"
+                 data-category="luxury">
                 @include('partials.car_card', ['vehicle' => $vehicle])
             </div>
         @endforeach
@@ -121,7 +152,11 @@
     <h2 class="luxury-section-title text-center">Mid Range</h2>
     <div class="row justify-content-center">
         @foreach($categories['Mid-Range'] as $vehicle)
-            <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3 mb-4 vehicle-card" 
+                 data-make="{{ strtolower($vehicle['name'] ?? '') }}" 
+                 data-model="{{ strtolower($vehicle['model'] ?? '') }}" 
+                 data-year="{{ $vehicle['year'] ?? '' }}"
+                 data-category="mid-range">
                 @include('partials.car_card', ['vehicle' => $vehicle])
             </div>
         @endforeach
@@ -135,7 +170,11 @@
     <h2 class="luxury-section-title text-center">Economy</h2>
     <div class="row justify-content-center">
         @foreach($categories['Economy'] as $vehicle)
-            <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3 mb-4 vehicle-card" 
+                 data-make="{{ strtolower($vehicle['name'] ?? '') }}" 
+                 data-model="{{ strtolower($vehicle['model'] ?? '') }}" 
+                 data-year="{{ $vehicle['year'] ?? '' }}"
+                 data-category="economy">
                 @include('partials.car_card', ['vehicle' => $vehicle])
             </div>
         @endforeach
@@ -149,7 +188,11 @@
     <h2 class="luxury-section-title text-center">Sports</h2>
     <div class="row justify-content-center">
         @foreach($categories['Sports'] as $vehicle)
-            <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3 mb-4 vehicle-card" 
+                 data-make="{{ strtolower($vehicle['name'] ?? '') }}" 
+                 data-model="{{ strtolower($vehicle['model'] ?? '') }}" 
+                 data-year="{{ $vehicle['year'] ?? '' }}"
+                 data-category="sports">
                 @include('partials.car_card', ['vehicle' => $vehicle])
             </div>
         @endforeach
@@ -163,7 +206,11 @@
     <h2 class="luxury-section-title text-center">Vans and Buses</h2>
     <div class="row justify-content-center">
         @foreach($categories['Vans'] as $vehicle)
-            <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="col-12 col-sm-6 col-md-3 mb-4 vehicle-card" 
+                 data-make="{{ strtolower($vehicle['name'] ?? '') }}" 
+                 data-model="{{ strtolower($vehicle['model'] ?? '') }}" 
+                 data-year="{{ $vehicle['year'] ?? '' }}"
+                 data-category="vans">
                 @include('partials.car_card', ['vehicle' => $vehicle])
             </div>
         @endforeach
@@ -397,46 +444,234 @@
         text-shadow: none;
         margin-bottom: 1.5rem;
     }
-    .hero-video-section {
-        min-height: 420px;
-        height: 60vh;
-        max-height: 600px;
+    .hero-section {
+        min-height: 600px;
+        height: 85vh;
+        max-height: 800px;
         width: 100vw;
         left: 50%;
         right: 50%;
         margin-left: -50vw;
         margin-right: -50vw;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
-    .hero-bg-video {
+    .hero-background {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 30%, #ffffff 70%, #f5f5f5 100%);
+        z-index: 1;
     }
-    .hero-overlay {
-        background: rgba(0,0,0,0.35);
+    .hero-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 25% 25%, rgba(191, 161, 51, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(191, 161, 51, 0.03) 0%, transparent 50%),
+            linear-gradient(45deg, transparent 30%, rgba(191, 161, 51, 0.02) 50%, transparent 70%);
+        z-index: 1;
+    }
+    .hero-pattern::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dots" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="1" fill="rgba(191,161,51,0.08)"/></pattern></defs><rect width="60" height="60" fill="url(%23dots)"/></svg>');
+        opacity: 0.3;
+    }
+    .hero-section .container {
         z-index: 2;
-    }
-    .hero-video-section .container {
-        z-index: 3;
         position: relative;
     }
-    @media (max-width: 767px) {
-        .hero-video-section {
-            height: 320px;
-            min-height: 220px;
-            max-height: 350px;
+    .hero-main-title {
+        font-size: 4rem;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #1a1a1a;
+        text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        animation: fadeInUp 1s ease-out;
+    }
+    .hero-description {
+        font-size: 1.15rem;
+        font-weight: 300;
+        line-height: 1.9;
+        color: #333333;
+        max-width: 900px;
+        margin: 0 auto 2rem;
+        animation: fadeInUp 1.4s ease-out;
+    }
+    .hero-buttons {
+        animation: fadeInUp 1.6s ease-out;
+    }
+    .vehicle-filter-wrapper {
+        animation: fadeInUp 1.6s ease-out;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(191, 161, 51, 0.2);
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    .vehicle-card {
+        transition: opacity 0.3s ease;
+    }
+    #reset-search-btn {
+        display: block;
+        margin: 20px auto 0;
+    }
+    .filter-label {
+        display: block;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .filter-select {
+        height: 50px;
+        border: 2px solid rgba(191, 161, 51, 0.3);
+        border-radius: 10px;
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    .filter-select:focus {
+        border-color: #bfa133;
+        box-shadow: 0 0 0 0.2rem rgba(191, 161, 51, 0.25);
+        outline: none;
+    }
+    .filter-select:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    #filter-search-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-hero-primary {
+        background: linear-gradient(135deg, #bfa133 0%, #d4b845 50%, #bfa133 100%);
+        background-size: 200% 200%;
+        color: #000;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 1rem 2.5rem;
+        transition: all 0.4s ease;
+        box-shadow: 
+            0 6px 25px rgba(191, 161, 51, 0.5),
+            0 0 20px rgba(191, 161, 51, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-hero-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+    .btn-hero-primary:hover::before {
+        left: 100%;
+    }
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 8px 35px rgba(191, 161, 51, 0.7),
+            0 0 30px rgba(191, 161, 51, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        background-position: right center;
+    }
+    .btn-hero-secondary {
+        background: transparent;
+        color: #bfa133;
+        border: 2px solid #bfa133;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 1rem 2.5rem;
+        transition: all 0.4s ease;
+        box-shadow: 0 2px 10px rgba(191, 161, 51, 0.2);
+    }
+    .btn-hero-secondary:hover {
+        background: #bfa133;
+        border-color: #bfa133;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 
+            0 6px 25px rgba(191, 161, 51, 0.5),
+            0 0 20px rgba(191, 161, 51, 0.3);
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
         }
-        .hero-video-section .container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        .hero-video-section h1 {
-            font-size: 1.1rem;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
-    .hero-main-text {
-        color: #fff !important;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    @media (max-width: 991px) {
+        .hero-main-title {
+            font-size: 3rem;
+        }
+        .hero-description {
+            font-size: 1.05rem;
+        }
+    }
+    @media (max-width: 767px) {
+        .hero-section {
+            min-height: 550px;
+            height: auto;
+            padding: 2rem 0;
+        }
+        .hero-main-title {
+            font-size: 2rem;
+            letter-spacing: 0.1em;
+        }
+        .hero-description {
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        .btn-hero-primary,
+        .btn-hero-secondary {
+            width: 100%;
+            max-width: 280px;
+            padding: 0.9rem 2rem;
+            font-size: 0.9rem;
+        }
     }
 </style>
 
@@ -575,5 +810,212 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const makeSelect = document.getElementById('filter-make');
+    const modelSelect = document.getElementById('filter-model');
+    const yearSelect = document.getElementById('filter-year');
+    const searchBtn = document.getElementById('filter-search-btn');
+
+    if (!makeSelect || !modelSelect || !yearSelect || !searchBtn) {
+        return; // Elements not found
+    }
+
+    // Load makes on page load
+    fetch('/api/vehicles/makes')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.makes) {
+                data.makes.forEach(make => {
+                    const option = document.createElement('option');
+                    option.value = make;
+                    option.textContent = make;
+                    makeSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading makes:', error);
+        });
+
+    // When make is selected, load models
+    makeSelect.addEventListener('change', function() {
+        const selectedMake = this.value;
+        
+        // Reset model and year
+        modelSelect.innerHTML = '<option value="">Select Model</option>';
+        modelSelect.disabled = !selectedMake;
+        yearSelect.innerHTML = '<option value="">Select Year</option>';
+        yearSelect.disabled = true;
+        searchBtn.disabled = true;
+
+        if (selectedMake) {
+            fetch(`/api/vehicles/models?make=${encodeURIComponent(selectedMake)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.models) {
+                        data.models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model;
+                            option.textContent = model;
+                            modelSelect.appendChild(option);
+                        });
+                        modelSelect.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading models:', error);
+                });
+        }
+    });
+
+    // When model is selected, load years
+    modelSelect.addEventListener('change', function() {
+        const selectedMake = makeSelect.value;
+        const selectedModel = this.value;
+        
+        // Reset year
+        yearSelect.innerHTML = '<option value="">Select Year</option>';
+        yearSelect.disabled = !selectedModel;
+        searchBtn.disabled = true;
+
+        if (selectedMake && selectedModel) {
+            fetch(`/api/vehicles/years?make=${encodeURIComponent(selectedMake)}&model=${encodeURIComponent(selectedModel)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.years) {
+                        data.years.forEach(year => {
+                            const option = document.createElement('option');
+                            option.value = year;
+                            option.textContent = year;
+                            yearSelect.appendChild(option);
+                        });
+                        yearSelect.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading years:', error);
+                });
+        }
+    });
+
+    // When year is selected, enable search button
+    yearSelect.addEventListener('change', function() {
+        searchBtn.disabled = !this.value;
+    });
+
+    // Search button click
+    searchBtn.addEventListener('click', function() {
+        const make = makeSelect.value.toLowerCase().trim();
+        const model = modelSelect.value.toLowerCase().trim();
+        const year = yearSelect.value.trim();
+
+        if (!make || !model || !year) {
+            alert('Please select Make, Model, and Year');
+            return;
+        }
+
+        // Hide all vehicle cards
+        const allVehicleCards = document.querySelectorAll('.vehicle-card');
+        allVehicleCards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // Hide all category sections initially
+        const allSections = document.querySelectorAll('#luxury, #mid-range, #economy, #sports, #vans');
+        allSections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Find matching vehicle
+        let foundVehicle = null;
+        let foundCategory = null;
+
+        allVehicleCards.forEach(card => {
+            const cardMake = (card.getAttribute('data-make') || '').toLowerCase().trim();
+            const cardModel = (card.getAttribute('data-model') || '').toLowerCase().trim();
+            const cardYear = String(card.getAttribute('data-year') || '').trim();
+
+            // Normalize comparison - remove extra spaces and compare
+            const normalizedCardMake = cardMake.replace(/\s+/g, ' ').trim();
+            const normalizedCardModel = cardModel.replace(/\s+/g, ' ').trim();
+            const normalizedMake = make.replace(/\s+/g, ' ').trim();
+            const normalizedModel = model.replace(/\s+/g, ' ').trim();
+
+            if (normalizedCardMake === normalizedMake && 
+                normalizedCardModel === normalizedModel && 
+                cardYear === year) {
+                foundVehicle = card;
+                foundCategory = card.getAttribute('data-category');
+            }
+        });
+
+        if (foundVehicle && foundCategory) {
+            // Show the matching vehicle
+            foundVehicle.style.display = 'block';
+
+            // Show the category section
+            const categorySectionId = foundCategory === 'mid-range' ? 'mid-range' : foundCategory;
+            const categorySection = document.getElementById(categorySectionId);
+            if (categorySection) {
+                categorySection.style.display = 'block';
+                
+                // Scroll to the category section smoothly
+                setTimeout(() => {
+                    categorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // Add reset button if not exists
+            if (!document.getElementById('reset-search-btn')) {
+                const resetBtn = document.createElement('button');
+                resetBtn.id = 'reset-search-btn';
+                resetBtn.className = 'btn btn-hero-secondary mt-3';
+                resetBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise me-2"></i>Show All Vehicles';
+                resetBtn.style.display = 'block';
+                resetBtn.style.margin = '20px auto';
+                resetBtn.onclick = function() {
+                    // Reset all filters
+                    makeSelect.value = '';
+                    modelSelect.value = '';
+                    yearSelect.value = '';
+                    modelSelect.disabled = true;
+                    yearSelect.disabled = true;
+                    searchBtn.disabled = true;
+
+                    // Show all vehicles
+                    allVehicleCards.forEach(card => {
+                        card.style.display = 'block';
+                    });
+
+                    // Show all sections
+                    allSections.forEach(section => {
+                        section.style.display = 'block';
+                    });
+
+                    // Remove reset button
+                    resetBtn.remove();
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                document.querySelector('.vehicle-filter-wrapper').appendChild(resetBtn);
+            }
+        } else {
+            // No vehicle found
+            alert('No vehicle found matching your search criteria.');
+            
+            // Show all vehicles again
+            allVehicleCards.forEach(card => {
+                card.style.display = 'block';
+            });
+            allSections.forEach(section => {
+                section.style.display = 'block';
+            });
+        }
+    });
+});
+</script>
 
 @endsection

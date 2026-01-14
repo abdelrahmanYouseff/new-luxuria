@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Login to your Luxuria UAE account to access premium luxury car rentals, manage bookings, and view your rental history." />
     <link rel="canonical" href="{{ url()->current() }}" />
+    <link rel="icon" type="image/png" href="/images_car/new-logo3.png" />
+    <link rel="shortcut icon" type="image/png" href="/images_car/new-logo3.png" />
     <title>Login - Luxuria UAE</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">

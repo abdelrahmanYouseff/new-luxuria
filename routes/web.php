@@ -23,6 +23,12 @@ Route::get('/api/coupons', [App\Http\Controllers\CouponController::class, 'getCo
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Vehicle filter API routes
+Route::get('/api/vehicles/makes', [App\Http\Controllers\VehicleController::class, 'getMakes'])->name('api.vehicles.makes');
+Route::get('/api/vehicles/models', [App\Http\Controllers\VehicleController::class, 'getModels'])->name('api.vehicles.models');
+Route::get('/api/vehicles/years', [App\Http\Controllers\VehicleController::class, 'getYears'])->name('api.vehicles.years');
+Route::get('/api/vehicles/search', [App\Http\Controllers\VehicleController::class, 'searchVehicles'])->name('api.vehicles.search');
+
 // Sitemap route for search engines
 Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 

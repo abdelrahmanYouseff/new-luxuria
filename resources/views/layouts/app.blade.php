@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('meta_description', 'Luxuria UAE - Premium luxury car rental service in the United Arab Emirates. Rent luxury, sports, and classic vehicles with exceptional service.')" />
     <link rel="canonical" href="@yield('canonical_url', url()->current())" />
+    <link rel="icon" type="image/png" href="/images_car/new-logo3.png" />
+    <link rel="shortcut icon" type="image/png" href="/images_car/new-logo3.png" />
 
     <title>@yield('title', 'Luxuria UAE')</title>
 
