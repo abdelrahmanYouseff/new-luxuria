@@ -517,8 +517,7 @@ class VehicleController extends Controller
 
         $matchingVehicles = Vehicle::query()
             ->where('make', $vehicle->make)
-            ->where('model', $vehicle->model)
-            ->where('year', $vehicle->year);
+            ->where('model', $vehicle->model);
 
         $updatedCount = $matchingVehicles->update([
             'daily_rate' => $validated['daily_rate'],

@@ -62,8 +62,13 @@ class HomeController extends Controller
         });
 
         foreach ($grouped as $group) {
-            // Prefer an Available unit to represent the model, otherwise take the first
-            $vehicle = $group->first(function($v){ return strtolower($v->status) === 'available'; }) ?? $group->first();
+            // Use the latest edited matching vehicle so homepage pricing reflects admin price changes.
+            $availableVehicles = $group->filter(function($v){
+                return strtolower($v->status) === 'available';
+            });
+            $vehicle = ($availableVehicles->isNotEmpty() ? $availableVehicles : $group)
+                ->sortByDesc('updated_at')
+                ->first();
             $category = $this->mapCategory($vehicle->category ?? 'economy');
 
             $transformedVehicle = [
