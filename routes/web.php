@@ -46,6 +46,7 @@ Route::get('/test-vehicle-routes', function () {
 // Vehicle visibility management (admin only)
 Route::middleware(['auth'])->group(function () {
     Route::patch('/vehicles/{vehicle}/toggle-visibility', [App\Http\Controllers\VehicleController::class, 'toggleVisibility'])->name('vehicles.toggle-visibility');
+    Route::patch('/vehicles/{vehicle}/price', [App\Http\Controllers\VehicleController::class, 'updatePrice'])->name('vehicles.update-price');
 });
 
 // Debug route to test authentication

@@ -159,7 +159,15 @@
                 </td>
 
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span class="font-medium">AED {{ vehicle.dailyRate }}</span>
+                  <button
+                    v-if="canManageVehicles"
+                    type="button"
+                    class="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    @click="openPriceDialog(vehicle)"
+                  >
+                    AED {{ vehicle.dailyRate }}
+                  </button>
+                  <span v-else class="font-medium">AED {{ vehicle.dailyRate }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <DropdownMenu>
@@ -177,6 +185,10 @@
                       <DropdownMenuItem @click="editVehicle(vehicle.id)">
                         <Icon name="edit" class="w-4 h-4 mr-2" />
                         Edit Vehicle
+                      </DropdownMenuItem>
+                      <DropdownMenuItem v-if="canManageVehicles" @click="openPriceDialog(vehicle)">
+                        <Icon name="dollar-sign" class="w-4 h-4 mr-2" />
+                        Edit Price
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="manageImage(vehicle.id)">
                         <Icon name="image" class="w-4 h-4 mr-2" />
@@ -212,6 +224,42 @@
           </div>
         </div>
       </div>
+
+      <Dialog v-model:open="priceDialogOpen">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Vehicle Price</DialogTitle>
+            <DialogDescription>
+              Change the daily rental price for {{ selectedVehicle?.name }} {{ selectedVehicle?.model }}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form class="space-y-4" @submit.prevent="updateVehiclePrice">
+            <div class="space-y-2">
+              <Label for="daily-rate">Daily Rate (AED)</Label>
+              <Input
+                id="daily-rate"
+                v-model="priceForm.dailyRate"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Enter daily rate"
+                required
+              />
+              <p v-if="priceForm.error" class="text-sm text-red-600">{{ priceForm.error }}</p>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" :disabled="priceForm.processing" @click="closePriceDialog">
+                Cancel
+              </Button>
+              <Button type="submit" :disabled="priceForm.processing">
+                {{ priceForm.processing ? 'Saving...' : 'Save Price' }}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   </AppLayout>
 </template>
@@ -223,6 +271,16 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Icon from '@/components/Icon.vue'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -268,10 +326,18 @@ const filteredVehicles = computed(() => {
 
 const visibleCount = computed(() => vehicles.value.filter(v => v.is_visible !== false).length)
 const hiddenCount = computed(() => vehicles.value.filter(v => v.is_visible === false).length)
+const canManageVehicles = computed(() => Boolean((page.props.auth as { user?: unknown } | undefined)?.user))
 
 // State
 const syncing = ref(false)
 const showHiddenVehicles = ref(true) // Default to show all vehicles including hidden ones
+const priceDialogOpen = ref(false)
+const selectedVehicle = ref<Vehicle | null>(null)
+const priceForm = ref({
+  dailyRate: '',
+  processing: false,
+  error: '',
+})
 
 const refreshPage = () => {
   window.location.reload()
@@ -281,6 +347,73 @@ const refreshPage = () => {
 
 const editVehicle = (id: number) => {
   alert(`Edit vehicle ${id}`)
+}
+
+const openPriceDialog = (vehicle: Vehicle) => {
+  selectedVehicle.value = vehicle
+  priceForm.value.dailyRate = String(vehicle.dailyRate ?? '')
+  priceForm.value.error = ''
+  priceDialogOpen.value = true
+}
+
+const closePriceDialog = () => {
+  if (priceForm.value.processing) {
+    return
+  }
+
+  priceDialogOpen.value = false
+  selectedVehicle.value = null
+  priceForm.value.error = ''
+}
+
+const updateVehiclePrice = async () => {
+  if (!selectedVehicle.value) {
+    return
+  }
+
+  const dailyRate = Number(priceForm.value.dailyRate)
+
+  if (!Number.isFinite(dailyRate) || dailyRate < 0) {
+    priceForm.value.error = 'Please enter a valid price.'
+    return
+  }
+
+  try {
+    priceForm.value.processing = true
+    priceForm.value.error = ''
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+
+    if (!csrfToken) {
+      throw new Error('CSRF token not found. Please refresh the page and try again.')
+    }
+
+    const response = await fetch(`/vehicles/${selectedVehicle.value.id}/price`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        daily_rate: dailyRate,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update vehicle price.')
+    }
+
+    selectedVehicle.value.dailyRate = data.dailyRate
+    priceForm.value.processing = false
+    closePriceDialog()
+  } catch (error) {
+    priceForm.value.error = error instanceof Error ? error.message : 'Failed to update vehicle price.'
+  } finally {
+    priceForm.value.processing = false
+  }
 }
 
 const viewVehicle = (id: number) => {

@@ -491,6 +491,26 @@ class VehicleController extends Controller
     }
 
     /**
+     * Update vehicle daily price from the vehicles table.
+     */
+    public function updatePrice(Request $request, Vehicle $vehicle)
+    {
+        $validated = $request->validate([
+            'daily_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+        ]);
+
+        $vehicle->update([
+            'daily_rate' => $validated['daily_rate'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vehicle price updated successfully.',
+            'dailyRate' => (float) $vehicle->fresh()->daily_rate,
+        ]);
+    }
+
+    /**
      * Sync vehicles from API to database
      */
     public function syncFromApi()
