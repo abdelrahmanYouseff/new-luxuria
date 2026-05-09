@@ -515,7 +515,12 @@ class VehicleController extends Controller
             'monthly_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
         ]);
 
-        $vehicle->update([
+        $matchingVehicles = Vehicle::query()
+            ->where('make', $vehicle->make)
+            ->where('model', $vehicle->model)
+            ->where('year', $vehicle->year);
+
+        $updatedCount = $matchingVehicles->update([
             'daily_rate' => $validated['daily_rate'],
             'weekly_rate' => $validated['weekly_rate'],
             'monthly_rate' => $validated['monthly_rate'],
@@ -526,6 +531,7 @@ class VehicleController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Vehicle prices updated successfully.',
+            'updatedCount' => $updatedCount,
             'dailyRate' => (float) $vehicle->daily_rate,
             'weeklyRate' => (float) $vehicle->weekly_rate,
             'monthlyRate' => (float) $vehicle->monthly_rate,

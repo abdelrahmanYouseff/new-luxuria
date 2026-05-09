@@ -473,9 +473,18 @@ const updateVehiclePrice = async () => {
       throw new Error(data.message || 'Failed to update vehicle price.')
     }
 
-    selectedVehicle.value.dailyRate = data.dailyRate
-    selectedVehicle.value.weeklyRate = data.weeklyRate
-    selectedVehicle.value.monthlyRate = data.monthlyRate
+    vehicles.value
+      .filter(vehicle =>
+        vehicle.name === selectedVehicle.value?.name &&
+        vehicle.model === selectedVehicle.value?.model &&
+        vehicle.year === selectedVehicle.value?.year
+      )
+      .forEach(vehicle => {
+        vehicle.dailyRate = data.dailyRate
+        vehicle.weeklyRate = data.weeklyRate
+        vehicle.monthlyRate = data.monthlyRate
+      })
+
     priceForm.value.processing = false
     closePriceDialog()
   } catch (error) {
