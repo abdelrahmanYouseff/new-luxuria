@@ -39,6 +39,8 @@ class VehicleController extends Controller
                     'transmission' => $vehicle->transmission,
                     'odometer' => $vehicle->odometer,
                     'dailyRate' => (float) $vehicle->daily_rate,
+                    'weeklyRate' => (float) $vehicle->weekly_rate,
+                    'monthlyRate' => (float) $vehicle->monthly_rate,
                     'image' => $vehicle->image_url,
                     'image_url' => $vehicle->image_url,
                     'is_visible' => $vehicle->is_visible,
@@ -122,6 +124,8 @@ class VehicleController extends Controller
                 'transmission' => 'Automatic',
                 'odometer' => 15000,
                 'dailyRate' => 150,
+                'weeklyRate' => 900,
+                'monthlyRate' => 3000,
                 'image' => null
             ],
             [
@@ -137,6 +141,8 @@ class VehicleController extends Controller
                 'transmission' => 'Automatic',
                 'odometer' => 25000,
                 'dailyRate' => 350,
+                'weeklyRate' => 2100,
+                'monthlyRate' => 7000,
                 'image' => null
             ],
             [
@@ -152,6 +158,8 @@ class VehicleController extends Controller
                 'transmission' => 'Automatic',
                 'odometer' => 18000,
                 'dailyRate' => 200,
+                'weeklyRate' => 1200,
+                'monthlyRate' => 4000,
                 'image' => null
             ],
             [
@@ -167,6 +175,8 @@ class VehicleController extends Controller
                 'transmission' => 'Automatic',
                 'odometer' => 12000,
                 'dailyRate' => 300,
+                'weeklyRate' => 1800,
+                'monthlyRate' => 6000,
                 'image' => null
             ],
             [
@@ -182,6 +192,8 @@ class VehicleController extends Controller
                 'transmission' => 'Automatic',
                 'odometer' => 22000,
                 'dailyRate' => 120,
+                'weeklyRate' => 720,
+                'monthlyRate' => 2400,
                 'image' => null
             ]
         ];
@@ -251,6 +263,8 @@ class VehicleController extends Controller
                     'transmission' => $vehicle->transmission,
                     'odometer' => $vehicle->odometer,
                     'dailyRate' => (float) $vehicle->daily_rate,
+                    'weeklyRate' => (float) $vehicle->weekly_rate,
+                    'monthlyRate' => (float) $vehicle->monthly_rate,
                     'image' => $vehicle->image_url,
                     'image_url' => $vehicle->image_url,
                     'is_visible' => $vehicle->is_visible,
@@ -491,22 +505,30 @@ class VehicleController extends Controller
     }
 
     /**
-     * Update vehicle daily price from the vehicles table.
+     * Update vehicle rental prices from the vehicles table.
      */
     public function updatePrice(Request $request, Vehicle $vehicle)
     {
         $validated = $request->validate([
             'daily_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'weekly_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'monthly_rate' => ['required', 'numeric', 'min:0', 'max:999999.99'],
         ]);
 
         $vehicle->update([
             'daily_rate' => $validated['daily_rate'],
+            'weekly_rate' => $validated['weekly_rate'],
+            'monthly_rate' => $validated['monthly_rate'],
         ]);
+
+        $vehicle->refresh();
 
         return response()->json([
             'success' => true,
-            'message' => 'Vehicle price updated successfully.',
-            'dailyRate' => (float) $vehicle->fresh()->daily_rate,
+            'message' => 'Vehicle prices updated successfully.',
+            'dailyRate' => (float) $vehicle->daily_rate,
+            'weeklyRate' => (float) $vehicle->weekly_rate,
+            'monthlyRate' => (float) $vehicle->monthly_rate,
         ]);
     }
 

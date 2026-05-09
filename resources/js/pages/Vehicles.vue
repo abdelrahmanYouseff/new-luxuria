@@ -80,6 +80,8 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
 
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daily Rate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly Rate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Rate</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -169,6 +171,28 @@
                   </button>
                   <span v-else class="font-medium">AED {{ vehicle.dailyRate }}</span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <button
+                    v-if="canManageVehicles"
+                    type="button"
+                    class="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    @click="openPriceDialog(vehicle)"
+                  >
+                    AED {{ vehicle.weeklyRate }}
+                  </button>
+                  <span v-else class="font-medium">AED {{ vehicle.weeklyRate }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <button
+                    v-if="canManageVehicles"
+                    type="button"
+                    class="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    @click="openPriceDialog(vehicle)"
+                  >
+                    AED {{ vehicle.monthlyRate }}
+                  </button>
+                  <span v-else class="font-medium">AED {{ vehicle.monthlyRate }}</span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -188,7 +212,7 @@
                       </DropdownMenuItem>
                       <DropdownMenuItem v-if="canManageVehicles" @click="openPriceDialog(vehicle)">
                         <Icon name="dollar-sign" class="w-4 h-4 mr-2" />
-                        Edit Price
+                        Edit Prices
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="manageImage(vehicle.id)">
                         <Icon name="image" class="w-4 h-4 mr-2" />
@@ -228,26 +252,52 @@
       <Dialog v-model:open="priceDialogOpen">
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Vehicle Price</DialogTitle>
+            <DialogTitle>Update Vehicle Prices</DialogTitle>
             <DialogDescription>
-              Change the daily rental price for {{ selectedVehicle?.name }} {{ selectedVehicle?.model }}.
+              Change the daily, weekly, and monthly rental prices for {{ selectedVehicle?.name }} {{ selectedVehicle?.model }}.
             </DialogDescription>
           </DialogHeader>
 
           <form class="space-y-4" @submit.prevent="updateVehiclePrice">
-            <div class="space-y-2">
-              <Label for="daily-rate">Daily Rate (AED)</Label>
-              <Input
-                id="daily-rate"
-                v-model="priceForm.dailyRate"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Enter daily rate"
-                required
-              />
-              <p v-if="priceForm.error" class="text-sm text-red-600">{{ priceForm.error }}</p>
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div class="space-y-2">
+                <Label for="daily-rate">Daily Rate (AED)</Label>
+                <Input
+                  id="daily-rate"
+                  v-model="priceForm.dailyRate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Daily"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <Label for="weekly-rate">Weekly Rate (AED)</Label>
+                <Input
+                  id="weekly-rate"
+                  v-model="priceForm.weeklyRate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Weekly"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <Label for="monthly-rate">Monthly Rate (AED)</Label>
+                <Input
+                  id="monthly-rate"
+                  v-model="priceForm.monthlyRate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Monthly"
+                  required
+                />
+              </div>
             </div>
+            <p v-if="priceForm.error" class="text-sm text-red-600">{{ priceForm.error }}</p>
 
             <DialogFooter>
               <Button type="button" variant="outline" :disabled="priceForm.processing" @click="closePriceDialog">
@@ -304,6 +354,8 @@ interface Vehicle {
   transmission: string
   odometer: number
   dailyRate: number
+  weeklyRate: number
+  monthlyRate: number
   image: string | null
   image_url?: string
   is_visible?: boolean
@@ -335,6 +387,8 @@ const priceDialogOpen = ref(false)
 const selectedVehicle = ref<Vehicle | null>(null)
 const priceForm = ref({
   dailyRate: '',
+  weeklyRate: '',
+  monthlyRate: '',
   processing: false,
   error: '',
 })
@@ -352,6 +406,8 @@ const editVehicle = (id: number) => {
 const openPriceDialog = (vehicle: Vehicle) => {
   selectedVehicle.value = vehicle
   priceForm.value.dailyRate = String(vehicle.dailyRate ?? '')
+  priceForm.value.weeklyRate = String(vehicle.weeklyRate ?? '')
+  priceForm.value.monthlyRate = String(vehicle.monthlyRate ?? '')
   priceForm.value.error = ''
   priceDialogOpen.value = true
 }
@@ -372,9 +428,18 @@ const updateVehiclePrice = async () => {
   }
 
   const dailyRate = Number(priceForm.value.dailyRate)
+  const weeklyRate = Number(priceForm.value.weeklyRate)
+  const monthlyRate = Number(priceForm.value.monthlyRate)
 
-  if (!Number.isFinite(dailyRate) || dailyRate < 0) {
-    priceForm.value.error = 'Please enter a valid price.'
+  if (
+    !Number.isFinite(dailyRate) ||
+    !Number.isFinite(weeklyRate) ||
+    !Number.isFinite(monthlyRate) ||
+    dailyRate < 0 ||
+    weeklyRate < 0 ||
+    monthlyRate < 0
+  ) {
+    priceForm.value.error = 'Please enter valid prices.'
     return
   }
 
@@ -397,6 +462,8 @@ const updateVehiclePrice = async () => {
       },
       body: JSON.stringify({
         daily_rate: dailyRate,
+        weekly_rate: weeklyRate,
+        monthly_rate: monthlyRate,
       }),
     })
 
@@ -407,6 +474,8 @@ const updateVehiclePrice = async () => {
     }
 
     selectedVehicle.value.dailyRate = data.dailyRate
+    selectedVehicle.value.weeklyRate = data.weeklyRate
+    selectedVehicle.value.monthlyRate = data.monthlyRate
     priceForm.value.processing = false
     closePriceDialog()
   } catch (error) {
