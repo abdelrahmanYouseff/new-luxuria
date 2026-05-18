@@ -1119,8 +1119,200 @@
 }
 
 @media (max-width: 767px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .car-details-section {
+        max-width: 100%;
+    }
+
+    .responsive-car-details {
+        margin-top: 78px !important;
+        margin-bottom: 2rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+    }
+
+    .responsive-car-details > .row {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 1rem;
+    }
+
+    .car-hero-img-wrap2 {
+        min-height: 0;
+        padding: 0.75rem 0.35rem;
+        border-radius: 24px;
+        background: linear-gradient(180deg, #f8f8f8 0%, #ffffff 100%);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .car-hero-img2 {
+        width: 100%;
+        max-width: 100%;
+        height: clamp(230px, 68vw, 330px);
+        max-height: none;
+        object-fit: contain;
+        border-radius: 20px;
+        box-shadow: none;
+    }
+
+    .responsive-car-details .col-12.col-lg-6:last-child {
+        background: #fff;
+        border: 1px solid rgba(191, 161, 51, 0.16);
+        border-radius: 24px;
+        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.08);
+        padding: 1rem !important;
+    }
+
+    .responsive-car-details .lux-heading.mb-4 {
+        font-size: clamp(1.8rem, 8vw, 2.45rem) !important;
+        line-height: 1.12;
+        text-align: center;
+        margin-bottom: 0.85rem !important;
+    }
+
+    .responsive-car-details .d-flex.flex-wrap.gap-3 {
+        justify-content: center;
+        gap: 0.45rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .responsive-car-details .badge {
+        font-size: 0.75rem !important;
+        padding: 0.42rem 0.72rem !important;
+        border-radius: 999px !important;
+    }
+
+    .responsive-car-details p.mb-4 {
+        font-size: 0.96rem !important;
+        line-height: 1.65;
+        text-align: center;
+        margin-bottom: 1rem !important;
+    }
+
+    .lux-pricing-compact {
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .lux-pricing-compact .row {
+        --bs-gutter-x: 0.55rem;
+        --bs-gutter-y: 0.55rem;
+        flex-wrap: nowrap;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .lux-pricing-compact .row > div {
+        width: 33.333333%;
+        flex: 0 0 33.333333%;
+        margin-bottom: 0;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    .lux-pricing-card-compact {
+        min-height: 96px;
+        border-radius: 18px;
+        padding: 0.8rem 0.35rem !important;
+        box-shadow: 0 8px 24px rgba(191, 161, 51, 0.1);
+    }
+
+    .lux-pricing-icon-compact {
+        font-size: 1.05rem;
+        margin-bottom: 0.1rem !important;
+    }
+
+    .lux-pricing-label-compact {
+        font-size: 0.82rem;
+        line-height: 1.1;
+    }
+
+    .lux-pricing-amount-compact {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        line-height: 1.05;
+    }
+
+    .lux-pricing-currency-compact {
+        font-size: 0.68rem;
+        margin-right: 0;
+    }
+
+    .lux-pricing-value-compact {
+        font-size: clamp(1rem, 4.5vw, 1.25rem);
+    }
+
+    .lux-btn-gold-compact {
+        width: 100%;
+        max-width: 260px;
+        border-radius: 16px;
+        font-size: 1rem;
+        padding: 0.75rem 1.2rem !important;
+    }
+
+    .responsive-car-details .d-flex.align-items-center.gap-2.mt-2 {
+        justify-content: center;
+        background: #f8f5ec;
+        border-radius: 18px;
+        padding: 0.75rem;
+        margin-top: 0.9rem !important;
+    }
+
+    .responsive-car-details .lux-whatsapp-icon img {
+        width: 42px;
+        height: 42px;
+    }
+
+    .responsive-car-details .lux-whatsapp-icon + span {
+        font-size: 0.92rem !important;
+        line-height: 1.25;
+    }
+
     .luxury-modal-body {
         padding: 1.5rem;
+    }
+
+    .luxury-modal {
+        border-radius: 18px;
+    }
+
+    .modal-dialog {
+        margin: 0.75rem;
+    }
+
+    .luxury-modal-header {
+        padding: 1rem;
+    }
+
+    .luxury-modal-title {
+        gap: 0.75rem;
+    }
+
+    .luxury-modal-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+
+    .luxury-modal-title h5 {
+        font-size: 1.05rem;
+        line-height: 1.2;
+    }
+
+    .luxury-pricing-info,
+    .luxury-booking-summary,
+    .luxury-unavailable-info {
+        padding: 1rem;
+        border-radius: 16px;
+        margin-bottom: 1rem;
     }
 
     .luxury-pricing-grid,
@@ -1172,22 +1364,25 @@
         flex: 1;
         width: 100%;
     }
+}
 
+@media (max-width: 380px) {
     .responsive-car-details {
-        margin-top: 64px !important;
-        padding-left: 0.2rem;
-        padding-right: 0.2rem;
+        padding-left: 0.65rem !important;
+        padding-right: 0.65rem !important;
     }
-    .lux-pricing-compact .row > div {
-        margin-bottom: 0.8rem;
+
+    .lux-pricing-card-compact {
+        min-height: 90px;
+        padding: 0.7rem 0.2rem !important;
     }
-    .lux-pricing-compact {
-        padding-left: 0.2rem;
-        padding-right: 0.2rem;
+
+    .lux-pricing-label-compact {
+        font-size: 0.74rem;
     }
-    .car-hero-img2 {
-        max-width: 100%;
-        max-height: 140px;
+
+    .lux-pricing-value-compact {
+        font-size: 0.95rem;
     }
 }
 </style>

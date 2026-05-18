@@ -648,18 +648,187 @@
         }
     }
     @media (max-width: 767px) {
+        body {
+            overflow-x: hidden;
+        }
+
         .hero-section {
-            min-height: 550px;
+            min-height: auto;
             height: auto;
-            padding: 2rem 0;
+            padding: 2rem 0 1.5rem;
+        }
+        .hero-section .row {
+            min-height: auto !important;
+        }
+        .hero-section .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
         .hero-main-title {
-            font-size: 2rem;
-            letter-spacing: 0.1em;
+            font-size: clamp(1.85rem, 9vw, 2.5rem);
+            letter-spacing: 0.04em;
+            line-height: 1.1;
+            margin-bottom: 1rem !important;
         }
         .hero-description {
             font-size: 0.95rem;
-            line-height: 1.7;
+            line-height: 1.6;
+            margin-bottom: 1.4rem !important;
+        }
+        .vehicle-filter-wrapper {
+            padding: 1rem;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+        .filter-label {
+            font-size: 0.78rem;
+            margin-bottom: 0.35rem;
+        }
+        .filter-select {
+            height: 46px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+        .brands-marquee-wrapper {
+            width: 100vw;
+            min-width: 0;
+            padding: 12px 0;
+            border-left: 0;
+            border-right: 0;
+        }
+        .brands-marquee {
+            gap: 42px;
+            animation-duration: 22s;
+        }
+        .brands-marquee img {
+            height: 42px;
+        }
+        #luxury,
+        #mid-range,
+        #economy,
+        #sports,
+        #vans,
+        #about,
+        #contact,
+        #promotions {
+            margin-top: 2rem !important;
+            margin-bottom: 2rem !important;
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+        }
+        #luxury > .row,
+        #mid-range > .row,
+        #economy > .row,
+        #sports > .row,
+        #vans > .row {
+            --bs-gutter-x: 0;
+            row-gap: 1rem;
+        }
+        .luxury-section-title {
+            font-size: clamp(1.8rem, 10vw, 2.65rem) !important;
+            letter-spacing: 0.05em;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            padding: 0 0.5rem;
+            word-break: normal;
+        }
+        .vehicle-card {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-bottom: 0.75rem !important;
+        }
+        .car-card-link {
+            max-width: 430px;
+            margin: 0 auto;
+        }
+        .luxury-car-card {
+            height: auto;
+            min-height: 0;
+            padding-bottom: 0;
+            border-radius: 24px;
+            border-width: 2px;
+            box-shadow: 0 14px 38px rgba(0, 0, 0, 0.14);
+        }
+        .luxury-car-card .p-4.pb-0 {
+            padding: 1.05rem 1.05rem 0.35rem !important;
+            display: block;
+        }
+        .vehicle-name {
+            font-size: 1.35rem !important;
+            line-height: 1.2;
+            min-height: 2.9rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .luxury-car-card .badge {
+            font-size: 0.75rem !important;
+            padding: 0.38rem 0.72rem !important;
+        }
+        .luxury-car-img {
+            width: 100%;
+            max-width: 100%;
+            height: clamp(205px, 58vw, 285px);
+            min-height: 0;
+            max-height: none;
+            margin: 0.65rem auto 0.35rem;
+            object-fit: contain;
+        }
+        .luxury-card-gradient {
+            position: relative;
+            height: auto;
+            padding: 1rem 1.05rem 1.1rem !important;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            gap: 1rem;
+        }
+        .luxury-card-gradient .row {
+            margin-bottom: 0 !important;
+            align-items: stretch;
+        }
+        .luxury-card-gradient .col {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+        .luxury-card-gradient .lux-heading {
+            font-size: 0.95rem !important;
+            line-height: 1.1;
+            margin-bottom: 0.35rem !important;
+        }
+        .luxury-card-gradient .fs-5 {
+            font-size: clamp(0.98rem, 4vw, 1.2rem) !important;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+        .luxury-card-gradient .d-flex {
+            margin-top: 0;
+            gap: 0.85rem;
+        }
+        .lux-btn-book {
+            border-radius: 14px;
+            font-size: 1rem;
+            padding: 0.65rem 1.15rem;
+            min-width: 128px;
+        }
+        .lux-whatsapp-icon img {
+            width: 46px;
+            height: 46px;
+        }
+        #about .lead {
+            font-size: 1rem !important;
+            line-height: 1.65 !important;
+        }
+        #about p:not(.lead),
+        #contact p,
+        #promotions p {
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
+        }
+        #contact {
+            padding-top: 1rem !important;
+        }
+        #contact .card-body,
+        #promotions .card-body {
+            padding: 1.25rem !important;
         }
         .hero-buttons {
             flex-direction: column;
@@ -671,6 +840,19 @@
             max-width: 280px;
             padding: 0.9rem 2rem;
             font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .luxury-card-gradient .lux-heading {
+            font-size: 0.82rem !important;
+        }
+        .luxury-card-gradient .fs-5 {
+            font-size: 0.9rem !important;
+        }
+        .lux-btn-book {
+            min-width: 112px;
+            font-size: 0.92rem;
         }
     }
 </style>

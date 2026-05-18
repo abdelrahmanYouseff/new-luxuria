@@ -545,55 +545,217 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: #fff !important;
+    }
+
+    .classic-login-container {
+        min-height: 100vh;
+        align-items: center;
+        padding: 10px;
+        background: #fff;
+    }
+
+    .login-background {
+        display: none;
+    }
+
     .login-wrapper {
-        flex-direction: column;
-        margin: 20px;
+        display: block;
+        width: 100%;
+        margin: 0;
         max-width: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: none;
+        animation: none;
     }
 
     .branding-section {
-        padding: 40px 30px;
+        display: none;
     }
 
     .form-section {
-        padding: 40px 30px;
-    }
-
-    .company-name {
-        font-size: 2rem;
-    }
-
-    .luxury-logo {
-        width: 60px;
-        height: 60px;
-    }
-
-    .luxury-logo i {
-        font-size: 2rem;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-}
-
-@media (max-width: 480px) {
-    .branding-section {
-        padding: 30px 20px;
-    }
-
-    .form-section {
-        padding: 30px 20px;
+        padding: 22px 18px;
+        border-radius: 24px;
+        margin-top: 0;
+        position: relative;
+        z-index: 3;
     }
 
     .company-name {
         font-size: 1.8rem;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+    }
+
+    .company-tagline {
+        font-size: 0.92rem;
+        margin-bottom: 18px;
+    }
+
+    .logo-container {
+        margin-bottom: 14px;
+    }
+
+    .luxury-logo {
+        width: 66px;
+        height: 66px;
+        border-width: 1px;
+    }
+
+    .brand-features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+
+    .feature-item {
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px 6px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        font-size: 0.72rem;
+        line-height: 1.15;
+    }
+
+    .feature-item i {
+        font-size: 1rem;
+        color: #bfa133;
+    }
+
+    .form-container {
+        max-width: 100%;
+    }
+
+    .form-header {
+        margin-bottom: 20px;
+    }
+
+    .form-header h2 {
+        font-size: 1.65rem;
+        margin-bottom: 6px;
+    }
+
+    .form-header p {
+        font-size: 0.92rem;
+    }
+
+    .form-field {
+        margin-bottom: 16px;
+    }
+
+    .field-label {
+        font-size: 0.84rem;
+        margin-bottom: 7px;
+    }
+
+    .input-wrapper {
+        border-radius: 15px;
+        background: #f5f5f5;
+    }
+
+    .input-wrapper i {
+        padding: 0 13px;
+        font-size: 1rem;
+    }
+
+    .elegant-input {
+        min-width: 0;
+        padding: 14px 10px;
+        font-size: 0.95rem;
+    }
+
+    .password-toggle {
+        padding: 0 13px;
+    }
+
+    .form-actions {
+        flex-direction: row;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .checkbox-wrapper,
+    .forgot-password {
+        font-size: 0.82rem;
+    }
+
+    .submit-btn {
+        border-radius: 16px;
+        padding: 15px;
+        font-size: 1rem;
+        box-shadow: 0 12px 28px rgba(26, 26, 26, 0.25);
+    }
+
+    .register-link {
+        margin-top: 18px;
+    }
+
+    .register-link p {
+        font-size: 0.86rem;
+        line-height: 1.5;
+    }
+
+    .alert {
+        border-radius: 14px;
+        font-size: 0.86rem;
+        padding: 0.8rem 0.9rem;
+    }
+
+    .alert ul {
+        padding-left: 1rem;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .classic-login-container {
+        padding: 8px;
+    }
+
+    .form-section {
+        padding: 20px 14px;
+    }
+
+    .company-name {
+        font-size: 1.55rem;
     }
 
     .form-header h2 {
         font-size: 1.5rem;
+    }
+
+    .brand-features {
+        gap: 6px;
+    }
+
+    .feature-item {
+        font-size: 0.66rem;
+        padding: 8px 4px;
+    }
+}
+
+@media (max-width: 360px) {
+    .form-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand-features {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-item {
+        flex-direction: row;
+        justify-content: center;
+        font-size: 0.78rem;
     }
 }
 
@@ -617,8 +779,6 @@ function togglePassword() {
 
 // Form submission with loading state
 document.querySelector('.elegant-form').addEventListener('submit', function(e) {
-    console.log('Form submitted!');
-
     const submitBtn = document.querySelector('.submit-btn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoader = submitBtn.querySelector('.btn-loader');
@@ -628,13 +788,6 @@ document.querySelector('.elegant-form').addEventListener('submit', function(e) {
     btnLoader.style.display = 'flex';
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.8';
-
-    // Log form data
-    const formData = new FormData(this);
-    console.log('Email:', formData.get('email'));
-    console.log('Password:', formData.get('password'));
-    console.log('Remember:', formData.get('remember'));
-    console.log('CSRF Token:', formData.get('_token'));
 });
 
 // Add smooth focus effects to inputs

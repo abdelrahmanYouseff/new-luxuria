@@ -564,49 +564,131 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: #fff !important;
+    }
+
+    .classic-login-container {
+        min-height: 100vh;
+        align-items: flex-start;
+        padding: 8px;
+        background: #fff;
+    }
+
+    .login-background {
+        display: none;
+    }
+
     .login-wrapper {
-        flex-direction: column;
-        margin: 20px;
+        display: block;
+        width: 100%;
+        margin: 0;
         max-width: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: none;
+        animation: none;
     }
 
     .branding-section {
-        padding: 40px 30px;
+        display: none;
     }
 
     .form-section {
-        padding: 40px 30px;
+        padding: 20px 14px 24px;
+        border-radius: 24px;
+        background: #fff;
     }
 
-    .company-name {
-        font-size: 2rem;
+    .form-container {
+        max-width: 100%;
     }
 
-    .luxury-logo {
-        width: 60px;
-        height: 60px;
+    .form-header {
+        margin-bottom: 20px;
     }
 
-    .luxury-logo i {
-        font-size: 2rem;
+    .form-header h2 {
+        font-size: 1.65rem;
+        margin-bottom: 6px;
+    }
+
+    .form-header p {
+        font-size: 0.92rem;
+    }
+
+    .form-field {
+        margin-bottom: 15px;
+    }
+
+    .field-label {
+        font-size: 0.84rem;
+        margin-bottom: 7px;
+    }
+
+    .input-wrapper {
+        border-radius: 15px;
+        background: #f5f5f5;
+    }
+
+    .input-wrapper i {
+        padding: 0 13px;
+        font-size: 1rem;
+    }
+
+    .elegant-input {
+        min-width: 0;
+        padding: 13px 10px;
+        font-size: 0.95rem;
+    }
+
+    textarea.elegant-input {
+        min-height: 78px;
+        resize: vertical;
+    }
+
+    .password-toggle {
+        padding: 0 13px;
+    }
+
+    .submit-btn {
+        border-radius: 16px;
+        padding: 15px;
+        font-size: 1rem;
+        box-shadow: 0 12px 28px rgba(26, 26, 26, 0.25);
+    }
+
+    .register-link {
+        margin-top: 18px;
+    }
+
+    .register-link p {
+        font-size: 0.86rem;
+        line-height: 1.5;
     }
 }
 
 @media (max-width: 480px) {
-    .branding-section {
-        padding: 30px 20px;
+    .classic-login-container {
+        padding: 8px;
     }
 
     .form-section {
-        padding: 30px 20px;
-    }
-
-    .company-name {
-        font-size: 1.8rem;
+        padding: 18px 12px 22px;
     }
 
     .form-header h2 {
         font-size: 1.5rem;
+    }
+
+    .form-field {
+        margin-bottom: 13px;
+    }
+
+    .elegant-input {
+        padding: 12px 9px;
     }
 }
 </style>
