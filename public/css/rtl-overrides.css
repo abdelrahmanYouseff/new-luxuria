@@ -1,0 +1,218 @@
+/*
+ * RTL (Right-to-Left) Global Overrides for Luxuria UAE
+ * Loaded only when lang="ar" dir="rtl" is active.
+ * Complements Bootstrap 5 RTL stylesheet.
+ */
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+[dir="rtl"] body,
+[dir="rtl"] * {
+    font-family: 'Tajawal', sans-serif !important;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+    letter-spacing: 0 !important;
+    text-transform: none;
+}
+
+/* ── Luxury section titles — remove excessive letter-spacing in Arabic ────── */
+[dir="rtl"] .luxury-section-title {
+    letter-spacing: 0 !important;
+}
+
+[dir="rtl"] .hero-main-title {
+    letter-spacing: 0 !important;
+    text-transform: none;
+}
+
+[dir="rtl"] .filter-label {
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+[dir="rtl"] .btn-hero-primary,
+[dir="rtl"] .btn-hero-secondary {
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+[dir="rtl"] .lux-navbar .navbar-nav {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-brand {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+[dir="rtl"] .dropdown-menu-end {
+    right: auto !important;
+    left: 0 !important;
+}
+
+[dir="rtl"] .navbar-collapse {
+    text-align: right;
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+[dir="rtl"] .form-label,
+[dir="rtl"] label {
+    text-align: right;
+    display: block;
+}
+
+[dir="rtl"] .form-control,
+[dir="rtl"] .form-select,
+[dir="rtl"] textarea,
+[dir="rtl"] input {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir="rtl"] .form-control::placeholder,
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+    text-align: right;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+[dir="rtl"] .card-body {
+    text-align: right;
+}
+
+/* ── Bootstrap alerts, badges, modals ────────────────────────────────────── */
+[dir="rtl"] .alert {
+    text-align: right;
+}
+
+[dir="rtl"] .modal-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .modal-header .btn-close {
+    margin: -0.5rem auto -0.5rem -0.5rem;
+}
+
+[dir="rtl"] .modal-footer {
+    justify-content: flex-start;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+[dir="rtl"] .table {
+    text-align: right;
+}
+
+[dir="rtl"] .table-responsive {
+    direction: rtl;
+}
+
+/* ── Utility spacing mirrors ─────────────────────────────────────────────── */
+[dir="rtl"] .me-2  { margin-right: 0 !important; margin-left: 0.5rem !important; }
+[dir="rtl"] .me-3  { margin-right: 0 !important; margin-left: 1rem  !important; }
+[dir="rtl"] .ms-2  { margin-left:  0 !important; margin-right: 0.5rem !important; }
+[dir="rtl"] .ms-auto { margin-left: 0 !important; margin-right: auto !important; }
+
+/* ── About / Contact cards: swap border side ─────────────────────────────── */
+[dir="rtl"] .about-card {
+    border-left:  none !important;
+    border-right: 6px solid #bfa133 !important;
+}
+
+[dir="rtl"] .contact-form-card,
+[dir="rtl"] .contact-hours-card,
+[dir="rtl"] .contact-services-card,
+[dir="rtl"] .privacy-toc-card,
+[dir="rtl"] .privacy-content-card {
+    border-left:  none !important;
+    border-right: 6px solid #bfa133 !important;
+}
+
+/* ── Icon direction: prevent decorative icons from flipping ─────────────── */
+[dir="rtl"] .bi-arrow-up-right::before { content: "\F113"; }  /* arrow-up-left */
+
+/* ── Sticky ToC (privacy page) ───────────────────────────────────────────── */
+[dir="rtl"] .privacy-toc-list {
+    padding-right: 0;
+    padding-left:  0;
+}
+
+[dir="rtl"] .privacy-toc-link {
+    text-align: right;
+}
+
+/* ── Footer subscribe form ───────────────────────────────────────────────── */
+[dir="rtl"] .lux-footer-subscribe-form {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .lux-footer-subscribe-btn {
+    margin-left:  0;
+    margin-right: 0.5rem;
+}
+
+/* ── Dropdown items ──────────────────────────────────────────────────────── */
+[dir="rtl"] .dropdown-item {
+    text-align: right;
+}
+
+/* ── List items with icons ───────────────────────────────────────────────── */
+[dir="rtl"] .list-unstyled li {
+    text-align: right;
+}
+
+/* ── Booking summary progress steps ─────────────────────────────────────── */
+[dir="rtl"] .step-connector {
+    transform: scaleX(-1);
+}
+
+/* ── Mobile responsiveness for RTL ──────────────────────────────────────── */
+@media (max-width: 767px) {
+    [dir="rtl"] .hero-main-title {
+        font-size: clamp(1.6rem, 8vw, 2.2rem) !important;
+    }
+
+    [dir="rtl"] .luxury-section-title {
+        font-size: clamp(1.6rem, 9vw, 2.4rem) !important;
+    }
+
+    [dir="rtl"] .form-actions {
+        flex-direction: row-reverse;
+    }
+}
+
+/* ── Login / Register standalone pages ───────────────────────────────────── */
+[dir="rtl"] .field-error {
+    padding-right: 15px;
+    padding-left:  0;
+    text-align: right;
+}
+
+[dir="rtl"] .input-wrapper i:first-child {
+    order: 2;
+    padding: 0 15px;
+}
+
+[dir="rtl"] .elegant-input {
+    order: 1;
+    text-align: right;
+}
+
+[dir="rtl"] .password-toggle {
+    order: 0;
+    padding: 0 15px;
+}
+
+[dir="rtl"] .form-actions {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .register-link,
+[dir="rtl"] .form-header {
+    text-align: right;
+}

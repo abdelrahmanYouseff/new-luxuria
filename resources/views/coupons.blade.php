@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
 
-@section('title', 'Coupons - Luxuria UAE')
+@section('title', __('app.meta_coupons_title'))
+@section('meta_description', __('app.meta_coupons_desc'))
+@section('canonical_url', url('/coupons'))
 
 @section('content')
 <div class="luxury-coupons-page">
@@ -16,26 +19,26 @@
                     <div class="hero-content">
                         <div class="hero-badge">
                             <i class="bi bi-star-fill"></i>
-                            <span>Exclusive Offers</span>
+                            <span>{{ __('app.coupons_hero_badge') }}</span>
                         </div>
                         <h1 class="luxury-hero-title">
-                            Premium Discounts & Offers
+                            {{ __('app.coupons_hero_title') }}
                         </h1>
                         <p class="luxury-hero-subtitle">
-                            Unlock exclusive savings on luxury car rentals with our carefully curated collection of premium coupons
+                            {{ __('app.coupons_hero_subtitle') }}
                         </p>
                         <div class="hero-stats">
                             <div class="stat-item">
                                 <span class="stat-number">{{ count($formattedCoupons) }}</span>
-                                <span class="stat-label">Active Offers</span>
+                                <span class="stat-label">{{ __('app.coupons_active') }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">24/7</span>
-                                <span class="stat-label">Available</span>
+                                <span class="stat-label">{{ __('app.coupons_available') }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">100%</span>
-                                <span class="stat-label">Secure</span>
+                                <span class="stat-label">{{ __('app.coupons_secure') }}</span>
                             </div>
                         </div>
                     </div>
@@ -61,8 +64,8 @@
         <div class="container">
             <!-- Section Header -->
             <div class="section-header text-center mb-5">
-                <h2 class="section-title">Available Offers</h2>
-                <p class="section-subtitle">Choose from our premium collection of exclusive discounts</p>
+                <h2 class="section-title">{{ __('app.coupons_section_title') }}</h2>
+                <p class="section-subtitle">{{ __('app.coupons_section_sub') }}</p>
             </div>
 
             <!-- Filters -->
@@ -181,8 +184,8 @@
                         <div class="empty-icon">
                             <i class="bi bi-ticket-perforated"></i>
                         </div>
-                        <h3 class="empty-title">No Offers Available</h3>
-                        <p class="empty-subtitle">Check back soon for exciting new deals and discounts!</p>
+                        <h3 class="empty-title">{{ __('app.coupons_no_offers') }}</h3>
+                        <p class="empty-subtitle">{{ __('app.coupons_no_offers_sub') }}</p>
                     </div>
                 </div>
                 @endforelse
@@ -195,29 +198,29 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-lg-10 text-center">
-                    <h2 class="section-title">How It Works</h2>
-                    <p class="section-subtitle">Simple steps to save on your luxury car rental</p>
+                    <h2 class="section-title">{{ __('app.coupons_how_title') }}</h2>
+                    <p class="section-subtitle">{{ __('app.coupons_how_sub') }}</p>
 
                     <div class="steps-grid">
                         <div class="step-item">
                             <div class="step-number">1</div>
                             <div class="step-content">
-                                <h4>Choose Your Coupon</h4>
-                                <p>Browse and select the perfect discount for your needs</p>
+                                <h3>{{ __('app.coupons_step1_title') }}</h3>
+                                <p>{{ __('app.coupons_step1_desc') }}</p>
                             </div>
                         </div>
                         <div class="step-item">
                             <div class="step-number">2</div>
                             <div class="step-content">
-                                <h4>Complete Purchase</h4>
-                                <p>Securely purchase your selected coupon online</p>
+                                <h3>{{ __('app.coupons_step2_title') }}</h3>
+                                <p>{{ __('app.coupons_step2_desc') }}</p>
                             </div>
                         </div>
                         <div class="step-item">
                             <div class="step-number">3</div>
                             <div class="step-content">
-                                <h4>Book & Save</h4>
-                                <p>Apply your coupon when booking to enjoy instant savings</p>
+                                <h3>{{ __('app.coupons_step3_title') }}</h3>
+                                <p>{{ __('app.coupons_step3_desc') }}</p>
                             </div>
                         </div>
                     </div>
@@ -740,28 +743,76 @@
     line-height: 1.6;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .modern-hero-title {
-        font-size: 2rem;
-    }
+/* ── Responsive ── */
+@media (max-width: 991px) {
+    .luxury-coupons-page { margin-top: 72px; }
+    .luxury-hero-section { padding: 70px 0 50px; }
+    .luxury-hero-title { font-size: 2.6rem; }
+    .hero-stats { gap: 36px; }
+    .stat-number { font-size: 1.65rem; }
+}
 
-    .modern-hero-subtitle {
-        font-size: 1.125rem;
-    }
+@media (max-width: 767px) {
+    body { overflow-x: hidden; }
+    .luxury-coupons-page { margin-top: 72px; }
 
-    .modern-coupons-section {
-        padding: 60px 0;
-    }
+    /* Hero */
+    .luxury-hero-section { padding: 50px 0 36px; }
+    .luxury-hero-title { font-size: clamp(1.7rem, 7vw, 2.2rem); margin-bottom: 1rem; }
+    .luxury-hero-subtitle { font-size: 0.95rem; margin-bottom: 24px; }
 
-    .section-title {
-        font-size: 2rem;
+    /* Stats row – stack into 3-column grid instead of huge gap row */
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 24px;
     }
+    .stat-number { font-size: 1.4rem; margin-bottom: 4px; }
+    .stat-label { font-size: 0.78rem; }
 
-    .steps-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
+    /* Filter tabs */
+    .filter-tabs { gap: 6px; flex-wrap: wrap; }
+    .filter-tab { padding: 8px 14px; font-size: 0.83rem; }
+
+    /* Section titles */
+    .section-title { font-size: 1.6rem; }
+    .section-subtitle { font-size: 0.88rem; }
+
+    /* Coupon cards */
+    .luxury-coupon-body { padding: 18px !important; }
+    .luxury-coupon-footer { padding: 16px 18px !important; }
+    .luxury-coupon-title { font-size: 1rem; }
+    .luxury-purchase-btn { font-size: 0.9rem; padding: 12px; }
+
+    /* How it works steps */
+    .steps-grid { grid-template-columns: 1fr; gap: 20px; }
+    .step-content h3 { font-size: 1rem; }
+    .step-number { width: 44px; height: 44px; font-size: 1.1rem; }
+
+    /* How it works section padding */
+    .how-it-works-section { padding: 48px 0; }
+}
+
+@media (max-width: 575px) {
+    .luxury-hero-title { font-size: clamp(1.4rem, 7.5vw, 1.8rem); }
+    .hero-badge { font-size: 0.78rem; padding: 6px 12px; }
+    .hero-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-number { font-size: 1.2rem; }
+    .stat-label { font-size: 0.72rem; }
+
+    .luxury-coupons-section { padding: 36px 0; }
+    .section-header { margin-bottom: 2rem !important; }
+    .section-title { font-size: 1.4rem; }
+
+    .filter-tabs { gap: 4px; }
+    .filter-tab { padding: 7px 10px; font-size: 0.78rem; }
+
+    .luxury-coupon-body { padding: 14px !important; }
+    .luxury-coupon-footer { padding: 12px 14px !important; }
+    .feature-item { gap: 8px; }
+    .feature-label { font-size: 0.75rem; }
+    .feature-value { font-size: 0.8rem; }
 }
 </style>
 

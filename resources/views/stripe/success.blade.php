@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
 
-@section('title', 'Payment Successful')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
+@section('title', __('app.meta_payment_title'))
+@section('meta_description', __('app.meta_payment_desc'))
+@section('robots', 'noindex, nofollow')
 
 @section('head')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">

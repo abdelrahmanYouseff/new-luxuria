@@ -1,19 +1,60 @@
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Create your Luxuria UAE account to start renting premium luxury cars in the United Arab Emirates. Join our exclusive community today." />
-    <link rel="canonical" href="{{ url()->current() }}" />
+    <meta name="description" content="{{ __('app.meta_register_desc') }}" />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href="{{ url('/register') }}" />
+    <meta property="og:title"       content="{{ __('app.meta_register_title') }}" />
+    <meta property="og:description" content="{{ __('app.meta_register_desc') }}" />
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="{{ url('/register') }}" />
+    <meta property="og:site_name"   content="{{ __('app.site_name') }}" />
     <link rel="icon" type="image/png" href="/images_car/new-logo3.png" />
     <link rel="shortcut icon" type="image/png" href="/images_car/new-logo3.png" />
-    <title>Register - Luxuria UAE</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <title>{{ __('app.meta_register_title') }}</title>
+    @if($isRtl)
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    @else
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    @endif
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/app.css">
+    @if($isRtl)
+    <link rel="stylesheet" href="/css/rtl-overrides.css">
+    <style>body,*{font-family:'Tajawal',sans-serif !important;}</style>
+    @endif
+    <style>
+    .standalone-lang-btn {
+        position: fixed; top: 1rem;
+        {{ $isRtl ? 'left' : 'right' }}: 1rem;
+        z-index: 9999;
+        background: transparent; color: #bfa133 !important;
+        border: none; border-radius: 0;
+        width: auto; height: auto; padding: 0; font-size: 1.5rem;
+        text-decoration: none;
+        transition: color 0.2s, transform 0.2s;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .standalone-lang-btn:hover {
+        color: #a88c2c !important; transform: rotate(20deg);
+    }
+    </style>
 </head>
-<body style="background:#f8f9fa; margin:0; padding:0; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+@php $bodyFont = $isRtl ? "'Tajawal', sans-serif" : "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"; @endphp
+<body style="background:#f8f9fa; margin:0; padding:0; font-family:{!! $bodyFont !!};">
+{{-- Language switcher --}}
+@if($isRtl)
+    <a class="standalone-lang-btn" href="{{ route('lang.switch', 'en') }}" title="Switch to English" aria-label="Switch to English">🌐</a>
+@else
+    <a class="standalone-lang-btn" href="{{ route('lang.switch', 'ar') }}" title="التبديل إلى العربية" aria-label="Switch to Arabic">🌐</a>
+@endif
+
 <div class="classic-login-container">
     <!-- Elegant Background -->
     <div class="login-background">
@@ -32,19 +73,19 @@
                     </div>
                 </div>
                 <h1 class="company-name">LUXURIA</h1>
-                <p class="company-tagline">Experience Luxury on Wheels</p>
+                <p class="company-tagline">{{ __('app.login_tagline') }}</p>
                 <div class="brand-features">
                     <div class="feature-item">
                         <i class="bi bi-shield-check"></i>
-                        <span>Premium Service</span>
+                        <span>{{ __('app.login_feature1') }}</span>
                     </div>
                     <div class="feature-item">
                         <i class="bi bi-award"></i>
-                        <span>Luxury Fleet</span>
+                        <span>{{ __('app.login_feature2') }}</span>
                     </div>
                     <div class="feature-item">
                         <i class="bi bi-geo-alt"></i>
-                        <span>UAE Wide</span>
+                        <span>{{ __('app.login_feature3') }}</span>
                     </div>
                 </div>
             </div>
@@ -54,8 +95,8 @@
         <div class="form-section">
             <div class="form-container">
                 <div class="form-header">
-                    <h2>Create Account</h2>
-                    <p>Join us and start your luxury journey</p>
+                    <h2>{{ __('app.register_title') }}</h2>
+                    <p>{{ __('app.register_subtitle') }}</p>
                 </div>
 
                 <form method="POST" action="{{ route('register') }}" class="elegant-form">
@@ -63,14 +104,14 @@
 
                     <!-- Name Field -->
                     <div class="form-field">
-                        <label for="name" class="field-label">Full Name</label>
+                        <label for="name" class="field-label">{{ __('app.register_name') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-person"></i>
                             <input type="text"
                                    id="name"
                                    name="name"
                                    class="elegant-input"
-                                   placeholder="Enter your full name"
+                                   placeholder="{{ __('app.register_name_ph') }}"
                                    value="{{ old('name') }}"
                                    required
                                    autofocus>
@@ -82,14 +123,14 @@
 
                     <!-- Email Field -->
                     <div class="form-field">
-                        <label for="email" class="field-label">Email Address</label>
+                        <label for="email" class="field-label">{{ __('app.register_email') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-envelope"></i>
                             <input type="email"
                                    id="email"
                                    name="email"
                                    class="elegant-input"
-                                   placeholder="Enter your email address"
+                                   placeholder="{{ __('app.register_email_ph') }}"
                                    value="{{ old('email') }}"
                                    required>
                         </div>
@@ -100,7 +141,7 @@
 
                     <!-- Phone Field -->
                     <div class="form-field">
-                        <label for="phone" class="field-label">Phone Number</label>
+                        <label for="phone" class="field-label">{{ __('app.register_phone') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-telephone"></i>
                             <input type="tel"
@@ -117,11 +158,11 @@
 
                     <!-- Emirate Field -->
                     <div class="form-field">
-                        <label for="emirate" class="field-label">Emirate</label>
+                        <label for="emirate" class="field-label">{{ __('app.register_emirate') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-geo-alt"></i>
                             <select id="emirate" name="emirate" class="elegant-input" required>
-                                <option value="" disabled selected>Select your emirate</option>
+                                <option value="" disabled selected>{{ __('app.register_select_emirate') }}</option>
                                 <option value="Abu Dhabi" {{ old('emirate') == 'Abu Dhabi' ? 'selected' : '' }}>Abu Dhabi</option>
                                 <option value="Dubai" {{ old('emirate') == 'Dubai' ? 'selected' : '' }}>Dubai</option>
                                 <option value="Sharjah" {{ old('emirate') == 'Sharjah' ? 'selected' : '' }}>Sharjah</option>
@@ -138,13 +179,13 @@
 
                     <!-- Address Field -->
                     <div class="form-field">
-                        <label for="address" class="field-label">Address</label>
+                        <label for="address" class="field-label">{{ __('app.register_address') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-house"></i>
                             <textarea id="address"
                                       name="address"
                                       class="elegant-input"
-                                      placeholder="Enter your full address"
+                                      placeholder="{{ __('app.register_address_ph') }}"
                                       rows="3"
                                       required>{{ old('address') }}</textarea>
                         </div>
@@ -155,14 +196,14 @@
 
                     <!-- Password Field -->
                     <div class="form-field">
-                        <label for="password" class="field-label">Password</label>
+                        <label for="password" class="field-label">{{ __('app.register_password') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-lock"></i>
                             <input type="password"
                                    id="password"
                                    name="password"
                                    class="elegant-input"
-                                   placeholder="Create a strong password"
+                                   placeholder="{{ __('app.register_password_ph') }}"
                                    required>
                             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                                 <i class="bi bi-eye" id="eye-icon-password"></i>
@@ -175,14 +216,14 @@
 
                     <!-- Confirm Password Field -->
                     <div class="form-field">
-                        <label for="password_confirmation" class="field-label">Confirm Password</label>
+                        <label for="password_confirmation" class="field-label">{{ __('app.register_confirm') }}</label>
                         <div class="input-wrapper">
                             <i class="bi bi-lock"></i>
                             <input type="password"
                                    id="password_confirmation"
                                    name="password_confirmation"
                                    class="elegant-input"
-                                   placeholder="Confirm your password"
+                                   placeholder="{{ __('app.register_confirm_ph') }}"
                                    required>
                             <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
                                 <i class="bi bi-eye" id="eye-icon-confirmation"></i>
@@ -195,7 +236,7 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="submit-btn">
-                        <span class="btn-text">Create Account</span>
+                        <span class="btn-text">{{ __('app.register_btn') }}</span>
                         <div class="btn-loader" style="display: none;">
                             <div class="spinner"></div>
                         </div>
@@ -203,8 +244,8 @@
 
                     <!-- Login Link -->
                     <div class="register-link">
-                        <p>Already have an account?
-                            <a href="{{ route('login') }}">Sign in here</a>
+                        <p>{{ __('app.register_have_account') }}
+                            <a href="{{ route('login') }}">{{ __('app.register_sign_in') }}</a>
                         </p>
                     </div>
                 </form>

@@ -1,12 +1,15 @@
 @extends('layouts.blade_app')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
 
-@section('title', 'Privacy Policy - LUXURIA CARS RENTAL')
-@section('meta_description', 'Read Luxuria UAE privacy policy to understand how we protect your personal information and ensure transparency in our luxury car rental services.')
+@section('title', __('app.meta_privacy_title'))
+@section('meta_description', __('app.meta_privacy_desc'))
+@section('canonical_url', url('/privacy-policy'))
+@section('robots', 'noindex, follow')
 
 @section('content')
 <div class="privacy-hero-section text-center text-white d-flex align-items-center justify-content-center flex-column">
-    <h1 class="display-3 fw-bold mb-3 privacy-hero-title">PRIVACY POLICY</h1>
-    <p class="lead privacy-hero-desc">Your Privacy Matters to Us<br>Protecting your information with transparency and care.</p>
+    <h1 class="display-3 fw-bold mb-3 privacy-hero-title">{{ __('app.privacy_hero_title') }}</h1>
+    <p class="lead privacy-hero-desc">{!! __('app.privacy_hero_desc') !!}</p>
 </div>
 
 <div class="container my-5">
@@ -15,10 +18,10 @@
         <div class="col-12">
             <div class="privacy-notice-card p-3 rounded shadow-sm">
                 <div class="d-flex align-items-center">
-                    <i class="bi bi-calendar-check text-gold me-2 fs-4"></i>
+                    <i class="bi bi-calendar-check text-gold {{ $isRtl ? 'ms-2' : 'me-2' }} fs-4"></i>
                     <div>
-                        <strong class="text-gold">Last Updated:</strong> {{ date('F d, Y') }}
-                        <br><small class="text-muted">This privacy policy is effective immediately and applies to all users of our services.</small>
+                        <strong class="text-gold">{{ __('app.privacy_last_updated') }}</strong> {{ date('F d, Y') }}
+                        <br><small class="text-muted">{{ __('app.privacy_effective') }}</small>
                     </div>
                 </div>
             </div>
@@ -29,19 +32,19 @@
     <div class="row mb-5">
         <div class="col-lg-3">
             <div class="privacy-toc-card p-3 rounded shadow-sm position-sticky" style="top: 120px;">
-                <h2 class="text-gold mb-3">Table of Contents</h2>
+                <h2 class="text-gold mb-3">{{ __('app.privacy_toc') }}</h2>
                 <ul class="list-unstyled privacy-toc-list">
-                    <li><a href="#section-1" class="privacy-toc-link">1. Information We Collect</a></li>
-                    <li><a href="#section-2" class="privacy-toc-link">2. How We Use Information</a></li>
-                    <li><a href="#section-3" class="privacy-toc-link">3. Information Sharing</a></li>
-                    <li><a href="#section-4" class="privacy-toc-link">4. Data Security</a></li>
-                    <li><a href="#section-5" class="privacy-toc-link">5. Cookies & Tracking</a></li>
-                    <li><a href="#section-6" class="privacy-toc-link">6. Your Rights</a></li>
-                    <li><a href="#section-7" class="privacy-toc-link">7. Third-Party Services</a></li>
-                    <li><a href="#section-8" class="privacy-toc-link">8. Data Retention</a></li>
-                    <li><a href="#section-9" class="privacy-toc-link">9. International Transfers</a></li>
-                    <li><a href="#section-10" class="privacy-toc-link">10. Children's Privacy</a></li>
-                    <li><a href="#section-11" class="privacy-toc-link">11. Contact Us</a></li>
+                    <li><a href="#section-1"  class="privacy-toc-link">{{ __('app.privacy_toc_1') }}</a></li>
+                    <li><a href="#section-2"  class="privacy-toc-link">{{ __('app.privacy_toc_2') }}</a></li>
+                    <li><a href="#section-3"  class="privacy-toc-link">{{ __('app.privacy_toc_3') }}</a></li>
+                    <li><a href="#section-4"  class="privacy-toc-link">{{ __('app.privacy_toc_4') }}</a></li>
+                    <li><a href="#section-5"  class="privacy-toc-link">{{ __('app.privacy_toc_5') }}</a></li>
+                    <li><a href="#section-6"  class="privacy-toc-link">{{ __('app.privacy_toc_6') }}</a></li>
+                    <li><a href="#section-7"  class="privacy-toc-link">{{ __('app.privacy_toc_7') }}</a></li>
+                    <li><a href="#section-8"  class="privacy-toc-link">{{ __('app.privacy_toc_8') }}</a></li>
+                    <li><a href="#section-9"  class="privacy-toc-link">{{ __('app.privacy_toc_9') }}</a></li>
+                    <li><a href="#section-10" class="privacy-toc-link">{{ __('app.privacy_toc_10') }}</a></li>
+                    <li><a href="#section-11" class="privacy-toc-link">{{ __('app.privacy_toc_11') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -49,7 +52,7 @@
             <!-- Introduction -->
             <div class="privacy-section mb-5">
                 <div class="privacy-content-card p-4 rounded shadow-sm">
-                    <h2 class="text-gold mb-3">Welcome to Luxuria Cars Rental</h2>
+                    <h2 class="text-gold mb-3">{{ __('app.privacy_welcome') }}</h2>
                     <p class="fs-6 mb-3">
                         At Luxuria Cars Rental ("we," "our," or "us"), we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website <strong>https://rentluxuria.com</strong>, use our mobile application, or engage with our luxury car rental services in the United Arab Emirates.
                     </p>
@@ -151,7 +154,7 @@
                         <strong>We do not sell, rent, or trade your personal information to third parties for marketing purposes.</strong>
                     </div>
 
-                    <h4 class="mb-3">We may share your information in the following circumstances:</h4>
+                    <p class="fw-semibold mb-3">We may share your information in the following circumstances:</p>
                     <ul class="privacy-list">
                         <li><strong>Service Providers:</strong> Payment processors (Stripe), SMS providers, email services, analytics tools</li>
                         <li><strong>Legal Requirements:</strong> When required by law, court order, or regulatory authority</li>
@@ -477,7 +480,7 @@
 }
 .privacy-hero-title {
     font-size: 3.5rem;
-    letter-spacing: 0.12em;
+    letter-spacing: {{ $isRtl ? '0' : '0.12em' }};
     color: #fff;
     text-shadow: 0 2px 12px #0008;
 }
@@ -496,7 +499,7 @@
 .privacy-toc-card {
     background: #fff;
     border: 1px solid #f0f0f0;
-    border-left: 6px solid #bfa133;
+    border-{{ $isRtl ? 'right' : 'left' }}: 6px solid #bfa133;
 }
 .privacy-toc-link {
     color: #495057;
@@ -514,7 +517,7 @@
 .privacy-content-card {
     background: #fff;
     border: 1px solid #f0f0f0;
-    border-left: 6px solid #bfa133;
+    border-{{ $isRtl ? 'right' : 'left' }}: 6px solid #bfa133;
 }
 .privacy-highlight-box {
     background: #f8f9fa;

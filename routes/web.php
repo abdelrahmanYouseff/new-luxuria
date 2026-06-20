@@ -12,6 +12,18 @@ use App\Models\Vehicle;
 
 
 
+// ── Language Switcher ──────────────────────────────────────────────────────────
+Route::get('/lang/{locale}', function (string $locale) {
+    $supported = ['en', 'ar'];
+    if (in_array($locale, $supported)) {
+        session(['app_locale' => $locale]);
+        cookie()->queue(cookie()->forever('app_locale', $locale));
+    }
+    return redirect()->back()->withHeaders([
+        'Cache-Control' => 'no-store, no-cache',
+    ]);
+})->name('lang.switch');
+
 // Public routes (no middleware)
 Route::get('/coupons', [App\Http\Controllers\CouponController::class, 'index'])->name('coupons.index');
 Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])->name('coupons.store')->withoutMiddleware(['web']);

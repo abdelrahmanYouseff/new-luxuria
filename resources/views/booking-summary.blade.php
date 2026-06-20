@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
 
-@section('title', 'Booking Summary - Luxuria UAE')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
+@section('title', $isRtl ? __('app.meta_booking_summary_title') : __('app.meta_booking_summary_title'))
+@section('meta_description', $isRtl ? __('app.meta_booking_summary_desc') : __('app.meta_booking_summary_desc'))
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="booking-summary-page">

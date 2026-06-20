@@ -1,6 +1,38 @@
 @extends('layouts.blade_app')
+@php
+    $isRtl       = app()->getLocale() === 'ar';
+    $dailyRate   = $effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0));
+    $formattedRate = $dailyRate > 0 ? number_format($dailyRate) : null;
 
-@section('title', $vehicle->make . ' ' . $vehicle->model . ' - Car Details')
+    // Dynamic SEO title & description
+    if ($formattedRate) {
+        $seoTitle = __('app.meta_car_title', [
+            'make'  => $vehicle->make,
+            'model' => $vehicle->model,
+            'rate'  => $formattedRate,
+        ]);
+        $seoDesc = __('app.meta_car_desc', [
+            'make'  => $vehicle->make,
+            'model' => $vehicle->model,
+            'rate'  => $formattedRate,
+        ]);
+    } else {
+        $seoTitle = __('app.meta_car_title_no_rate', [
+            'make'  => $vehicle->make,
+            'model' => $vehicle->model,
+        ]);
+        $seoDesc = __('app.meta_car_desc_no_rate', [
+            'make'  => $vehicle->make,
+            'model' => $vehicle->model,
+        ]);
+    }
+@endphp
+
+@section('title', $seoTitle)
+@section('meta_description', $seoDesc)
+@section('canonical_url', url('/cars/' . $vehicle->id))
+@section('og_type', 'product')
+@section('og_image', $vehicle->image_url ?? url('/images_car/new-logo3.png'))
 
 @section('content')
 <div class="car-details-section px-0 px-md-5 mb-5 mt-4 responsive-car-details">
@@ -16,17 +48,20 @@
         </div>
         <div class="col-12 col-lg-6">
             <h1 class="lux-heading mb-4" style="font-size:2.8rem; color:#111;">{{ $vehicle->make }} {{ $vehicle->model }}</h1>
+            {{-- Visually-hidden H2 for the specs/badges group --}}
+            <h2 class="visually-hidden">{{ __('app.car_specs_label') }}</h2>
             <div class="d-flex flex-wrap gap-3 mb-4">
-                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->seats ?? 5 }} Seats</span>
-                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->doors ?? 4 }} Doors</span>
-                <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">{{ $vehicle->deposit ?? 'No Deposit' }}</span>
+                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->seats ?? 5 }} {{ __('app.car_seats') }}</span>
+                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->doors ?? 4 }} {{ __('app.car_doors') }}</span>
+                <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">{{ $vehicle->deposit ?? __('app.car_no_deposit') }}</span>
                 <span class="badge bg-info fs-6 px-3 py-2 rounded-pill">{{ ucfirst($vehicle->category ?? 'Standard') }}</span>
-                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->transmission ?? 'Automatic' }}</span>
+                <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->transmission ?? __('app.car_automatic') }}</span>
                 <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->color ?? 'N/A' }}</span>
-                <span class="badge bg-warning fs-6 px-3 py-2 rounded-pill">{{ ucfirst($vehicle->status ?? 'Available') }}</span>
+                <span class="badge bg-warning fs-6 px-3 py-2 rounded-pill">{{ $isRtl ? ($vehicle->status === 'available' ? __('app.car_available') : ucfirst($vehicle->status ?? __('app.car_available'))) : ucfirst($vehicle->status ?? 'Available') }}</span>
             </div>
-            <p class="mb-4" style="font-size:1.15rem; color:#444;">Experience the ultimate in luxury and performance with the {{ $vehicle->make }} {{ $vehicle->model }}. Perfect for business, leisure, and special occasions in the UAE. {{ $vehicle->description ?? '' }}</p>
+            <p class="mb-4" style="font-size:1.15rem; color:#444;">{{ __('app.car_description', ['make' => $vehicle->make, 'model' => $vehicle->model]) }} {{ $vehicle->description ?? '' }}</p>
             <!-- Compact Luxury Pricing Section -->
+            <h2 class="visually-hidden">{{ __('app.car_rental_rates') }}</h2>
             <div class="lux-pricing-compact my-4">
                 <div class="row g-3 justify-content-center align-items-end">
                     <!-- Daily -->
@@ -35,7 +70,7 @@
                             <div class="lux-pricing-icon-compact mb-1">
                                 <i class="bi bi-clock-history"></i>
                             </div>
-                            <div class="lux-pricing-label-compact mb-1">Daily</div>
+                            <div class="lux-pricing-label-compact mb-1">{{ __('app.car_daily') }}</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
                                 <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}</span>
@@ -48,7 +83,7 @@
                             <div class="lux-pricing-icon-compact mb-1">
                                 <i class="bi bi-calendar-week"></i>
                             </div>
-                            <div class="lux-pricing-label-compact mb-1">Weekly</div>
+                            <div class="lux-pricing-label-compact mb-1">{{ __('app.car_weekly') }}</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
                                 <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0)))) }}</span>
@@ -61,7 +96,7 @@
                             <div class="lux-pricing-icon-compact mb-1">
                                 <i class="bi bi-calendar2-month"></i>
                             </div>
-                            <div class="lux-pricing-label-compact mb-1">Monthly</div>
+                            <div class="lux-pricing-label-compact mb-1">{{ __('app.car_monthly') }}</div>
                             <div class="lux-pricing-amount-compact">
                                 <span class="lux-pricing-currency-compact">AED</span>
                                 <span class="lux-pricing-value-compact">{{ number_format(($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0)))) }}</span>
@@ -72,17 +107,17 @@
                 <div class="d-flex justify-content-center mt-3">
                     @auth
                         <button id="bookNowBtn" class="btn lux-btn-gold-compact px-4 py-2 shadow-sm" data-vehicle-id="{{ $vehicle->id }}" data-vehicle-status="{{ $vehicle->status }}">
-                            Book Now
+                            {{ __('app.car_book_now') }}
                         </button>
                     @else
-                        <a href="{{ route('login', ['redirect' => request()->url()]) }}" class="btn lux-btn-gold-compact px-4 py-2 shadow-sm">Login to Book</a>
+                        <a href="{{ route('login', ['redirect' => request()->url()]) }}" class="btn lux-btn-gold-compact px-4 py-2 shadow-sm">{{ __('app.car_login_to_book') }}</a>
                     @endauth
                 </div>
             </div>
             <!-- End Compact Luxury Pricing Section -->
             <div class="d-flex align-items-center gap-2 mt-2">
                 <a href="https://wa.me/971501234567?text=Hi, I'm interested in booking the {{ $vehicle->make }} {{ $vehicle->model }} for {{ number_format($vehicle->daily_rate ?? 0) }} AED/day" target="_blank" class="lux-whatsapp-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="38" height="38"></a>
-                <span style="color:#444; font-size:1.1rem;">Chat with us for instant booking</span>
+                <span style="color:#444; font-size:1.1rem;">{{ __('app.car_chat') }}</span>
             </div>
         </div>
     </div>
@@ -99,9 +134,9 @@
                         <i class="bi bi-calendar-check"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0" id="bookingModalLabel">Book Your Luxury Vehicle</h5>
+                        <h2 class="mb-0 fs-5" id="bookingModalLabel">{{ __('app.book_modal_title') }}</h2>
                         <p class="mb-0 luxury-modal-subtitle">{{ $vehicle->make }} {{ $vehicle->model }} {{ $vehicle->year ?? '' }}</p>
-                        <small class="luxury-modal-details">{{ $vehicle->category ?? 'Luxury' }} • {{ $vehicle->transmission ?? 'Automatic' }} • {{ $vehicle->seats ?? 5 }} Seats</small>
+                        <small class="luxury-modal-details">{{ $vehicle->category ?? 'Luxury' }} • {{ $vehicle->transmission ?? __('app.car_automatic') }} • {{ $vehicle->seats ?? 5 }} {{ __('app.car_seats') }}</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close luxury-btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -113,25 +148,25 @@
                         <div class="luxury-pricing-icon">
                             <i class="bi bi-calculator"></i>
                         </div>
-                        <h6 class="mb-0">Smart Pricing System</h6>
+                        <h3 class="mb-0 fs-6">{{ __('app.book_smart_pricing') }}</h3>
                     </div>
                     <div class="luxury-pricing-grid">
                         <div class="luxury-pricing-item">
-                            <div class="luxury-pricing-duration">1-7 days</div>
-                            <div class="luxury-pricing-rate">Daily Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}/day</div>
+                            <div class="luxury-pricing-duration">{{ __('app.book_days_1_7') }}</div>
+                            <div class="luxury-pricing-rate">{{ __('app.book_rate_daily') }}</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}/{{ __('app.car_per_day') }}</div>
                         </div>
                         <div class="luxury-pricing-item">
-                            <div class="luxury-pricing-duration">8-27 days</div>
-                            <div class="luxury-pricing-rate">Weekly Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7)) }}/day</div>
-                            <div class="luxury-pricing-savings">Save {{ round((1 - ((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1))) * 100) }}%</div>
+                            <div class="luxury-pricing-duration">{{ __('app.book_days_8_27') }}</div>
+                            <div class="luxury-pricing-rate">{{ __('app.book_rate_weekly') }}</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7)) }}/{{ __('app.car_per_day') }}</div>
+                            <div class="luxury-pricing-savings">{{ __('app.car_save') }} {{ round((1 - ((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1))) * 100) }}%</div>
                         </div>
                         <div class="luxury-pricing-item">
-                            <div class="luxury-pricing-duration">28+ days</div>
-                            <div class="luxury-pricing-rate">Monthly Rate</div>
-                            <div class="luxury-pricing-amount">AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/day</div>
-                            <div class="luxury-pricing-savings">Save {{ round((1 - (((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1)))) * 100) }}%</div>
+                            <div class="luxury-pricing-duration">{{ __('app.book_days_28plus') }}</div>
+                            <div class="luxury-pricing-rate">{{ __('app.book_rate_monthly') }}</div>
+                            <div class="luxury-pricing-amount">AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/{{ __('app.car_per_day') }}</div>
+                            <div class="luxury-pricing-savings">{{ __('app.car_save') }} {{ round((1 - (((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30) / max(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0))), 1)))) * 100) }}%</div>
                         </div>
                     </div>
                 </div>
@@ -147,31 +182,31 @@
                         <!-- Emirate Selection -->
                         <div class="col-12">
                             <label for="emirate" class="luxury-form-label">
-                                <i class="bi bi-geo-alt"></i>Pick-up Emirate
+                                <i class="bi bi-geo-alt"></i>{{ __('app.book_emirate') }}
                             </label>
                             <select class="form-select luxury-form-select" id="emirate" name="emirate" required>
-                                <option value="">Select an emirate</option>
-                                <option value="Abu Dhabi">Abu Dhabi</option>
-                                <option value="Dubai">Dubai</option>
-                                <option value="Sharjah">Sharjah</option>
-                                <option value="Ajman">Ajman</option>
-                                <option value="Umm Al Quwain">Umm Al Quwain</option>
-                                <option value="Ras Al Khaimah">Ras Al Khaimah</option>
-                                <option value="Fujairah">Fujairah</option>
+                                <option value="">{{ __('app.book_select_emirate') }}</option>
+                                <option value="Abu Dhabi">{{ $isRtl ? 'أبوظبي' : 'Abu Dhabi' }}</option>
+                                <option value="Dubai">{{ $isRtl ? 'دبي' : 'Dubai' }}</option>
+                                <option value="Sharjah">{{ $isRtl ? 'الشارقة' : 'Sharjah' }}</option>
+                                <option value="Ajman">{{ $isRtl ? 'عجمان' : 'Ajman' }}</option>
+                                <option value="Umm Al Quwain">{{ $isRtl ? 'أم القيوين' : 'Umm Al Quwain' }}</option>
+                                <option value="Ras Al Khaimah">{{ $isRtl ? 'رأس الخيمة' : 'Ras Al Khaimah' }}</option>
+                                <option value="Fujairah">{{ $isRtl ? 'الفجيرة' : 'Fujairah' }}</option>
                             </select>
                         </div>
 
                         <!-- Date Selection -->
                         <div class="col-md-6">
                             <label for="start_date" class="luxury-form-label">
-                                <i class="bi bi-calendar-event"></i>Start Date
+                                <i class="bi bi-calendar-event"></i>{{ __('app.book_start_date') }}
                             </label>
                             <input type="date" class="form-control luxury-form-input" id="start_date" name="start_date" required min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                         </div>
 
                         <div class="col-md-6">
                             <label for="end_date" class="luxury-form-label">
-                                <i class="bi bi-calendar-x"></i>End Date
+                                <i class="bi bi-calendar-x"></i>{{ __('app.book_end_date') }}
                             </label>
                             <input type="date" class="form-control luxury-form-input" id="end_date" name="end_date" required min="{{ date('Y-m-d', strtotime('+2 days')) }}">
                         </div>
@@ -183,23 +218,23 @@
                                     <div class="luxury-summary-icon">
                                         <i class="bi bi-receipt"></i>
                                     </div>
-                                    <h6 class="mb-0">Booking Summary</h6>
+                                    <h3 class="mb-0 fs-6">{{ __('app.book_summary') }}</h3>
                                 </div>
                                 <div class="luxury-summary-grid">
                                     <div class="luxury-summary-item">
-                                        <div class="luxury-summary-label">Smart Pricing</div>
+                                        <div class="luxury-summary-label">{{ __('app.book_smart_pricing_lbl') }}</div>
                                         <div class="luxury-summary-rates">
-                                            <div class="luxury-rate-item">Daily: AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}</div>
-                                            <div class="luxury-rate-item">Weekly: AED {{ number_format(((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7))) }}/day</div>
-                                            <div class="luxury-rate-item">Monthly: AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/day</div>
+                                            <div class="luxury-rate-item">{{ __('app.car_daily') }}: AED {{ number_format(($effectiveRates['daily'] ?? (($vehicle->daily_rate ?? 0) > 0 ? $vehicle->daily_rate : ($modelRates['daily'] ?? 0)))) }}</div>
+                                            <div class="luxury-rate-item">{{ __('app.car_weekly') }}: AED {{ number_format(((($effectiveRates['weekly'] ?? (($vehicle->weekly_rate ?? 0) > 0 ? $vehicle->weekly_rate : ($modelRates['weekly'] ?? 0))) / 7))) }}/{{ __('app.car_per_day') }}</div>
+                                            <div class="luxury-rate-item">{{ __('app.car_monthly') }}: AED {{ number_format(round((($effectiveRates['monthly'] ?? (($vehicle->monthly_rate ?? 0) > 0 ? $vehicle->monthly_rate : ($modelRates['monthly'] ?? 0))) / 30))) }}/{{ __('app.car_per_day') }}</div>
                                         </div>
                                     </div>
                                     <div class="luxury-summary-item">
-                                        <div class="luxury-summary-label">Total Days</div>
+                                        <div class="luxury-summary-label">{{ __('app.book_total_days') }}</div>
                                         <div class="luxury-summary-value" id="totalDays">-</div>
                                     </div>
                                     <div class="luxury-summary-item">
-                                        <div class="luxury-summary-label">Total Amount</div>
+                                        <div class="luxury-summary-label">{{ __('app.book_total_amount') }}</div>
                                         <div class="luxury-summary-amount" id="totalAmount">AED -</div>
                                     </div>
                                 </div>
@@ -209,19 +244,19 @@
                         <!-- Notes -->
                         <div class="col-12">
                             <label for="notes" class="luxury-form-label">
-                                <i class="bi bi-chat-text"></i>Special Requests (Optional)
+                                <i class="bi bi-chat-text"></i>{{ __('app.book_notes') }}
                             </label>
-                            <textarea class="form-control luxury-form-textarea" id="notes" name="notes" rows="4" placeholder="Any special requests or notes..."></textarea>
+                            <textarea class="form-control luxury-form-textarea" id="notes" name="notes" rows="4" placeholder="{{ __('app.book_notes_ph') }}"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer luxury-modal-footer">
                 <button type="button" class="btn luxury-btn-cancel" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i>Cancel
+                    <i class="bi bi-x-circle"></i>{{ __('app.book_cancel') }}
                 </button>
                 <button type="button" id="submitBooking" class="btn luxury-btn-confirm">
-                    <i class="bi bi-check-circle"></i>Confirm Booking
+                    <i class="bi bi-check-circle"></i>{{ __('app.book_confirm') }}
                 </button>
             </div>
         </div>
@@ -240,9 +275,9 @@
                         <i class="bi bi-calendar-x-fill"></i>
                     </div>
                                          <div>
-                        <h5 class="mb-0" id="alternativeVehiclesModalLabel">Vehicle Currently Unavailable</h5>
+                        <h2 class="mb-0 fs-5" id="alternativeVehiclesModalLabel">{{ __('app.alt_modal_title') }}</h2>
                         <p class="mb-0 luxury-modal-subtitle" id="originalVehicleName">{{ $vehicle->make }} {{ $vehicle->model }} {{ $vehicle->year ?? '' }}</p>
-                        <small class="luxury-modal-details">We've found similar luxury vehicles for you</small>
+                        <small class="luxury-modal-details">{{ __('app.alt_modal_subtitle') }}</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close luxury-btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -255,17 +290,17 @@
                             <i class="bi bi-calendar-x"></i>
                         </div>
                         <div>
-                            <h6 class="mb-1">Sorry, this vehicle is not available right now</h6>
-                            <p class="mb-0 text-muted">But don't worry! We have found similar luxury vehicles that might interest you.</p>
+                            <h3 class="mb-1 fs-6">{{ __('app.alt_sorry') }}</h3>
+                            <p class="mb-0 text-muted">{{ __('app.alt_sorry_desc') }}</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Alternative Vehicles Grid -->
                 <div class="luxury-alternatives-section">
-                    <h6 class="luxury-alternatives-title">
-                        <i class="bi bi-stars me-2"></i>Recommended Alternatives
-                    </h6>
+                    <h3 class="luxury-alternatives-title fs-6">
+                        <i class="bi bi-stars me-2"></i>{{ __('app.alt_recommended') }}
+                    </h3>
                     <div class="luxury-alternatives-grid" id="alternativesGrid">
                         <!-- Dynamic content will be inserted here -->
                     </div>
@@ -274,7 +309,7 @@
                 <!-- Loading State -->
                 <div class="luxury-alternatives-loading" id="alternativesLoading">
                     <div class="luxury-loading-spinner"></div>
-                    <p>Finding the best alternatives for you...</p>
+                    <p>{{ __('app.alt_loading') }}</p>
                 </div>
 
                 <!-- No Alternatives State -->
@@ -282,19 +317,19 @@
                     <div class="luxury-no-alternatives-icon">
                         <i class="bi bi-search"></i>
                     </div>
-                    <h6>No alternatives found</h6>
-                    <p>Please contact us directly for assistance.</p>
+                    <h3 class="fs-6">{{ __('app.alt_none_title') }}</h3>
+                    <p>{{ __('app.alt_none_desc') }}</p>
                     <a href="https://wa.me/971501234567" target="_blank" class="btn luxury-btn-confirm">
-                        <i class="bi bi-whatsapp"></i>Contact via WhatsApp
+                        <i class="bi bi-whatsapp"></i>{{ __('app.alt_whatsapp') }}
                     </a>
                 </div>
             </div>
             <div class="modal-footer luxury-modal-footer">
                 <button type="button" class="btn luxury-btn-cancel" data-bs-dismiss="modal">
-                    <i class="bi bi-arrow-left"></i>Go Back
+                    <i class="bi bi-arrow-{{ $isRtl ? 'right' : 'left' }}"></i>{{ __('app.alt_go_back') }}
                 </button>
                 <a href="https://wa.me/971501234567" target="_blank" class="btn luxury-btn-secondary">
-                    <i class="bi bi-headset"></i>Need Help?
+                    <i class="bi bi-headset"></i>{{ __('app.alt_need_help') }}
                 </a>
             </div>
         </div>
@@ -1302,6 +1337,7 @@
         flex-shrink: 0;
     }
 
+    .luxury-modal-title h2,
     .luxury-modal-title h5 {
         font-size: 1.05rem;
         line-height: 1.2;
@@ -1346,7 +1382,8 @@
         text-align: center;
     }
 
-    .luxury-alternative-info h6 {
+    .luxury-alternative-info h6,
+    .luxury-alternative-info .luxury-alt-name {
         max-width: 100%;
         text-align: center;
         font-size: 0.9rem;
@@ -1364,6 +1401,32 @@
         flex: 1;
         width: 100%;
     }
+}
+
+@media (max-width: 575px) {
+    /* Vehicle H1 */
+    .lux-heading { font-size: clamp(1.6rem, 7vw, 2rem) !important; }
+
+    /* Badges */
+    .badge.fs-6 { font-size: 0.75rem !important; padding: 0.35rem 0.65rem !important; }
+
+    /* Pricing cards */
+    .lux-pricing-card-compact { padding: 0.75rem 0.5rem !important; }
+    .lux-pricing-label-compact { font-size: 0.78rem; }
+    .lux-pricing-value-compact { font-size: 1rem; }
+    .lux-btn-gold-compact { width: 100%; justify-content: center; min-height: 44px; font-size: 0.9rem; }
+
+    /* WhatsApp row */
+    .lux-whatsapp-icon img { width: 32px; height: 32px; }
+
+    /* Modals */
+    .luxury-modal-header { padding: 0.9rem 1rem !important; }
+    .luxury-modal-body { padding: 0.85rem !important; }
+    .luxury-modal-footer { padding: 0.75rem 0.85rem !important; }
+    .luxury-modal-title h2 { font-size: 0.95rem !important; }
+    .luxury-form-input, .luxury-form-select { font-size: 0.88rem; min-height: 44px; }
+    .luxury-form-textarea { font-size: 0.88rem; }
+    .luxury-btn-cancel, .luxury-btn-confirm, .luxury-btn-secondary { font-size: 0.88rem; min-height: 44px; }
 }
 
 @media (max-width: 380px) {
@@ -1389,6 +1452,29 @@
 
 @auth
 <script>
+// Pass PHP translations to JavaScript
+window.carTrans = {
+    bookUnavailableDates: @json(__('app.book_unavailable_dates')),
+    bookCheckError:       @json(__('app.book_check_error')),
+    bookError:            @json(__('app.book_error')),
+    bookRedirecting:      @json(__('app.book_redirecting')),
+    bookProcessing:       @json(__('app.book_processing')),
+    bookConfirm:          @json(__('app.book_confirm')),
+    bookDay:              @json(__('app.book_day')),
+    bookDays:             @json(__('app.book_days')),
+    rateDailyLabel:       @json(__('app.book_rate_daily_label')),
+    rateWeeklyLabel:      @json(__('app.book_rate_weekly_label')),
+    rateMonthlyLabel:     @json(__('app.book_rate_monthly_label')),
+    altMoreExpensive:     @json(__('app.alt_more_expensive')),
+    altCheaper:           @json(__('app.alt_cheaper')),
+    altSamePrice:         @json(__('app.alt_same_price')),
+    carSeats:             @json(__('app.car_seats')),
+    carDoors:             @json(__('app.car_doors')),
+    carAutomatic:         @json(__('app.car_automatic')),
+    altViewDetails:       @json(__('app.alt_view_details')),
+    carPerDay:            @json(__('app.car_per_day')),
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const bookNowBtn = document.getElementById('bookNowBtn');
     const bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
@@ -1464,23 +1550,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let priceBadge = '';
             if (priceDiff > 0) {
-                priceBadge = `<div class="luxury-price-difference more-expensive">+${Math.abs(priceDiffPercent)}% more</div>`;
+                priceBadge = `<div class="luxury-price-difference more-expensive">+${Math.abs(priceDiffPercent)}% ${window.carTrans.altMoreExpensive}</div>`;
             } else if (priceDiff < 0) {
-                priceBadge = `<div class="luxury-price-difference cheaper">${Math.abs(priceDiffPercent)}% less</div>`;
+                priceBadge = `<div class="luxury-price-difference cheaper">${Math.abs(priceDiffPercent)}% ${window.carTrans.altCheaper}</div>`;
             } else {
-                priceBadge = `<div class="luxury-price-difference same-price">Same price</div>`;
+                priceBadge = `<div class="luxury-price-difference same-price">${window.carTrans.altSamePrice}</div>`;
             }
 
             return `
                 <div class="luxury-alternative-card">
                     <div class="luxury-alternative-header">
                         <div class="luxury-alternative-info">
-                            <h6>${vehicle.make} ${vehicle.model}</h6>
-                            <p>${vehicle.year || ''} • ${vehicle.category || 'Luxury'}</p>
+                            <p class="luxury-alt-name fw-bold mb-0">${vehicle.make} ${vehicle.model}</p>
+                            <p class="mb-0">${vehicle.year || ''} • ${vehicle.category || 'Luxury'}</p>
                         </div>
                         <div class="luxury-alternative-price">
                             <div class="luxury-alternative-amount">AED ${numberFormat(vehicle.daily_rate)}</div>
-                            <span class="luxury-alternative-period">per day</span>
+                            <span class="luxury-alternative-period">${window.carTrans.carPerDay}</span>
                             ${priceBadge}
                         </div>
                     </div>
@@ -1490,15 +1576,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
 
                     <div class="luxury-alternative-specs">
-                        <span class="luxury-spec-badge">${vehicle.seats || 5} Seats</span>
-                        <span class="luxury-spec-badge">${vehicle.doors || 4} Doors</span>
-                        <span class="luxury-spec-badge">${vehicle.transmission || 'Automatic'}</span>
+                        <span class="luxury-spec-badge">${vehicle.seats || 5} ${window.carTrans.carSeats}</span>
+                        <span class="luxury-spec-badge">${vehicle.doors || 4} ${window.carTrans.carDoors}</span>
+                        <span class="luxury-spec-badge">${vehicle.transmission || window.carTrans.carAutomatic}</span>
                         <span class="luxury-spec-badge">${vehicle.color || 'N/A'}</span>
                     </div>
 
-                                        <div class="luxury-alternative-actions">
+                    <div class="luxury-alternative-actions">
                         <a href="/cars/${vehicle.id}" class="luxury-btn-view" style="flex: 1; width: 100%;">
-                            <i class="bi bi-eye"></i>View Details
+                            <i class="bi bi-eye"></i>${window.carTrans.altViewDetails}
                         </a>
                     </div>
                 </div>
@@ -1539,22 +1625,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // تطبيق منطق التسعير حسب عدد الأيام باستخدام الأسعار الحالية
                 const currentRates = window.currentVehicleRates;
                 if (daysDiff <= 7) {
-                    // 7 أيام أو أقل: السعر اليومي
                     totalAmount = daysDiff * currentRates.daily;
-                    rateInfo = `Daily Rate (${daysDiff} ${daysDiff === 1 ? 'day' : 'days'})`;
+                    rateInfo = `${window.carTrans.rateDailyLabel} (${daysDiff} ${daysDiff === 1 ? window.carTrans.bookDay : window.carTrans.bookDays})`;
                 } else if (daysDiff > 7 && daysDiff < 28) {
-                    // أكثر من 7 وأقل من 28: السعر الأسبوعي مقسوم على 7
                     const weeklyDailyRate = currentRates.weekly / 7;
                     totalAmount = daysDiff * weeklyDailyRate;
-                    rateInfo = `Weekly Rate (AED ${numberFormat(Math.round(weeklyDailyRate))}/day × ${daysDiff} days)`;
+                    rateInfo = `${window.carTrans.rateWeeklyLabel} (AED ${numberFormat(Math.round(weeklyDailyRate))}/${window.carTrans.carPerDay} × ${daysDiff} ${window.carTrans.bookDays})`;
                 } else {
-                    // 28 يوم أو أكثر: السعر الشهري مقسوم على 30
                     const monthlyDailyRate = Math.round(currentRates.monthly / 30);
                     totalAmount = daysDiff * monthlyDailyRate;
-                    rateInfo = `Monthly Rate (AED ${numberFormat(monthlyDailyRate)}/day × ${daysDiff} days)`;
+                    rateInfo = `${window.carTrans.rateMonthlyLabel} (AED ${numberFormat(monthlyDailyRate)}/${window.carTrans.carPerDay} × ${daysDiff} ${window.carTrans.bookDays})`;
                 }
 
-                totalDaysElement.textContent = daysDiff + ' days';
+                totalDaysElement.textContent = daysDiff + ' ' + (daysDiff === 1 ? window.carTrans.bookDay : window.carTrans.bookDays);
                 totalAmountElement.textContent = 'AED ' + numberFormat(Math.round(totalAmount));
 
                 // إضافة معلومات نوع التسعير تحت المبلغ
@@ -1592,7 +1675,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (!data.available) {
-                    showAlert('danger', 'Vehicle is not available for the selected dates. Please choose different dates.');
+                    showAlert('danger', window.carTrans.bookUnavailableDates);
                     submitBookingBtn.disabled = true;
                 } else {
                     hideAlert();
@@ -1601,7 +1684,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error checking availability:', error);
-                showAlert('warning', 'Unable to check availability. Please try again.');
+                showAlert('warning', window.carTrans.bookCheckError);
             });
     }
 
@@ -1610,7 +1693,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(bookingForm);
 
         submitBookingBtn.disabled = true;
-        submitBookingBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>Processing...';
+        submitBookingBtn.innerHTML = `<i class="bi bi-hourglass-split"></i>${window.carTrans.bookProcessing}`;
 
         fetch('/bookings', {
             method: 'POST',
@@ -1622,8 +1705,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success && data.redirect_url) {
-                // Show success message and redirect to summary
-                showAlert('success', 'Redirecting to booking summary...');
+                showAlert('success', window.carTrans.bookRedirecting);
 
                 // Redirect to summary page after short delay
                 setTimeout(() => {
@@ -1639,14 +1721,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 showAlert('danger', data.message);
                 submitBookingBtn.disabled = false;
-                submitBookingBtn.innerHTML = '<i class="bi bi-check-circle"></i>Confirm Booking';
+                submitBookingBtn.innerHTML = `<i class="bi bi-check-circle"></i>${window.carTrans.bookConfirm}`;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('danger', 'An error occurred. Please try again.');
+            showAlert('danger', window.carTrans.bookError);
             submitBookingBtn.disabled = false;
-            submitBookingBtn.innerHTML = '<i class="bi bi-check-circle"></i>Confirm Booking';
+            submitBookingBtn.innerHTML = `<i class="bi bi-check-circle"></i>${window.carTrans.bookConfirm}`;
         });
     });
 

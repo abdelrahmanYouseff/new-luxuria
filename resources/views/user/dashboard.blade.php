@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
 
-@section('title', 'User Dashboard')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
+@section('title', __('app.meta_dashboard_title'))
+@section('meta_description', __('app.meta_dashboard_desc'))
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="flex h-screen bg-gray-50" style="font-family: Arial, sans-serif;">

@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
 
-@section('title', 'My Bookings')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
+@section('title', __('app.meta_my_bookings_title'))
+@section('meta_description', __('app.meta_my_bookings_desc'))
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="container mt-5 pt-5">

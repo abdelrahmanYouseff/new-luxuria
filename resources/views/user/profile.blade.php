@@ -1,6 +1,9 @@
 @extends('layouts.blade_app')
 
-@section('title', 'Profile Settings')
+@php $isRtl = app()->getLocale() === 'ar'; @endphp
+@section('title', __('app.meta_profile_title'))
+@section('meta_description', __('app.meta_profile_desc'))
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="container-fluid" style="font-family: Arial, sans-serif;">

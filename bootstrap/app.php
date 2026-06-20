@@ -4,6 +4,7 @@ use App\Http\Middleware\CheckUserRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleSessionIssues;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\ValidatePointSysApiKey;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,9 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'app_locale']);
 
         $middleware->web(append: [
+            SetLocale::class,
             HandleSessionIssues::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
