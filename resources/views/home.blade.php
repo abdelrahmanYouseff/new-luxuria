@@ -69,13 +69,13 @@
 </div>
 
 <style>
-.brands-marquee-outer { display:flex; justify-content:center; margin:0; padding:0; }
-.brands-marquee-wrapper { overflow:hidden; background:#fff; padding:20px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; width:80vw; max-width:1200px; min-width:320px; margin:0; box-sizing:border-box; display:flex; justify-content:center; }
-.brands-marquee { display:flex; align-items:center; gap:120px; animation:marquee 18s linear infinite; width:max-content; }
-.brands-marquee img { height:70px; width:auto; object-fit:contain; filter:grayscale(0.2); transition:filter 0.3s; }
+.brands-marquee-outer { width:100%; overflow:hidden; margin:0; padding:0; }
+.brands-marquee-wrapper { overflow:hidden; background:#fff; padding:20px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; width:100%; box-sizing:border-box; }
+.brands-marquee { display:flex; align-items:center; gap:80px; animation:marquee 18s linear infinite; width:max-content; }
+.brands-marquee img { height:60px; width:auto; object-fit:contain; filter:grayscale(0.2); transition:filter 0.3s; flex-shrink:0; }
 .brands-marquee img:hover { filter:grayscale(0) drop-shadow(0 2px 8px #ccc); }
 @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-@media (max-width:900px) { .brands-marquee-wrapper{width:96vw;max-width:98vw;} .brands-marquee{gap:60px;} }
+@media (max-width:767px) { .brands-marquee-wrapper{ padding:10px 0; } .brands-marquee{ gap:40px; animation-duration:22s; } .brands-marquee img{ height:36px; } }
 </style>
 
 {{-- Visually-hidden H2 groups the entire fleet section for screen readers & SEO --}}
@@ -596,7 +596,7 @@ $faqs = [
     .lux-whatsapp-icon img { filter:drop-shadow(0 2px 6px #2222); transition:transform 0.2s; width:36px; height:36px; }
     .lux-whatsapp-icon img:hover { transform:scale(1.1) rotate(-5deg); }
     .luxury-section-title { font-size:80px !important; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; line-height:1.05; color:#111 !important; text-shadow:none; margin-bottom:1.5rem; }
-    .hero-section { min-height:600px; height:85vh; max-height:800px; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .hero-section { min-height:600px; height:85vh; max-height:800px; width:100%; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
     .hero-background { position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#ffffff 0%,#f8f9fa 30%,#ffffff 70%,#f5f5f5 100%); z-index:1; }
     .hero-pattern { position:absolute; top:0; left:0; width:100%; height:100%; background-image:radial-gradient(circle at 25% 25%,rgba(191,161,51,0.05) 0%,transparent 50%),radial-gradient(circle at 75% 75%,rgba(191,161,51,0.03) 0%,transparent 50%),linear-gradient(45deg,transparent 30%,rgba(191,161,51,0.02) 50%,transparent 70%); z-index:1; }
     .hero-pattern::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dots" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="1" fill="rgba(191,161,51,0.08)"/></pattern></defs><rect width="60" height="60" fill="url(%23dots)"/></svg>'); opacity:0.3; }
@@ -628,27 +628,24 @@ $faqs = [
     @endif
 
     @media (max-width:991px) {
+        html, body { overflow-x:hidden; max-width:100%; }
         .hero-main-title { font-size:3rem; }
         .hero-description { font-size:1.05rem; }
-        /* Fix section titles between 768-991px – was stuck at 80px */
         .luxury-section-title { font-size:clamp(2rem,5vw,3.5rem) !important; letter-spacing:0.06em; }
-        body { overflow-x:hidden; }
     }
     @media (max-width:767px) {
-        body { overflow-x:hidden; }
-        .hero-section { min-height:auto; height:auto; padding:2rem 0 1.5rem; }
+        html, body { overflow-x:hidden; max-width:100%; }
+        * { max-width:100%; box-sizing:border-box; }
+        .hero-section { min-height:auto; height:auto; padding:2rem 0 1.5rem; width:100% !important; margin-left:0 !important; margin-right:0 !important; left:auto !important; right:auto !important; }
         .hero-section .row { min-height:auto !important; }
-        .hero-section .container { padding-left:1rem; padding-right:1rem; }
+        .hero-section .container, .hero-section .container-fluid { padding-left:1rem !important; padding-right:1rem !important; max-width:100% !important; }
         .hero-main-title { font-size:clamp(1.85rem,9vw,2.5rem); letter-spacing:0.04em; line-height:1.1; margin-bottom:1rem !important; }
         .hero-description { font-size:0.95rem; line-height:1.6; margin-bottom:1.4rem !important; }
         .vehicle-filter-wrapper { padding:1rem; border-radius:18px; }
         .filter-label { font-size:0.78rem; margin-bottom:0.35rem; }
         .filter-select { height:46px; border-radius:12px; font-size:0.95rem; }
-        .brands-marquee-wrapper { width:100vw; min-width:0; padding:12px 0; }
-        .brands-marquee { gap:42px; animation-duration:22s; }
-        .brands-marquee img { height:42px; }
         #luxury,#mid-range,#economy,#sports,#vans,#about,#contact,#promotions { margin-top:2rem !important; margin-bottom:2rem !important; padding-left:0.85rem; padding-right:0.85rem; }
-        #luxury>.row,#mid-range>.row,#economy>.row,#sports>.row,#vans>.row { --bs-gutter-x:0; row-gap:1rem; }
+        #luxury>.row,#mid-range>.row,#economy>.row,#sports>.row,#vans>.row { --bs-gutter-x:0.5rem; row-gap:1rem; }
         .luxury-section-title { font-size:clamp(1.8rem,10vw,2.65rem) !important; letter-spacing:0.05em; line-height:1.15; margin-bottom:1rem; }
         .vehicle-card { padding-left:0 !important; padding-right:0 !important; margin-bottom:0.75rem !important; }
         .car-card-link { max-width:430px; margin:0 auto; }
