@@ -36,7 +36,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/PointSysHelper.php"
+            "app/Helpers/PointSysHelper.php",
+            "app/Helpers/CarNameHelper.php"
         ]
     },
     "autoload-dev": {

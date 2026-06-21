@@ -2,7 +2,7 @@
 <a href="/cars/{{ $vehicle['id'] ?? '' }}" class="car-card-link" style="text-decoration:none;display:block;">
 <div class="luxury-car-card p-0 mx-auto">
     <div class="p-4 pb-0 text-{{ $isRtl ? 'end' : 'start' }}">
-        <h3 class="lux-heading mb-3 vehicle-name" style="color:#fff !important;font-size:1.4rem !important;font-weight:700 !important;">{{ $vehicle['name'] ?? 'Luxury Car' }}</h3>
+        <h3 class="lux-heading mb-3 vehicle-name" style="color:#fff !important;font-size:1.4rem !important;font-weight:700 !important;">{{ translateCarName($vehicle['name'] ?? 'Luxury Car') }}</h3>
         <div class="d-flex justify-content-{{ $isRtl ? 'end' : 'start' }} gap-2 mb-3 flex-wrap">
             <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle['seats'] ?? 5 }} {{ __('app.card_seats') }}</span>
             <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle['doors'] ?? 4 }} {{ __('app.card_doors') }}</span>

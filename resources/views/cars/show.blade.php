@@ -47,7 +47,7 @@
             </div>
         </div>
         <div class="col-12 col-lg-6">
-            <h1 class="lux-heading mb-4" style="font-size:2.8rem; color:#111;">{{ $vehicle->make }} {{ $vehicle->model }}</h1>
+            <h1 class="lux-heading mb-4" style="font-size:2.8rem; color:#111;">{{ translateCarName($vehicle->make . ' ' . $vehicle->model) }}</h1>
             {{-- Visually-hidden H2 for the specs/badges group --}}
             <h2 class="visually-hidden">{{ __('app.car_specs_label') }}</h2>
             <div class="d-flex flex-wrap gap-3 mb-4">
@@ -59,7 +59,7 @@
                 <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill">{{ $vehicle->color ?? 'N/A' }}</span>
                 <span class="badge bg-warning fs-6 px-3 py-2 rounded-pill">{{ $isRtl ? ($vehicle->status === 'available' ? __('app.car_available') : ucfirst($vehicle->status ?? __('app.car_available'))) : ucfirst($vehicle->status ?? 'Available') }}</span>
             </div>
-            <p class="mb-4" style="font-size:1.15rem; color:#444;">{{ __('app.car_description', ['make' => $vehicle->make, 'model' => $vehicle->model]) }} {{ $vehicle->description ?? '' }}</p>
+            <p class="mb-4" style="font-size:1.15rem; color:#444;">{{ __('app.car_description', ['make' => translateCarName($vehicle->make), 'model' => translateCarName($vehicle->model)]) }} {{ $vehicle->description ?? '' }}</p>
             <!-- Compact Luxury Pricing Section -->
             <h2 class="visually-hidden">{{ __('app.car_rental_rates') }}</h2>
             <div class="lux-pricing-compact my-4">
@@ -135,7 +135,7 @@
                     </div>
                     <div>
                         <h2 class="mb-0 fs-5" id="bookingModalLabel">{{ __('app.book_modal_title') }}</h2>
-                        <p class="mb-0 luxury-modal-subtitle">{{ $vehicle->make }} {{ $vehicle->model }} {{ $vehicle->year ?? '' }}</p>
+                        <p class="mb-0 luxury-modal-subtitle">{{ translateCarName($vehicle->make . ' ' . $vehicle->model) }} {{ $vehicle->year ?? '' }}</p>
                         <small class="luxury-modal-details">{{ $vehicle->category ?? 'Luxury' }} • {{ $vehicle->transmission ?? __('app.car_automatic') }} • {{ $vehicle->seats ?? 5 }} {{ __('app.car_seats') }}</small>
                     </div>
                 </div>
@@ -276,7 +276,7 @@
                     </div>
                                          <div>
                         <h2 class="mb-0 fs-5" id="alternativeVehiclesModalLabel">{{ __('app.alt_modal_title') }}</h2>
-                        <p class="mb-0 luxury-modal-subtitle" id="originalVehicleName">{{ $vehicle->make }} {{ $vehicle->model }} {{ $vehicle->year ?? '' }}</p>
+                        <p class="mb-0 luxury-modal-subtitle" id="originalVehicleName">{{ translateCarName($vehicle->make . ' ' . $vehicle->model) }} {{ $vehicle->year ?? '' }}</p>
                         <small class="luxury-modal-details">{{ __('app.alt_modal_subtitle') }}</small>
                     </div>
                 </div>

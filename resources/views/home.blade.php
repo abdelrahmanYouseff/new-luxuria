@@ -649,74 +649,52 @@ $faqs = [
         .luxury-section-title { font-size:clamp(1.8rem,10vw,2.65rem) !important; letter-spacing:0.05em; line-height:1.15; margin-bottom:1rem; }
         .vehicle-card { padding-left:0 !important; padding-right:0 !important; margin-bottom:0.75rem !important; }
         .car-card-link { max-width:430px; margin:0 auto; }
-        /* ── Mobile car card reset ── */
+        /* ── Mobile car card ── */
         .luxury-car-card {
             height: auto !important;
             min-height: 0 !important;
             padding-bottom: 0 !important;
-            border-radius: 20px;
-            border-width: 2px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.13);
         }
-        /* Top section */
-        .luxury-car-card .p-4.pb-0 {
-            text-align: left !important;
-            padding: 14px 14px 0 !important;
-        }
-        .vehicle-name { font-size: 1.15rem !important; text-align: left !important; }
-        .luxury-car-card .p-4.pb-0 > .d-flex { justify-content: flex-start !important; }
-
-        /* Image */
-        .luxury-car-img {
-            max-height: 200px !important;
-            min-height: 140px !important;
-            margin: 8px auto !important;
-        }
-
-        /* Bottom gradient section */
+        /* Bottom section: keep transparent so card gradient shows through */
         .luxury-card-gradient {
             position: static !important;
             height: auto !important;
             width: 100% !important;
-            padding: 12px 14px 14px !important;
-            background: #fff !important;
-            border-top: 1px solid rgba(0,0,0,0.06);
+            background: transparent !important;
+            padding: 10px 12px 14px !important;
         }
+        .luxury-car-img { max-height: 200px !important; min-height: 130px !important; }
+        .vehicle-name { font-size: 1.1rem !important; }
 
-        /* Pricing row — horizontal, no wrapping */
+        /* Pricing: 3 equal columns spanning full card width */
         .luxury-card-gradient .row.text-center {
             display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            margin-bottom: 10px !important;
-            gap: 0;
+            margin: 0 0 10px 0 !important;
+            padding: 0 !important;
+            gap: 0 !important;
         }
         .luxury-card-gradient .row.text-center .col {
-            flex: 1 !important;
-            padding: 0 4px !important;
-            border-right: 1px solid #eee;
-            min-width: 0;
+            flex: 1 1 0 !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            text-align: center !important;
         }
-        .luxury-card-gradient .row.text-center .col:last-child { border-right: none; }
         .luxury-card-gradient .lux-heading {
-            font-size: 0.65rem !important;
-            color: #888 !important;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
+            font-size: 0.7rem !important;
+            color: #555 !important;
             display: block;
             margin-bottom: 2px !important;
             white-space: nowrap;
         }
         .luxury-card-gradient .fs-5 {
-            font-size: 0.85rem !important;
+            font-size: 0.82rem !important;
             font-weight: 800 !important;
             color: #111 !important;
             white-space: nowrap;
             display: block;
-            line-height: 1.2;
         }
 
-        /* Actions row — Book Now left, WhatsApp right */
+        /* Actions: Book Now far left, WhatsApp far right */
         .luxury-card-gradient .d-flex {
             width: 100% !important;
             display: flex !important;
@@ -726,18 +704,12 @@ $faqs = [
         }
         .lux-btn-book {
             font-size: 0.78rem !important;
-            padding: 0.5rem 1.1rem !important;
-            border-radius: 8px !important;
+            padding: 0.45rem 1rem !important;
             margin-left: 0 !important;
             margin-right: auto !important;
-            flex-shrink: 0;
         }
-        .lux-whatsapp-icon {
-            margin-left: auto !important;
-            margin-right: 0 !important;
-            flex-shrink: 0;
-        }
-        .lux-whatsapp-icon img { width: 38px !important; height: 38px !important; }
+        .lux-whatsapp-icon { margin-left: auto !important; margin-right: 0 !important; }
+        .lux-whatsapp-icon img { width: 36px !important; height: 36px !important; }
         #about .lead { font-size:1rem !important; line-height:1.65 !important; }
         #about p:not(.lead),#contact p,#promotions p { font-size:0.95rem !important; line-height:1.6 !important; }
         #contact { padding-top:1rem !important; }

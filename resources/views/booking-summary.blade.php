@@ -76,7 +76,7 @@
                                 <span class="bsp-vehicle-cat">{{ ucfirst($vehicle->category) }}</span>
                             </div>
                             <div class="bsp-vehicle-info">
-                                <h2 class="bsp-vehicle-name">{{ $vehicle->make ?? '' }} {{ $vehicle->model ?? '' }}</h2>
+                                <h2 class="bsp-vehicle-name">{{ translateCarName(($vehicle->make ?? '') . ' ' . ($vehicle->model ?? '')) }}</h2>
                                 <p class="bsp-vehicle-year">{{ $vehicle->year ?? 'Latest Model' }}</p>
                                 <div class="bsp-specs">
                                     <span class="bsp-spec"><i class="bi bi-people-fill"></i>{{ $vehicle->seats ?? 5 }} Seats</span>
