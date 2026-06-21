@@ -649,72 +649,11 @@ $faqs = [
         .luxury-section-title { font-size:clamp(1.8rem,10vw,2.65rem) !important; letter-spacing:0.05em; line-height:1.15; margin-bottom:1rem; }
         .vehicle-card { padding-left:0 !important; padding-right:0 !important; margin-bottom:0.75rem !important; }
         .car-card-link { max-width:430px; margin:0 auto; }
-        /* ── Mobile car card ── */
-        .luxury-car-card {
-            height: auto !important;
-            min-height: 0 !important;
-            padding-bottom: 0 !important;
-        }
-        /* Bottom section: keep transparent so card gradient shows through */
-        .luxury-card-gradient {
-            position: static !important;
-            height: auto !important;
-            width: 100% !important;
-            background: transparent !important;
-            padding: 10px 12px 14px !important;
-        }
-        .luxury-car-img { max-height: 200px !important; min-height: 130px !important; }
-        .vehicle-name { font-size: 1.1rem !important; }
-
-        /* Pricing: Daily left — Weekly center — Monthly right */
-        .luxury-card-gradient .row.text-center {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: flex-start !important;
-            margin: 0 0 10px 0 !important;
-            padding: 0 !important;
-            gap: 0 !important;
-            width: 100% !important;
-        }
-        .luxury-card-gradient .row.text-center .col {
-            flex: 0 0 auto !important;
-            min-width: 0 !important;
-            padding: 0 !important;
-        }
-        .luxury-card-gradient .row.text-center .col:first-child { text-align: left !important; }
-        .luxury-card-gradient .row.text-center .col:nth-child(2) { text-align: center !important; }
-        .luxury-card-gradient .row.text-center .col:last-child  { text-align: right !important; }
-        .luxury-card-gradient .lux-heading {
-            font-size: 0.7rem !important;
-            color: #555 !important;
-            display: block;
-            margin-bottom: 2px !important;
-            white-space: nowrap;
-        }
-        .luxury-card-gradient .fs-5 {
-            font-size: 0.82rem !important;
-            font-weight: 800 !important;
-            color: #111 !important;
-            white-space: nowrap;
-            display: block;
-        }
-
-        /* Actions: Book Now far left, WhatsApp far right */
-        .luxury-card-gradient .d-flex {
-            width: 100% !important;
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            margin-top: 0 !important;
-        }
-        .lux-btn-book {
-            font-size: 0.78rem !important;
-            padding: 0.45rem 1rem !important;
-            margin-left: 0 !important;
-            margin-right: auto !important;
-        }
-        .lux-whatsapp-icon { margin-left: auto !important; margin-right: 0 !important; }
-        .lux-whatsapp-icon img { width: 36px !important; height: 36px !important; }
+        /* ── Mobile car card: identical to desktop ── */
+        .luxury-car-card { height: 500px !important; padding-bottom: 160px !important; }
+        .luxury-card-gradient { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; height: 160px !important; }
+        .luxury-card-gradient .d-flex { width:100% !important; justify-content:space-between !important; align-items:center !important; }
+        .luxury-car-img { max-height: 360px !important; min-height: 300px !important; }
         #about .lead { font-size:1rem !important; line-height:1.65 !important; }
         #about p:not(.lead),#contact p,#promotions p { font-size:0.95rem !important; line-height:1.6 !important; }
         #contact { padding-top:1rem !important; }
