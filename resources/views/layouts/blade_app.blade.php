@@ -209,19 +209,23 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            border: 1.5px solid rgba(191,161,51,0.45);
+            border: 2px solid #bfa133;
+            background: rgba(191,161,51,0.08);
             color: #bfa133 !important;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             text-decoration: none !important;
-            transition: border-color 0.2s, background 0.2s;
+            transition: background 0.25s, box-shadow 0.25s, transform 0.2s;
+            box-shadow: 0 0 0 0 rgba(191,161,51,0);
         }
+        .lux-profile-btn::after { display: none !important; }
         .lux-profile-btn:hover,
         .lux-profile-btn[aria-expanded="true"] {
-            background: rgba(191,161,51,0.12);
-            border-color: #bfa133;
+            background: rgba(191,161,51,0.18);
+            box-shadow: 0 0 14px rgba(191,161,51,0.35);
+            transform: scale(1.07);
         }
 
         /* Profile dropdown */
@@ -392,6 +396,23 @@
             .lux-navbar-actions { gap: 0.5rem; }
         }
     </style>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1710324886275712');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1710324886275712&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 @php $bodyFont = $isRtl ? "'Tajawal', sans-serif" : "'Playfair Display', serif"; @endphp
 <body style="background:#fff; color:#111; font-family:{!! $bodyFont !!};">
@@ -469,7 +490,7 @@
                     @else
                         @if(Auth::user()->role === 'user')
                             <div class="dropdown">
-                                <a class="lux-profile-btn dropdown-toggle"
+                                <a class="lux-profile-btn"
                                    href="#"
                                    id="navbarProfileDropdown"
                                    role="button"

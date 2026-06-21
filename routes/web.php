@@ -183,6 +183,21 @@ Route::middleware(['auth'])->group(function () {
     })->name('booking.mock.payment');
 });
 
+// Public "return from payment" route — restores the user back to booking summary
+// without requiring a fresh login if session expired during Stripe redirect.
+Route::get('/booking/return', function () {
+    $returnUrl = session('booking_return_url');
+    if ($returnUrl) {
+        session()->forget('booking_return_url');
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            return redirect($returnUrl);
+        }
+        // Store as intended so login sends them back automatically
+        session(['url.intended' => $returnUrl]);
+    }
+    return redirect()->route('login');
+})->name('booking.return');
+
 // Test external booking API (public route for testing)
 Route::get('/test-external-booking', function () {
     $externalBookingService = app(\App\Services\ExternalBookingService::class);

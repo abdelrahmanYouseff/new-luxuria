@@ -958,7 +958,7 @@ class StripeController extends Controller
                 ]],
                 'mode' => 'payment',
                 'success_url' => route('booking.payment.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('cars.show', ['id' => $booking->vehicle_id]),
+                'cancel_url' => $request->input('cancel_url', route('cars.show', ['id' => $booking->vehicle_id])),
                 'metadata' => [
                     'booking_id' => $booking->id,
                     'user_id' => $booking->user_id,

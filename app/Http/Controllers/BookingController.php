@@ -357,11 +357,31 @@ class BookingController extends Controller
                 'booking_id' => $booking->id
             ]);
 
+            // Store the booking summary URL in session so the user lands back
+            // here (not on login) if they press browser-back from the payment page.
+            $summaryUrl = route('booking.summary', ['vehicle' => $booking->vehicle_id])
+                . '?' . http_build_query([
+                    'vehicle_id'   => $booking->vehicle_id,
+                    'emirate'      => $booking->emirate,
+                    'start_date'   => $booking->start_date,
+                    'end_date'     => $booking->end_date,
+                    'daily_rate'   => $booking->daily_rate,
+                    'pricing_type' => $booking->pricing_type,
+                    'applied_rate' => $booking->applied_rate,
+                    'total_days'   => $booking->total_days,
+                    'total_amount' => $booking->total_amount,
+                    'notes'        => $booking->notes ?? '',
+                ]);
+            session(['booking_return_url' => $summaryUrl, 'url.intended' => $summaryUrl]);
+
             // Create Stripe payment session using dependency injection
             $stripe = app(\App\Http\Controllers\StripeController::class);
 
             $paymentRequest = new \Illuminate\Http\Request();
-            $paymentRequest->merge(['booking_id' => $booking->id]);
+            $paymentRequest->merge([
+                'booking_id'  => $booking->id,
+                'cancel_url'  => $summaryUrl,
+            ]);
 
             $paymentResponse = $stripe->createBookingPaymentSession($paymentRequest);
             $paymentData = $paymentResponse->getData(true);
@@ -372,6 +392,11 @@ class BookingController extends Controller
                 Log::info('Redirecting to Stripe payment', [
                     'payment_url' => $paymentData['payment_url']
                 ]);
+                // AJAX request: return JSON so the browser can navigate with
+                // window.location.href, keeping the booking summary in back-stack.
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json(['redirect' => $paymentData['payment_url']]);
+                }
                 return redirect($paymentData['payment_url']);
             } else {
                 Log::error('Stripe payment failed, deleting booking', [
@@ -379,6 +404,9 @@ class BookingController extends Controller
                     'error' => $paymentData['message'] ?? 'Unknown error'
                 ]);
                 $booking->delete();
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json(['error' => 'Unable to create payment session. Please try again.'], 422);
+                }
                 return redirect()->back()->with('error', 'Unable to create payment session. Please try again.');
             }
         } elseif ($request->payment_method === 'bank') {
