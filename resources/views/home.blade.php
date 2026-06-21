@@ -666,19 +666,24 @@ $faqs = [
         .luxury-car-img { max-height: 200px !important; min-height: 130px !important; }
         .vehicle-name { font-size: 1.1rem !important; }
 
-        /* Pricing: 3 equal columns spanning full card width */
+        /* Pricing: Daily left — Weekly center — Monthly right */
         .luxury-card-gradient .row.text-center {
             display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
             margin: 0 0 10px 0 !important;
             padding: 0 !important;
             gap: 0 !important;
+            width: 100% !important;
         }
         .luxury-card-gradient .row.text-center .col {
-            flex: 1 1 0 !important;
+            flex: 0 0 auto !important;
             min-width: 0 !important;
             padding: 0 !important;
-            text-align: center !important;
         }
+        .luxury-card-gradient .row.text-center .col:first-child { text-align: left !important; }
+        .luxury-card-gradient .row.text-center .col:nth-child(2) { text-align: center !important; }
+        .luxury-card-gradient .row.text-center .col:last-child  { text-align: right !important; }
         .luxury-card-gradient .lux-heading {
             font-size: 0.7rem !important;
             color: #555 !important;
